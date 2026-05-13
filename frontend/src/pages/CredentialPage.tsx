@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -9,7 +10,69 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
 
-export function CredentialPage() {
+/** Landing page: user enters a QR token or scans a code */
+function CredentialSearch() {
+  const [input, setInput] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = input.trim();
+    if (trimmed) navigate(`/credencial/${encodeURIComponent(trimmed)}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-background px-4 py-16 text-on-surface">
+      <div className="mx-auto max-w-lg text-center">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full border-2 border-primary/30 bg-surface-container">
+          <MaterialIcon name="qr_code_scanner" className="text-primary" size={40} />
+        </div>
+
+        <h1 className="font-headline-lg text-headline-lg">Validar Jugador</h1>
+        <p className="mt-2 text-on-surface-variant">
+          Ingresa el código QR de la credencial deportiva para verificar la identidad del jugador.
+        </p>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ingresa el token QR del jugador..."
+            className="w-full rounded-xl border border-outline-variant/30 bg-surface-container px-4 py-3.5 text-on-surface placeholder:text-on-surface-variant/60 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="w-full rounded-xl bg-primary py-3.5 font-label-caps text-label-caps text-on-primary hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            <MaterialIcon name="verified" size={18} />
+            Validar Credencial
+          </button>
+        </form>
+
+        <div className="mt-10 rounded-2xl border border-outline-variant/20 bg-surface-container/60 p-6 text-left">
+          <h3 className="font-medium text-on-surface flex items-center gap-2">
+            <MaterialIcon name="info" size={18} className="text-primary" />
+            ¿Cómo funciona?
+          </h3>
+          <ol className="mt-3 space-y-2 text-sm text-on-surface-variant list-decimal pl-5">
+            <li>Escanea el código QR de la credencial del jugador</li>
+            <li>El sistema verificará automáticamente la identidad</li>
+            <li>Se mostrarán los datos del jugador si la credencial es válida</li>
+          </ol>
+        </div>
+
+        <Link to="/" className="mt-8 inline-block text-sm text-primary hover:underline">
+          ← Volver al inicio
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+/** Result page: validates a specific token */
+function CredentialResult() {
   const { token } = useParams<{ token: string }>();
 
   const q = useQuery({
@@ -30,14 +93,6 @@ export function CredentialPage() {
     retry:   false,
   });
 
-  if (!token) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-container-lowest px-4 text-on-surface">
-        <p>Token no válido.</p>
-      </div>
-    );
-  }
-
   if (q.isLoading) {
     return (
       <div className="min-h-screen bg-surface-container-lowest">
@@ -55,7 +110,7 @@ export function CredentialPage() {
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
           <MaterialIcon name="qr_code_scanner" className="text-primary" size={48} />
-          <h1 className="mt-2 font-headline-lg text-headline-lg">Credencial digital</h1>
+          <h1 className="mt-2 font-headline-lg text-headline-lg">Credencial Digital</h1>
           <p className="mt-1 text-sm text-on-surface-variant">Validación pública (escaneo QR)</p>
         </div>
 
@@ -64,14 +119,16 @@ export function CredentialPage() {
             <MaterialIcon name="cancel" className="text-error" size={56} />
             <p className="mt-4 font-medium">Credencial no válida o jugador no verificado</p>
             <p className="mt-2 text-sm text-on-surface-variant">{q.data?.message ?? 'Intenta de nuevo o contacta al club.'}</p>
-            <Link to="/" className="mt-6 inline-block text-primary hover:underline">
-              Volver al inicio
+            <Link to="/credencial" className="mt-6 inline-block text-primary hover:underline">
+              Intentar de nuevo
             </Link>
           </div>
         ) : (
           <div className="rounded-2xl border border-primary/30 bg-surface-container/80 p-6 shadow-lg">
-            <MaterialIcon name="check_circle" className="text-primary" size={56} filled />
-            <p className="mt-4 text-center font-medium text-primary">Credencial válida</p>
+            <div className="text-center">
+              <MaterialIcon name="check_circle" className="text-primary" size={56} filled />
+              <p className="mt-4 font-medium text-primary">Credencial válida ✓</p>
+            </div>
             {player ? (
               <dl className="mt-6 space-y-2 text-sm">
                 <div className="flex justify-between border-b border-outline-variant/20 py-2">
@@ -90,12 +147,12 @@ export function CredentialPage() {
                 </div>
                 <div className="flex justify-between py-2">
                   <dt className="text-on-surface-variant">Club</dt>
-                  <dd>{String(player.club_name ?? 'Academia')}</dd>
+                  <dd>{String(player.club_name ?? 'Academia Barcelona Chalco')}</dd>
                 </div>
               </dl>
             ) : null}
-            <Link to="/" className="mt-6 block text-center text-sm text-primary hover:underline">
-              Volver al inicio
+            <Link to="/credencial" className="mt-6 block text-center text-sm text-primary hover:underline">
+              Validar otra credencial
             </Link>
           </div>
         )}
@@ -103,3 +160,9 @@ export function CredentialPage() {
     </div>
   );
 }
+
+export function CredentialPage() {
+  const { token } = useParams<{ token: string }>();
+  return token ? <CredentialResult /> : <CredentialSearch />;
+}
+

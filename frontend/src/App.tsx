@@ -35,6 +35,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/credencial/:token" element={<CredentialPage />} />
+      <Route path="/credencial" element={<CredentialPage />} />
 
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
