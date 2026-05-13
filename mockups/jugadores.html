@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FutID Barcelona Chalco - Nuestros Jugadores</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#eac249",
+                        "surface-container-high": "#2a2a2a",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-tertiary": "#3d2f00",
+                        "background": "#131313",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "inverse-on-surface": "#313030",
+                        "primary-container": "#d4af37",
+                        "on-tertiary-container": "#564300",
+                        "on-primary-container": "#554300",
+                        "primary-fixed-dim": "#e9c349",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "secondary-container": "#2a4386",
+                        "surface-container": "#201f1f",
+                        "on-surface-variant": "#d0c5af",
+                        "surface-container-lowest": "#0e0e0e",
+                        "on-secondary": "#0d2c6e",
+                        "on-error": "#690005",
+                        "on-background": "#e5e2e1",
+                        "secondary": "#b3c5ff",
+                        "surface-bright": "#3a3939",
+                        "on-primary": "#3c2f00",
+                        "primary": "#f2ca50",
+                        "on-secondary-fixed-variant": "#2a4386",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed-dim": "#b3c5ff",
+                        "surface-container-low": "#1c1b1b",
+                        "surface": "#131313",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "tertiary": "#f3ca50",
+                        "on-secondary-container": "#9bb3fd",
+                        "tertiary-fixed": "#ffe08b",
+                        "tertiary-container": "#d5af37",
+                        "surface-dim": "#131313",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-fixed": "#00174a",
+                        "inverse-primary": "#735c00",
+                        "on-primary-fixed": "#241a00",
+                        "surface-tint": "#e9c349",
+                        "outline": "#99907c",
+                        "inverse-surface": "#e5e2e1",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed": "#ffe088",
+                        "outline-variant": "#4d4635",
+                        "on-surface": "#e5e2e1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "24px",
+                        "base": "8px",
+                        "stack-sm": "12px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "container-max": "1280px",
+                        "stack-lg": "48px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-caps": ["Anybody"],
+                        "display-hero": ["Montserrat"],
+                        "stat-value": ["Anybody"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "stat-value": ["40px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface/80 backdrop-blur-md dark:bg-surface/80 border-none shadow-md bg-surface-container-lowest/40">
+<div class="font-display-hero text-headline-lg-mobile text-primary tracking-tighter">
+            FutID Barcelona Chalco
+        </div>
+<nav class="hidden md:flex gap-gutter h-full items-center">
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1 h-full flex items-center hover:text-primary transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Players</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors h-full flex items-center transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Matches</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors h-full flex items-center transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Results</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors h-full flex items-center transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">News</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors h-full flex items-center transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Gallery</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors h-full flex items-center transition-all duration-300 scale-95 active:scale-90 transition-transform" href="#">Registration</a>
+</nav>
+<div class="flex items-center">
+<button class="bg-surface-container-lowest text-primary border-2 border-primary px-6 py-2 rounded-full font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-colors duration-300">
+                Login
+            </button>
+</div>
+</header>
+<main class="flex-grow pt-32 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto">
+<div class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-stack-lg gap-stack-md">
+<div>
+<h1 class="font-display-hero text-display-hero text-on-surface mb-2">Nuestros Jugadores</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Explora el talento de élite de nuestro club. Identidades verificadas y estadísticas de rendimiento en tiempo real.</p>
+</div>
+<div class="flex flex-col sm:flex-row gap-base w-full lg:w-auto">
+<div class="relative flex-grow sm:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary text-on-surface font-body-md py-3 pl-10 pr-4 outline-none transition-colors duration-300 placeholder:text-on-surface-variant/50" placeholder="Buscar jugador..." type="text"/>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap gap-base mb-stack-lg">
+<button class="px-6 py-2 rounded-full bg-primary text-on-primary font-label-caps text-label-caps transition-all shadow-[0_0_15px_rgba(212,175,55,0.2)]">Todos</button>
+<button class="px-6 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:border-primary hover:text-primary transition-all">Activos</button>
+<button class="px-6 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:border-primary hover:text-primary transition-all">Verificados</button>
+<button class="px-6 py-2 rounded-full bg-surface-container border border-outline-variant text-on-surface-variant font-label-caps text-label-caps hover:border-primary hover:text-primary transition-all flex items-center gap-2">
+                Por Posición
+                <span class="material-symbols-outlined text-sm">arrow_drop_down</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<article class="flex flex-col bg-secondary-container/30 backdrop-blur-md rounded-2xl border border-primary/20 overflow-hidden relative group">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-0"></div>
+<div class="h-64 relative z-10 overflow-hidden bg-surface-container-lowest">
+<img alt="Player Portrait" class="w-full h-full object-cover object-top mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" data-alt="A dramatic, high-contrast portrait of a semi-professional male soccer player in a dark studio setting. The lighting is cinematic and moody, highlighting his athletic physique and intense focus. He wears a sleek, modern, dark blue kit with subtle gold accents, perfectly matching the elite, high-end sport editorial aesthetic of the surrounding digital interface. The background is a deep, atmospheric void." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWLbNP3V7NwCSy9PHZKi3NloyDPPFGx_IK3_x4pgxVYBG3D6m2Ub2NQZDxAixKwrGUvB1PkRVJT8UPSs1izZ9egc84PTrSdDGNx5MuXBmTOIhnBIBoeRLuIfw7q-PzVDqurz0PwzUNDr3WiKykQkGJJ5bbR75oa1eB08KIEWXUzJIRvh5mTtXpGVAQR2Q66q8b89w6DUgsEbbFPaI831k0geMm6E2rT1VBvt9cP_BI6FekqC72l-_RjugfHZuP2DLrpajz2_wkNg"/>
+<div class="absolute top-4 right-4 bg-primary text-on-primary font-stat-value text-headline-lg-mobile w-12 h-12 flex items-center justify-center rounded-lg shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                        10
+                    </div>
+</div>
+<div class="p-stack-md relative z-10 flex flex-col flex-grow">
+<div class="mb-4">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Carlos Silva</h2>
+<p class="font-label-caps text-label-caps text-primary tracking-widest">FUTID BARCELONA CHALCO</p>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm flex-grow">
+                        Delantero dinámico con excepcional visión de juego. Especialista en tiros libres y creación de espacios en el último tercio del campo.
+                    </p>
+<div class="grid grid-cols-3 gap-2 mb-stack-md py-4 border-y border-outline-variant/30">
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Posición</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">DEL</span>
+</div>
+<div class="flex flex-col items-center justify-center border-x border-outline-variant/30">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Edad</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">24</span>
+</div>
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Temp</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">23/24</span>
+</div>
+</div>
+<div class="flex items-center justify-between mb-stack-md bg-surface-container/50 p-3 rounded-lg border border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div class="flex flex-col">
+<span class="font-body-md text-sm text-on-surface">Estado: Jugador Verificado</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Folio Deportivo: FX-1092-B</span>
+</div>
+</div>
+<img alt="QR Code" class="w-12 h-12 rounded bg-surface p-1" data-alt="A crisp, high-definition digital QR code rendered in pure white against a deep, dark blue background. The code is intricate and perfectly legible, representing a secure digital identity credential within an elite sports management platform. The edges are sharp, and the contrast is maximized for a premium, tech-forward aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4OGzS32n9T9TK8dA70H9N4hZGPq-V4z9D0cmUreJJkVSLvwPZ_go8RJe_n41bZ1xitVzi4R38Woq0bcJ9rOPq7VHDS2rQ-FFi63zTYy17V4tfzTC2uwdidNl05Y2d1b2Kha6fxejUpysE5TLX244CseDjrc_BqkV5IG-A0ZjxHyk6Hjmqs-oEw_2VYW1gV23Sz8QP52GEgx8NZZRKk5P25hj-VhPE6-FdsFQWaPRP46OTSMPkYKKt6VNX5_8HFPYbtxC-IT6hxg"/>
+</div>
+<button class="w-full py-4 bg-surface-container border border-primary/50 text-primary font-label-caps text-label-caps rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                        Ver Credencial Deportiva
+                    </button>
+</div>
+</article>
+<article class="flex flex-col bg-secondary-container/30 backdrop-blur-md rounded-2xl border border-primary/20 overflow-hidden relative group">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-0"></div>
+<div class="h-64 relative z-10 overflow-hidden bg-surface-container-lowest">
+<img alt="Player Portrait" class="w-full h-full object-cover object-top mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" data-alt="An intense, stylized portrait of a male soccer player staring confidently into the camera against a pitch-black background. The scene features high-contrast rim lighting that traces his silhouette, emphasizing a premium, championship-level aesthetic. He is dressed in an exclusive, deep navy blue jersey with metallic gold trim. The overall mood conveys professional dedication and elite athletic status." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAes0Mesq9TgsR8HEJWDlwUS8D97sTnUW5rNxtqxTbsf9EPFg_Ohid7x55RvwVLU0pacG7irj2zrq1t1d140-rSBOp1ArLm_MEfmXjMkJ_vhwt8uaxHYySEYFJK59tSwGOeObh34nby8hX7xjvdGGFaH8IiJaSDwu-P0JXaB7z0qzGHY92ccPkw45NmCmAdF9hcqGCCCZQxEDPLwSXk1Bda7_-Nj_1B8wyloFyoU4bnv5TTAu1Gq2bxxu7en7rFjnpUpjskdcu8IA"/>
+<div class="absolute top-4 right-4 bg-surface-container text-on-surface font-stat-value text-headline-lg-mobile w-12 h-12 flex items-center justify-center rounded-lg border border-outline-variant">
+                        4
+                    </div>
+</div>
+<div class="p-stack-md relative z-10 flex flex-col flex-grow">
+<div class="mb-4">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Mateo Ruiz</h2>
+<p class="font-label-caps text-label-caps text-primary tracking-widest">FUTID BARCELONA CHALCO</p>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm flex-grow">
+                        Defensa central imponente. Liderazgo comprobado en la línea de fondo con excelente capacidad para el juego aéreo y salida con balón dominado.
+                    </p>
+<div class="grid grid-cols-3 gap-2 mb-stack-md py-4 border-y border-outline-variant/30">
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Posición</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">DEF</span>
+</div>
+<div class="flex flex-col items-center justify-center border-x border-outline-variant/30">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Edad</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">28</span>
+</div>
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Temp</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">23/24</span>
+</div>
+</div>
+<div class="flex items-center justify-between mb-stack-md bg-surface-container/50 p-3 rounded-lg border border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div class="flex flex-col">
+<span class="font-body-md text-sm text-on-surface">Estado: Jugador Verificado</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Folio Deportivo: FX-2044-A</span>
+</div>
+</div>
+<img alt="QR Code" class="w-12 h-12 rounded bg-surface p-1" data-alt="A precise, high-contrast digital QR code presented in striking white lines against a dark, glassy navy blue surface. The code acts as a secure identity anchor within a premium sports editorial interface. The aesthetic is clean, sharp, and highly technical, reflecting the exclusive digital nature of the platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOAE6HcRf3zPL-9JEkhydrgA-7ycYD62lkCh10xA1_vWIGIqKCEk7QvH5njQmp0psy2nDJr2mKk8U_4gy3JZVHBPqyqAoG8xGpljp6bPJKPCbLVaUib-M82idBY3hyEpDve0WvYg59vJ_uATa3g_9qVZ2I5HzeT6NhGQoBVb4AjiBE3qSP4rtxYY_r9nrcLiuOGduRocu66kdDVsOMC7g8OqBhKr_0Z8RKCIullumW4su9qBAbMrJDGj-kLcU_-ql6qUoRaERtAg"/>
+</div>
+<button class="w-full py-4 bg-surface-container border border-primary/50 text-primary font-label-caps text-label-caps rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                        Ver Credencial Deportiva
+                    </button>
+</div>
+</article>
+<article class="flex flex-col bg-secondary-container/30 backdrop-blur-md rounded-2xl border border-primary/20 overflow-hidden relative group">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-0"></div>
+<div class="h-64 relative z-10 overflow-hidden bg-surface-container-lowest">
+<img alt="Player Portrait" class="w-full h-full object-cover object-top mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700" data-alt="A striking, editorial-style headshot of a young male soccer midfielder looking intensely towards the field. The lighting is sophisticated and directional, creating a sense of depth and focus reminiscent of high-end sports magazine covers. He is wearing a minimalist dark blue uniform. The aesthetic seamlessly integrates with a luxury digital identity system, utilizing deep shadows and sharp, crisp details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYRNPA5x_2gtdG3giTw_eU2cUj58xrfxe1UG1rRtGlZjhkjrlMcaoy52lF20pInOdc7J5XdvI6J_Z6WctLgSzj3EK7GnJi4w7lay5U3pHroZ1QscLCvKIWt4GJwJEcXOjBBv4AKd-3DtJsz6zSUUpLwjlA8iIvYXi-vDhmKfGvZ5n7H1TkAX-X3YC0n_PrsMVixSmbqKpjEJrjNtbwaLX1Ue22r_ie_Um_5IjPV4Z5AHBNrQDcYRjjaN7ixaomqyDhfTH2VH2fIA"/>
+<div class="absolute top-4 right-4 bg-surface-container text-on-surface font-stat-value text-headline-lg-mobile w-12 h-12 flex items-center justify-center rounded-lg border border-outline-variant">
+                        8
+                    </div>
+</div>
+<div class="p-stack-md relative z-10 flex flex-col flex-grow">
+<div class="mb-4">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">Diego Torres</h2>
+<p class="font-label-caps text-label-caps text-primary tracking-widest">FUTID BARCELONA CHALCO</p>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-sm flex-grow">
+                        Mediocampista creativo. El motor del equipo, dicta el ritmo del partido con pases precisos y una resistencia física inigualable.
+                    </p>
+<div class="grid grid-cols-3 gap-2 mb-stack-md py-4 border-y border-outline-variant/30">
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Posición</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">MED</span>
+</div>
+<div class="flex flex-col items-center justify-center border-x border-outline-variant/30">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Edad</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">21</span>
+</div>
+<div class="flex flex-col items-center justify-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase">Temp</span>
+<span class="font-stat-value text-headline-lg-mobile text-on-surface">23/24</span>
+</div>
+</div>
+<div class="flex items-center justify-between mb-stack-md bg-surface-container/50 p-3 rounded-lg border border-outline-variant/20">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<div class="flex flex-col">
+<span class="font-body-md text-sm text-on-surface">Estado: Jugador Verificado</span>
+<span class="font-label-caps text-[10px] text-on-surface-variant">Folio Deportivo: FX-3391-C</span>
+</div>
+</div>
+<img alt="QR Code" class="w-12 h-12 rounded bg-surface p-1" data-alt="An immaculate digital QR code displayed on a sleek, dark interface. The code is rendered in bright white, ensuring perfect readability and scannability. The surrounding space hints at a luxury digital sports portfolio, characterized by deep blue tones and subtle metallic accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCBJ4u6McZi0nrfH_885p6wKVmkr4EHgpJ4jc_zpKpnuWLtinzarHDitIY0-pZ0TuSbX9pdVI_5BFo-64VJpTmDAw5Y4WVBjaakTTxbHmqWNroxaHUQZBRzPwAwFjPDpkv1zokA286EGqnV7OUno0vNEs0XOe_zgo_UTcZ4edV2WDfPzzSiWeoY0fmufq-0arCRYWWKXGAmL6imMpRtquP3rLxekc2O4mNJMmTx9xCHMHnqxuJnc36H6G7mGS72cc_bGgSAkr1vQ"/>
+</div>
+<button class="w-full py-4 bg-surface-container border border-primary/50 text-primary font-label-caps text-label-caps rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+                        Ver Credencial Deportiva
+                    </button>
+</div>
+</article>
+</div>
+</main>
+<footer class="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20">
+<div class="font-display-hero text-primary text-center">
+            FutID Barcelona Chalco
+        </div>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Cookie Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Contact Support</a>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant text-center opacity-60">
+            © 2024 FutID Barcelona Chalco. Elite Performance &amp; Digital Identity.
+        </div>
+</footer>
+</body></html>

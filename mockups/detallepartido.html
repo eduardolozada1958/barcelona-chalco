@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Match Details - FutID Barcelona Chalco</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400;500&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#1c1b1b",
+                    "secondary": "#b3c5ff",
+                    "on-primary": "#3c2f00",
+                    "tertiary-container": "#d5af37",
+                    "surface-tint": "#e9c349",
+                    "on-error": "#690005",
+                    "on-surface": "#e5e2e1",
+                    "surface-variant": "#353534",
+                    "surface-container-highest": "#353534",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "on-background": "#e5e2e1",
+                    "on-secondary-container": "#9bb3fd",
+                    "secondary-fixed": "#dbe1ff",
+                    "on-secondary-fixed-variant": "#2a4386",
+                    "primary": "#f2ca50",
+                    "surface-container": "#201f1f",
+                    "primary-container": "#d4af37",
+                    "on-secondary": "#0d2c6e",
+                    "surface-container-lowest": "#0e0e0e",
+                    "surface-dim": "#131313",
+                    "secondary-fixed-dim": "#b3c5ff",
+                    "on-secondary-fixed": "#00174a",
+                    "inverse-primary": "#735c00",
+                    "on-primary-fixed-variant": "#574500",
+                    "on-primary-container": "#554300",
+                    "tertiary": "#f3ca50",
+                    "primary-fixed-dim": "#e9c349",
+                    "surface-container-high": "#2a2a2a",
+                    "on-error-container": "#ffdad6",
+                    "outline": "#99907c",
+                    "inverse-surface": "#e5e2e1",
+                    "error-container": "#93000a",
+                    "background": "#131313",
+                    "outline-variant": "#4d4635",
+                    "error": "#ffb4ab",
+                    "tertiary-fixed": "#ffe08b",
+                    "on-surface-variant": "#d0c5af",
+                    "tertiary-fixed-dim": "#eac249",
+                    "primary-fixed": "#ffe088",
+                    "surface": "#131313",
+                    "on-tertiary-fixed": "#241a00",
+                    "secondary-container": "#2a4386",
+                    "on-tertiary-container": "#564300",
+                    "inverse-on-surface": "#313030",
+                    "on-tertiary": "#3d2f00",
+                    "on-primary-fixed": "#241a00",
+                    "surface-bright": "#3a3939"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "48px",
+                    "container-max": "1280px",
+                    "stack-sm": "12px",
+                    "stack-lg": "48px",
+                    "gutter": "24px",
+                    "base": "8px",
+                    "stack-md": "24px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "display-hero": [
+                            "Montserrat"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Montserrat"
+                    ],
+                    "label-caps": [
+                            "Anybody"
+                    ],
+                    "stat-value": [
+                            "Anybody"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "display-hero": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.0",
+                                    "letterSpacing": "0.1em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "stat-value": [
+                            "40px",
+                            {
+                                    "lineHeight": "1.0",
+                                    "letterSpacing": "-0.04em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .glass-card {
+            background-color: rgba(42, 67, 134, 0.4); /* secondary-container with opacity */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.2); /* primary-container with opacity */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 w-full max-w-container-max mx-auto">
+<!-- Brand -->
+<a class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-primary tracking-tighter" href="#">
+                FutID Barcelona Chalco
+            </a>
+<!-- Navigation Links (Desktop) -->
+<ul class="hidden md:flex items-center space-x-8">
+<li><a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Players</a></li>
+<li><a class="text-primary font-bold border-b-2 border-primary pb-1 hover:text-primary transition-colors duration-300" href="#">Matches</a></li>
+<li><a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Results</a></li>
+<li><a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">News</a></li>
+<li><a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Gallery</a></li>
+<li><a class="text-on-surface-variant font-medium hover:text-primary transition-colors duration-300" href="#">Registration</a></li>
+</ul>
+<!-- Trailing Action / Profile -->
+<div class="flex items-center space-x-4">
+<button class="hidden md:block text-primary border-2 border-primary rounded-full px-6 py-2 font-label-caps text-label-caps hover:bg-primary/10 transition-colors">
+                    Sign In
+                </button>
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30 flex-shrink-0">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A cinematic, high-contrast portrait of an elite football fan or player, silhouetted slightly against a dark, moody background. Warm, golden rim lighting catches the edge of their profile, emphasizing a premium, atmospheric aesthetic. The mood is intense and focused, reflecting a high-end digital identity architecture style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMwL_VYwfqpw7Txvd7gwRD5EkFBK8ljSARkRRyh9KtRsRFFP8Q3_Ih9MQBprkIGyaY-VOcS_KDsbRRZAhRkkvswx7pFRl-0sPv-pdr3WUalnWgP9K7yAL-qAkvraKicVGdr613cfmuWbeJbgLTtyx1LkM7hxSxmECvFweBp5MfWsY49QNzHZea5KMPbUspqQ9bkhzXEwjqtAx5dQ40pORElQNDYVKh4b3yng2ylrZnZXfhdkp8-JMeG8JVLqtepK9p_NFU_JAcdw"/>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto space-y-stack-lg">
+<!-- Match Header / Scoreboard -->
+<section class="glass-card rounded-xl p-stack-md flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Decorative Background Glow -->
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background/0 to-background/0 pointer-events-none"></div>
+<!-- Meta Details Top -->
+<div class="flex items-center space-x-2 text-on-surface-variant font-label-caps text-label-caps mb-stack-sm z-10">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>OCT 24, 2024</span>
+<span class="px-2">•</span>
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>20:00 HRS</span>
+</div>
+<!-- Teams and Score -->
+<div class="flex items-center justify-between w-full max-w-3xl z-10">
+<!-- Local Team -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-24 h-24 md:w-32 md:h-32 mb-4">
+<img alt="Local Team Logo" class="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]" data-alt="A high-contrast, metallic crest logo of a prestigious football club, featuring dark deep blue and shimmering gold accents. The logo is rendered with 3D depth and cinematic lighting, floating against a pure black background. The design exudes heritage and elite athletic performance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsPQl9FIOIRHnDeZYk0O7kJXxIzCMVZaKbR8vT1-bBEXOyS0v6_92E5yR6BWTJOec2I7nuc3WBi4rnFNYdv2UN6WzeNnilK--LDFkPOYCn7-tB80u1IvlRI0M4EDEwXfmLo_rcYOVwu2s6HZiI-KqEx9E9_xx7pVAQeSOV2Rf_6NBk92bv-yNTdF-kLukOen6oVuRpT1bcTK-seOq4U_Y9Bz1hJzjErDAZqAj20lPUy1CFIZnkc7FZoMGMrzHAw5Ho6s82CEqMDw"/>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background text-center">Barcelona Chalco</h2>
+</div>
+<!-- Score -->
+<div class="flex flex-col items-center px-gutter">
+<div class="flex items-center space-x-4">
+<span class="font-stat-value text-[64px] md:text-[80px] text-primary leading-none">3</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">:</span>
+<span class="font-stat-value text-[64px] md:text-[80px] text-primary leading-none">1</span>
+</div>
+<span class="mt-2 px-3 py-1 bg-primary/20 text-primary rounded-full font-label-caps text-label-caps border border-primary/30">FINAL</span>
+</div>
+<!-- Visitor Team -->
+<div class="flex flex-col items-center flex-1">
+<div class="w-24 h-24 md:w-32 md:h-32 mb-4">
+<img alt="Visitor Team Logo" class="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" data-alt="A sleek, modern crest logo of a rival football team, designed in deep crimson and silver tones. The emblem is polished and metallic, lit dramatically from above to create striking highlights. It sits against an absolute black void, fitting seamlessly into a high-end sports editorial interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyGHAuDQb5hVYfI6bo0ylYBeOKQXDkY45Kb_-bjUMljkFiIP5W6-PoIVNxgpvdgFsnuK4WS6jmIJRg2GAZ7ZA8WRpxyy_DjWMCygZxEnnRb6Aqv48zg-J2RlwUnLcwm0D5FsZ-GhOIgE4VApsYsAu_Bl7xMeiDwOcU9yBWDV3iTT_5-74M2ikw7_rsw6uMXwdGL4f105--z6wtG7n1LotFoyZ9rTt8KzIfU2NH9UiKf8eHLQOdd6XjxlMOnqr0LK_MgsMfMf172Q"/>
+</div>
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background text-center">Real F.C.</h2>
+</div>
+</div>
+<!-- Venue & Map Map -->
+<div class="mt-stack-md w-full border-t border-outline-variant/20 pt-stack-sm flex flex-col md:flex-row items-center justify-between z-10">
+<div class="flex items-center space-x-2 text-on-surface mb-4 md:mb-0">
+<span class="material-symbols-outlined text-primary">stadium</span>
+<span class="font-body-md text-body-md">Estadio Municipal de Chalco</span>
+</div>
+<div class="w-full md:w-64 h-16 bg-surface-container rounded-lg overflow-hidden border border-outline-variant/30 relative">
+<img alt="Map Placeholder" class="w-full h-full object-cover opacity-60" data-alt="A stylized, dark-mode digital map overview of a stadium location. The map uses a sophisticated color palette of deep blacks, charcoal greys, and subtle glowing gold pathways to indicate roads. A glowing pinpoint marker identifies the stadium, creating a high-tech, futuristic interface vibe suitable for a premium application." data-location="Chalco, Mexico" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBA982vJxIGIxpgeugITryrxcdxkXOGK3ZR4Y8mZL6RtCj9uoYWcySMC5MSZZV7eW5K5eFlqV87bXZ7TWmOiVxL5CSpBYuLmwoCHv80Jx9zAIcYyy8R-ZSyFKPY3r_rNHJn63IW43pHxEnfR4znWcHZgIoyEyv4vK-JQaDBhNAHR0q4xf_-z220Ke8TxYy6WIbLL22UzTbX9LX6VU79rK17YWSHqH8OQruOu8dQOLo_J_4qYq4H1OHjLj4MtuOnh_41Uw9bKShuXQ"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="font-label-caps text-label-caps text-on-surface bg-surface-container/80 px-2 py-1 rounded backdrop-blur">View Map</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Two Column Layout for Desktop -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Lineup (Convocados) Section -->
+<div class="lg:col-span-8 space-y-stack-sm">
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">groups</span>
+                    Starting XI
+                </h3>
+<!-- Bento Grid for Players -->
+<div class="grid grid-cols-2 md:grid-cols-3 gap-base md:gap-stack-sm">
+<!-- Player Card 1 -->
+<div class="glass-card rounded-xl overflow-hidden group cursor-pointer relative h-64">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent z-10"></div>
+<img alt="Player Image" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" data-alt="A dramatic, high-contrast action portrait of a football player. The athlete is lit with cinematic, hard lighting against a pure black void, wearing a premium dark kit with subtle gold accents. The mood is intense, disciplined, and elite, reflecting a high-end sports editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6DIW57AMZoJui2_eVWHJcrOuMoCRCDVf33BrOG1-KvuZm1Ik4fs6IuWUIzM2z2RV2P9KGnoOqgwGcT2qhbwk61JNyBhfaNQrDTFLVcO4Cogk8jrhA48iOCWQHB8baHhU8DLT49hxqbl6cxAMXgdwZVAU_5MkX88OCA5Zc5uj7XrF0cyPmX7atliqyC9qf13fYjArRMXoXSDdTfPCJLB-U0mMkJqnZUXSj3sSlrIg7Emf9T9Y7vafvo6gZieyNNRBUtqIEthSs2g"/>
+<div class="absolute bottom-0 left-0 w-full p-4 z-20">
+<div class="font-stat-value text-[32px] text-primary leading-none opacity-80 -mb-1">10</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background uppercase tracking-wider">Silva</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Midfielder</div>
+</div>
+</div>
+<!-- Player Card 2 -->
+<div class="glass-card rounded-xl overflow-hidden group cursor-pointer relative h-64">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent z-10"></div>
+<img alt="Player Image" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" data-alt="A dramatic, high-contrast action portrait of a football player. The athlete is lit with cinematic, hard lighting against a pure black void, wearing a premium dark kit with subtle gold accents. The mood is intense, disciplined, and elite, reflecting a high-end sports editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs-HL6L4-AiBZIURKvpawk56FFSSxUymv6oSl5FUiP0Brgd_a5MtDFf_0rOY2klGs10qEckydUG1hcftwIHPbKbtx1AL-X2XiQ1UJzGaSkSK4NJs3BntrBfA0QThPg98dFbZDK-Ab3j3mHx2_ttpBzFTRrFlNWr8Vgk_NBE8nDEbIaxCSfu2HtJukORv5A2clZv65Ah60PlcpbKPi4smLCU7t7Y6ANzo1TFgsRCtCQasK2fB_7a-Si0HI9c8Pz8Th8O7TnbkW_IA"/>
+<div class="absolute bottom-0 left-0 w-full p-4 z-20">
+<div class="font-stat-value text-[32px] text-primary leading-none opacity-80 -mb-1">09</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background uppercase tracking-wider">Gomez</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Striker</div>
+</div>
+</div>
+<!-- Player Card 3 -->
+<div class="glass-card rounded-xl overflow-hidden group cursor-pointer relative h-64">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent z-10"></div>
+<img alt="Player Image" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" data-alt="A dramatic, high-contrast action portrait of a football player. The athlete is lit with cinematic, hard lighting against a pure black void, wearing a premium dark kit with subtle gold accents. The mood is intense, disciplined, and elite, reflecting a high-end sports editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhf5TFemnr9WlNWpl3OL07yudGv0cMTE4QMNV48NTNiKQvwISSVkjEvJ_MRbAiF0bFSAopCQwcNcm2mQ33VCnI78v8jBmf2gzU3g_YEKaJTTBbTMRlCo0RjL1HFDNjluwsQBLg3rLrh2q22I46DO1_1uNdlhoIrAZNZ1LNmFq4njaHZeIYlxCqTD-yI4pI8OMEpuA9Cx0S0ElVtrZsxMGe4spYd2jh2M6yZZzlGUBNI8mre4iL8mqzLzaHktVaGLGS1kgOTyFRbg"/>
+<div class="absolute bottom-0 left-0 w-full p-4 z-20">
+<div class="font-stat-value text-[32px] text-primary leading-none opacity-80 -mb-1">07</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background uppercase tracking-wider">Ramos</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Winger</div>
+</div>
+</div>
+<!-- Player Card 4 -->
+<div class="glass-card rounded-xl overflow-hidden group cursor-pointer relative h-64">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent z-10"></div>
+<img alt="Player Image" class="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" data-alt="A dramatic, high-contrast action portrait of a football player. The athlete is lit with cinematic, hard lighting against a pure black void, wearing a premium dark kit with subtle gold accents. The mood is intense, disciplined, and elite, reflecting a high-end sports editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf73G-f9I7DBsHCVJ6lDLKKsGcsBlYtT9LmW3ubBG2HIePPFXoUBHfisoKDEN028lQBTmhhynQfjgDpwppluq2oMu1GLel38oK7v22mUMqAJerikFHYZjunoNSc9tXF4lpKYOpnOkqmheJxqLWANPiRITjV0-hqpHvS383ra6zQ-XJhhZWc41aLKoNjr-5A0Hph0nAIxJM6Eq4lO_WoKJU-CrxxrseXjg92uK-278Z-oirzfXX7WFnSBOIIor68RSrDoUbRqmgXA"/>
+<div class="absolute bottom-0 left-0 w-full p-4 z-20">
+<div class="font-stat-value text-[32px] text-primary leading-none opacity-80 -mb-1">01</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background uppercase tracking-wider">Torres</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant">Goalkeeper</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Match Updates Sidebar -->
+<div class="lg:col-span-4 space-y-stack-sm mt-stack-md lg:mt-0">
+<h3 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">history</span>
+                    Match Updates
+                </h3>
+<div class="bg-surface-container-lowest border border-outline-variant/10 rounded-xl p-stack-sm">
+<div class="relative border-l border-outline-variant/30 ml-3 space-y-8">
+<!-- Event 1 -->
+<div class="relative pl-6">
+<div class="absolute -left-[13px] top-1 bg-surface-container border-2 border-primary w-6 h-6 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.4)]">
+<span class="material-symbols-outlined text-[14px] text-primary">sports_soccer</span>
+</div>
+<div class="font-label-caps text-label-caps text-primary mb-1">90' + 2</div>
+<div class="font-body-md text-body-md text-on-surface"><strong>GOAL!</strong> A stunning strike from outside the box by Silva seals the victory.</div>
+</div>
+<!-- Event 2 -->
+<div class="relative pl-6">
+<div class="absolute -left-[13px] top-1 bg-surface-container border-2 border-outline-variant w-6 h-6 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-on-surface-variant">swap_horiz</span>
+</div>
+<div class="font-label-caps text-label-caps text-on-surface-variant mb-1">75'</div>
+<div class="font-body-md text-body-md text-on-surface">Substitution. Perez replaces Ramos on the right wing.</div>
+</div>
+<!-- Event 3 -->
+<div class="relative pl-6">
+<div class="absolute -left-[13px] top-1 bg-surface-container border-2 border-primary w-6 h-6 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.4)]">
+<span class="material-symbols-outlined text-[14px] text-primary">sports_soccer</span>
+</div>
+<div class="font-label-caps text-label-caps text-primary mb-1">62'</div>
+<div class="font-body-md text-body-md text-on-surface"><strong>GOAL!</strong> Gomez taps it in after a beautiful cross from the left flank.</div>
+</div>
+<!-- Event 4 -->
+<div class="relative pl-6">
+<div class="absolute -left-[13px] top-1 bg-surface-container border-2 border-[#ffb4ab] w-6 h-6 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-error" style="font-variation-settings: 'FILL' 1;">style</span>
+</div>
+<div class="font-label-caps text-label-caps text-error mb-1">45'</div>
+<div class="font-body-md text-body-md text-on-surface">Red Card for Real F.C. defender after a harsh tackle.</div>
+</div>
+<!-- Event 5 -->
+<div class="relative pl-6">
+<div class="absolute -left-[13px] top-1 bg-surface-container border-2 border-primary w-6 h-6 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(212,175,55,0.4)]">
+<span class="material-symbols-outlined text-[14px] text-primary">sports_soccer</span>
+</div>
+<div class="font-label-caps text-label-caps text-primary mb-1">12'</div>
+<div class="font-body-md text-body-md text-on-surface"><strong>GOAL!</strong> Early lead established by a powerful header from the corner.</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest w-full py-stack-lg border-t border-outline-variant/20">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto space-y-6 md:space-y-0">
+<!-- Brand / Copyright -->
+<div class="flex flex-col items-center md:items-start text-center md:text-left">
+<span class="font-display-hero text-primary text-xl tracking-tighter mb-2">FutID Barcelona Chalco</span>
+<p class="font-body-md text-body-md text-on-surface-variant">© 2024 FutID Barcelona Chalco. All Rights Reserved.</p>
+</div>
+<!-- Links -->
+<ul class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Terms of Service</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Club Rules</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Contact Us</a></li>
+</ul>
+</div>
+</footer>
+</body></html>

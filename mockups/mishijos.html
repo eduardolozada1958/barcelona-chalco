@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mis Hijos - FutID Barcelona Chalco</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#b3c5ff",
+                        "on-primary": "#3c2f00",
+                        "tertiary-container": "#d5af37",
+                        "surface-tint": "#e9c349",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#9bb3fd",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#2a4386",
+                        "primary": "#f2ca50",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#d4af37",
+                        "on-secondary": "#0d2c6e",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-dim": "#131313",
+                        "secondary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed": "#00174a",
+                        "inverse-primary": "#735c00",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-primary-container": "#554300",
+                        "tertiary": "#f3ca50",
+                        "primary-fixed-dim": "#e9c349",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#99907c",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "outline-variant": "#4d4635",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffe08b",
+                        "on-surface-variant": "#d0c5af",
+                        "tertiary-fixed-dim": "#eac249",
+                        "primary-fixed": "#ffe088",
+                        "surface": "#131313",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-container": "#2a4386",
+                        "on-tertiary-container": "#564300",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#3d2f00",
+                        "on-primary-fixed": "#241a00",
+                        "surface-bright": "#3a3939"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "container-max": "1280px",
+                        "stack-sm": "12px",
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-caps": ["Anybody"],
+                        "stat-value": ["Anybody"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-value": ["40px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col md:flex-row selection:bg-primary/30 selection:text-primary">
+<!-- Mobile TopNavBar -->
+<header class="md:hidden bg-background/80 backdrop-blur-md fixed top-0 w-full z-50 border-b border-outline-variant/20 shadow-sm flex justify-between items-center px-margin-mobile h-20">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">sports_soccer</span>
+</div>
+<span class="font-display-hero text-headline-lg-mobile text-primary tracking-tighter">FutID Barcelona</span>
+</div>
+<button class="text-on-surface-variant font-medium flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+</header>
+<!-- Desktop SideNavBar -->
+<nav class="hidden md:flex bg-surface-container-low h-screen w-64 fixed left-0 top-0 border-r border-outline-variant/10 shadow-lg flex-col h-full py-base z-40">
+<div class="px-gutter py-stack-md flex flex-col items-center text-center border-b border-outline-variant/10 mb-stack-sm">
+<div class="w-20 h-20 rounded-full bg-surface-container-high border-2 border-primary/30 flex items-center justify-center mb-stack-sm shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+<span class="material-symbols-outlined text-primary text-[40px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<h1 class="font-display-hero text-primary text-body-lg">Barcelona Chalco</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-1">Elite Management</p>
+</div>
+<div class="flex-1 overflow-y-auto px-2 space-y-1">
+<!-- Active Tab: Dashboard (serving as Home/Portal context) -->
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 px-4 py-3 flex items-center gap-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-primary transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-caps text-label-caps">Roster</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-primary transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps">Schedule</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-primary transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">search_insights</span>
+<span class="font-label-caps text-label-caps">Scouting</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-primary transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</div>
+<div class="px-4 mt-auto border-t border-outline-variant/10 pt-stack-sm space-y-1 pb-stack-sm">
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-primary transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 px-4 py-3 flex items-center gap-3 hover:text-error transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 pt-[100px] md:pt-0 min-h-screen">
+<!-- Decorative Background Gradient -->
+<div class="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
+<div class="absolute top-[-10%] right-[-5%] w-[800px] h-[800px] bg-secondary-container/10 blur-[120px] rounded-full mix-blend-screen"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-primary/5 blur-[150px] rounded-full mix-blend-screen"></div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-stack-sm mb-stack-lg border-b border-outline-variant/20 pb-stack-sm">
+<div>
+<h2 class="font-label-caps text-label-caps text-primary tracking-widest mb-2 uppercase">Portal Familiar</h2>
+<h1 class="font-display-hero text-headline-lg-mobile md:text-display-hero text-on-surface">Mis Jugadores</h1>
+</div>
+<div class="flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-lg border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Familia Garcia</span>
+</div>
+</div>
+<!-- Players Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Player Card 1 -->
+<div class="group relative flex flex-col bg-surface-container-low/80 backdrop-blur-md rounded-xl border border-outline-variant/30 overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-lg">
+<!-- Inner Gold Border Accent -->
+<div class="absolute inset-[1px] rounded-[11px] border border-primary/10 pointer-events-none z-20"></div>
+<!-- Image Section (Glassmorphism & High Contrast) -->
+<div class="h-72 w-full relative bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover object-top opacity-80 mix-blend-luminosity group-hover:scale-105 group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-700" data-alt="A striking sports editorial portrait of a young male football player standing confidently on a pitch. The scene is set under dramatic, moody stadium lighting that casts deep shadows, contrasting with a high-key spotlight on the player. The background is a vast, dark expanse, punctuated by subtle metallic gold and deep blue atmospheric flares, conveying a premium, professional athletic identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHfYDJoFUWdwPd2TY2ffk4cNFo6SlEsMQPoX5CEce5uAtkLyRYsHlAhnaDABzghSZgD6b3FurQWr2LIiMs1CzWoJwcFRW1g9bcN5P8JWMdNywiNjnBdcIX07jfs7241A-QyPsATJp365bcmqB0XVSBeTiDTn-xN1Ew1iiNCyNA8iKnMo31HCEGxqe0h1XIrtOsCP707gKJlw_fDMbc0P8Gq_xFLTktkfxR7kJiuvumJ15KkEJ6e3s1rrPGKjtsDxETAUjufOAqGg"/>
+<!-- Gradient Overlay for Seamless Blend -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/40 to-transparent"></div>
+<!-- Status Badge -->
+<div class="absolute top-4 right-4 z-10 bg-surface-container-highest/90 backdrop-blur px-3 py-1.5 rounded-full border border-primary/40 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-[10px] text-primary tracking-widest uppercase">Activo</span>
+</div>
+<!-- Player Number Watermark -->
+<div class="absolute bottom-[-10px] right-4 z-0 font-stat-value text-[80px] text-surface-variant/30 leading-none pointer-events-none select-none">
+                            10
+                        </div>
+</div>
+<!-- Info Section -->
+<div class="px-stack-sm pb-stack-sm pt-2 relative z-10 flex-1 flex flex-col">
+<p class="font-label-caps text-label-caps text-primary/80 mb-1">Categoria U-16 Elite</p>
+<h3 class="font-display-hero text-headline-lg-mobile text-on-surface mb-4">Mateo<br/>Garcia</h3>
+<!-- Quick Stats/Details Grid -->
+<div class="grid grid-cols-2 gap-2 mb-stack-md mt-auto">
+<div class="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">Posición</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">Delantero</p>
+</div>
+<div class="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">Dorsal</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">#10</p>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-3 mt-auto">
+<button class="w-full bg-transparent border-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/5 rounded-lg py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 transition-all duration-300">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                                Ver Perfil
+                            </button>
+<button class="w-full bg-primary text-on-primary hover:bg-primary-fixed rounded-lg py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)]">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+                                Ver Credencial QR
+                            </button>
+</div>
+</div>
+</div>
+<!-- Player Card 2 -->
+<div class="group relative flex flex-col bg-surface-container-low/80 backdrop-blur-md rounded-xl border border-outline-variant/30 overflow-hidden hover:border-primary/50 transition-all duration-500 shadow-lg">
+<div class="absolute inset-[1px] rounded-[11px] border border-primary/10 pointer-events-none z-20"></div>
+<div class="h-72 w-full relative bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover object-top opacity-80 mix-blend-luminosity group-hover:scale-105 group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-700" data-alt="A high-end sports editorial portrait of a young female football player looking determined. The lighting is cinematic, casting intense highlights and deep shadows that emphasize athleticism. She stands against a dark, minimalist void background with subtle, glowing golden and deep blue gradients, reflecting the elite, premium aesthetic of a professional sports academy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLT21Y2BLp0JHykM3CluOCOMa_HfsF_-NUQ4UoHxnK1ADTxvzLZWwq636yrmwkjWY27Qthl-s9e8XCRikpH-k-fFhbSiPc-_BOcZnP4oSCbzIPOdkjoaJd0voucxe0MWnIqBLg1K0SrqUYB9nOQgTMXVFqdWU92RzHN6hY7mm6Se4-QrrAEzpEJll9fGl_CjryEvvQYb4zbo34BZzfYmTFWo1k1mBPxlU9SwpnZoFw1Ef1569nLtCVVd99790rW4PCC9kWpBH94A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-surface-container-low/40 to-transparent"></div>
+<div class="absolute top-4 right-4 z-10 bg-surface-container-highest/90 backdrop-blur px-3 py-1.5 rounded-full border border-primary/40 flex items-center gap-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.5)]">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-[10px] text-primary tracking-widest uppercase">Activo</span>
+</div>
+<div class="absolute bottom-[-10px] right-4 z-0 font-stat-value text-[80px] text-surface-variant/30 leading-none pointer-events-none select-none">
+                            08
+                        </div>
+</div>
+<div class="px-stack-sm pb-stack-sm pt-2 relative z-10 flex-1 flex flex-col">
+<p class="font-label-caps text-label-caps text-primary/80 mb-1">Categoria U-14 Femenil</p>
+<h3 class="font-display-hero text-headline-lg-mobile text-on-surface mb-4">Sofia<br/>Garcia</h3>
+<div class="grid grid-cols-2 gap-2 mb-stack-md mt-auto">
+<div class="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">Posición</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">Medio</p>
+</div>
+<div class="bg-surface-container-high/50 p-3 rounded-lg border border-outline-variant/10">
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">Dorsal</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">#08</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 mt-auto">
+<button class="w-full bg-transparent border-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/5 rounded-lg py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 transition-all duration-300">
+<span class="material-symbols-outlined text-[18px]">person</span>
+                                Ver Perfil
+                            </button>
+<button class="w-full bg-primary text-on-primary hover:bg-primary-fixed rounded-lg py-3 font-label-caps text-label-caps flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.1)] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)]">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">qr_code_2</span>
+                                Ver Credencial QR
+                            </button>
+</div>
+</div>
+</div>
+<!-- Add New Child Card (Ghost style) -->
+<div class="flex flex-col items-center justify-center bg-surface-container-low/30 backdrop-blur-sm rounded-xl border-2 border-dashed border-outline-variant/40 hover:border-primary/50 hover:bg-surface-container-low/60 transition-all duration-300 cursor-pointer min-h-[400px] md:min-h-full">
+<div class="w-16 h-16 rounded-full bg-surface-container-high border border-outline-variant/30 flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-on-surface-variant text-[32px]">person_add</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">Vincular Jugador</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-center px-6 max-w-[250px]">Ingresa el código de invitación para agregar otro hijo a tu portal.</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

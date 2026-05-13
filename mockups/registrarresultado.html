@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Registrar Resultado - FutID</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#b3c5ff",
+                        "on-primary": "#3c2f00",
+                        "tertiary-container": "#d5af37",
+                        "surface-tint": "#e9c349",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#9bb3fd",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#2a4386",
+                        "primary": "#f2ca50",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#d4af37",
+                        "on-secondary": "#0d2c6e",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-dim": "#131313",
+                        "secondary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed": "#00174a",
+                        "inverse-primary": "#735c00",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-primary-container": "#554300",
+                        "tertiary": "#f3ca50",
+                        "primary-fixed-dim": "#e9c349",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#99907c",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "outline-variant": "#4d4635",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffe08b",
+                        "on-surface-variant": "#d0c5af",
+                        "tertiary-fixed-dim": "#eac249",
+                        "primary-fixed": "#ffe088",
+                        "surface": "#131313",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-container": "#2a4386",
+                        "on-tertiary-container": "#564300",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#3d2f00",
+                        "on-primary-fixed": "#241a00",
+                        "surface-bright": "#3a3939"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "container-max": "1280px",
+                        "stack-sm": "12px",
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-caps": ["Anybody"],
+                        "stat-value": ["Anybody"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-value": ["40px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background-color: rgba(28, 27, 27, 0.6); /* surface-container-low with opacity */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.2); /* Gold hint border */
+        }
+        
+        .premium-input {
+            background-color: var(--color-surface-container);
+            border: none;
+            border-bottom: 2px solid var(--color-outline-variant);
+            border-radius: 0.25rem 0.25rem 0 0;
+            transition: border-color 0.3s ease;
+        }
+        .premium-input:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom-color: var(--color-primary);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex selection:bg-primary/30 selection:text-primary">
+<!-- Global Background Texture -->
+<div class="fixed inset-0 z-[-1] opacity-20 pointer-events-none mix-blend-overlay" style="background-image: radial-gradient(circle at 50% 0%, var(--color-surface-variant) 0%, transparent 70%);"></div>
+<!-- SideNavBar (from JSON) -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/10 shadow-lg flex flex-col py-base z-40 hidden md:flex">
+<!-- Header -->
+<div class="px-gutter mb-stack-lg mt-stack-md">
+<div class="flex items-center gap-3 mb-2">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center border border-primary/30 overflow-hidden">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<div>
+<h1 class="font-display-hero text-body-lg text-primary tracking-tight leading-none">Barcelona Chalco</h1>
+<p class="font-label-caps text-[10px] text-on-surface-variant mt-1 uppercase tracking-widest">Elite Management</p>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-2 px-2">
+<!-- Active State: Dashboard -->
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps uppercase">Dashboard</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-caps text-label-caps uppercase">Roster</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps uppercase">Schedule</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">search_insights</span>
+<span class="font-label-caps text-label-caps uppercase">Scouting</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps uppercase">Settings</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto border-t border-outline-variant/10 pt-4 px-2 mb-4">
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps uppercase">Support</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps uppercase">Logout</span>
+</a>
+</div>
+<!-- CTA -->
+<div class="px-4 pb-4">
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-caps text-label-caps uppercase hover:shadow-[0_0_15px_rgba(242,202,80,0.4)] transition-all duration-300">New Report</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-64 h-screen overflow-y-auto relative">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+<!-- Page Header -->
+<header class="mb-stack-lg">
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span class="font-label-caps text-[10px] tracking-widest uppercase">Match Operations</span>
+</div>
+<h2 class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-on-background">Registrar Resultado</h2>
+</header>
+<!-- Form -->
+<form class="space-y-stack-md">
+<!-- Match Selection & Core Result (Bento Grid Style) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-stack-sm">
+<!-- Match Selection Panel -->
+<div class="glass-panel rounded-xl p-6 lg:col-span-1 flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+<div class="relative z-10">
+<label class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-base">sports_soccer</span> Select Match
+                            </label>
+<select class="w-full bg-surface-container text-on-surface font-body-md premium-input px-4 py-3">
+<option disabled="" selected="" value="">Choose scheduled match...</option>
+<option value="1">vs. Atletico Central (Home) - Oct 28</option>
+<option value="2">vs. Deportivo Norte (Away) - Nov 4</option>
+<option value="3">vs. Real Sur (Home) - Nov 11</option>
+</select>
+<div class="mt-6 pt-6 border-t border-outline-variant/30 text-on-surface-variant font-body-md text-sm">
+<p><strong>Competition:</strong> Liga Premier</p>
+<p class="mt-1"><strong>Venue:</strong> Estadio Municipal</p>
+</div>
+</div>
+</div>
+<!-- Score Panel -->
+<div class="glass-panel rounded-xl p-8 lg:col-span-2 flex flex-col items-center justify-center relative">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest absolute top-6 left-6">Final Score</label>
+<div class="flex items-center justify-center gap-8 md:gap-16 mt-4 w-full">
+<!-- Local -->
+<div class="flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-primary mb-3 uppercase tracking-widest">Local</span>
+<div class="bg-surface-container rounded-lg border border-outline-variant p-2 w-24 h-24 md:w-32 md:h-32 flex items-center justify-center focus-within:border-primary focus-within:shadow-[0_0_15px_rgba(242,202,80,0.2)] transition-all">
+<input class="w-full bg-transparent border-none text-center font-stat-value text-[48px] md:text-[64px] text-on-surface focus:ring-0 p-0 m-0 leading-none" min="0" type="number" value="0"/>
+</div>
+<span class="font-body-md text-on-surface mt-3 font-semibold">Barcelona Chalco</span>
+</div>
+<!-- Divider -->
+<div class="font-display-hero text-headline-lg text-outline-variant/50 pb-8">-</div>
+<!-- Visitor -->
+<div class="flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-3 uppercase tracking-widest">Visitor</span>
+<div class="bg-surface-container rounded-lg border border-outline-variant p-2 w-24 h-24 md:w-32 md:h-32 flex items-center justify-center focus-within:border-primary focus-within:shadow-[0_0_15px_rgba(242,202,80,0.2)] transition-all">
+<input class="w-full bg-transparent border-none text-center font-stat-value text-[48px] md:text-[64px] text-on-surface focus:ring-0 p-0 m-0 leading-none" min="0" type="number" value="0"/>
+</div>
+<span class="font-body-md text-on-surface-variant mt-3">Atletico Central</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Match Events Details -->
+<div class="glass-panel rounded-xl p-6 md:p-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest border-b border-outline-variant/30 pb-4 mb-6">Match Events</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<!-- Scorers -->
+<div>
+<label class="font-label-caps text-[10px] text-primary uppercase mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sports_soccer</span> Scorers
+                            </label>
+<div class="bg-surface-container rounded-lg border border-outline-variant p-2 min-h-[100px]">
+<input class="w-full bg-transparent border-none text-on-surface font-body-md focus:ring-0 text-sm" placeholder="Add player (e.g. M. Silva 24')..." type="text"/>
+<!-- Placeholder for selected tokens -->
+<div class="flex flex-wrap gap-2 mt-2 px-2 pb-2">
+<span class="inline-flex items-center gap-1 bg-surface-variant text-on-surface px-3 py-1 rounded-full text-xs font-body-md border border-outline-variant/50">M. Silva (24') <span class="material-symbols-outlined text-[14px] cursor-pointer hover:text-error">close</span></span>
+</div>
+</div>
+</div>
+<!-- Assists -->
+<div>
+<label class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">directions_run</span> Assists
+                            </label>
+<div class="bg-surface-container rounded-lg border border-outline-variant p-2 min-h-[100px]">
+<input class="w-full bg-transparent border-none text-on-surface font-body-md focus:ring-0 text-sm" placeholder="Add player..." type="text"/>
+</div>
+</div>
+<!-- Cards -->
+<div class="md:col-span-2">
+<label class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">style</span> Disciplinary (Cards)
+                            </label>
+<div class="bg-surface-container rounded-lg border border-outline-variant p-2 min-h-[100px]">
+<div class="flex items-center gap-4 mb-2 px-2 pt-1 border-b border-outline-variant/30 pb-2">
+<button class="text-xs font-label-caps uppercase px-3 py-1 rounded bg-[#f2ca50]/20 text-primary border border-primary/50" type="button">Yellow Card</button>
+<button class="text-xs font-label-caps uppercase px-3 py-1 rounded bg-error/20 text-error border border-error/50" type="button">Red Card</button>
+</div>
+<input class="w-full bg-transparent border-none text-on-surface font-body-md focus:ring-0 text-sm" placeholder="Select player and assign card..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Awards & Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-stack-sm">
+<!-- MVP -->
+<div class="glass-panel rounded-xl p-6 md:col-span-1">
+<label class="font-label-caps text-label-caps text-primary uppercase tracking-widest block mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-base">military_tech</span> MVP of the Match
+                        </label>
+<select class="w-full bg-surface-container text-on-surface font-body-md premium-input px-4 py-3">
+<option disabled="" selected="" value="">Select MVP...</option>
+<option value="1">M. Silva (Striker)</option>
+<option value="2">J. Hernandez (Midfielder)</option>
+<option value="3">D. Torres (Goalkeeper)</option>
+</select>
+<p class="text-xs text-on-surface-variant mt-4 font-body-md">Awards 500 bonus points to player profile.</p>
+</div>
+<!-- Summary -->
+<div class="glass-panel rounded-xl p-6 md:col-span-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest block mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-base">article</span> Match Summary
+                        </label>
+<textarea class="w-full bg-surface-container text-on-surface font-body-md premium-input px-4 py-3 resize-none" placeholder="Brief technical summary of the match performance..." rows="4"></textarea>
+</div>
+</div>
+<!-- Action Footer -->
+<div class="flex flex-col sm:flex-row items-center justify-between pt-stack-sm border-t border-outline-variant/20 mt-stack-md gap-6">
+<!-- Publish Toggle -->
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input checked="" class="sr-only" id="publish-toggle" type="checkbox"/>
+<div class="block bg-surface-variant w-14 h-8 rounded-full border border-outline-variant transition-colors peer-checked:bg-primary"></div>
+<div class="dot absolute left-1 top-1 bg-on-surface w-6 h-6 rounded-full transition transform peer-checked:translate-x-6 peer-checked:bg-on-primary"></div>
+</div>
+<div class="ml-3 font-label-caps text-sm text-on-surface uppercase tracking-wider">
+                            Publish Immediately
+                        </div>
+</label>
+<style>
+                        /* Minimal custom CSS for the toggle dot animation since JS is not allowed */
+                        input:checked ~ .dot {
+                            transform: translateX(1.5rem);
+                            background-color: var(--color-on-primary);
+                        }
+                        input:checked ~ .block {
+                            background-color: var(--color-primary);
+                            border-color: var(--color-primary);
+                        }
+                    </style>
+<!-- Submit Button -->
+<button class="w-full sm:w-auto bg-primary text-on-primary font-label-caps text-label-caps uppercase px-12 py-4 rounded-lg hover:shadow-[0_0_20px_rgba(242,202,80,0.5)] transition-all duration-300 flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined text-base">save</span>
+                        Save Result
+                    </button>
+</div>
+</form>
+</div>
+</main>
+</body></html>

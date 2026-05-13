@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gallery - FutID Barcelona Chalco</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400&amp;family=Montserrat:wght@700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#b3c5ff",
+                        "on-primary": "#3c2f00",
+                        "tertiary-container": "#d5af37",
+                        "surface-tint": "#e9c349",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#9bb3fd",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#2a4386",
+                        "primary": "#f2ca50",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#d4af37",
+                        "on-secondary": "#0d2c6e",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-dim": "#131313",
+                        "secondary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed": "#00174a",
+                        "inverse-primary": "#735c00",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-primary-container": "#554300",
+                        "tertiary": "#f3ca50",
+                        "primary-fixed-dim": "#e9c349",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#99907c",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "outline-variant": "#4d4635",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffe08b",
+                        "on-surface-variant": "#d0c5af",
+                        "tertiary-fixed-dim": "#eac249",
+                        "primary-fixed": "#ffe088",
+                        "surface": "#131313",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-container": "#2a4386",
+                        "on-tertiary-container": "#564300",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#3d2f00",
+                        "on-primary-fixed": "#241a00",
+                        "surface-bright": "#3a3939"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "container-max": "1280px",
+                        "stack-sm": "12px",
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-caps": ["Anybody"],
+                        "stat-value": ["Anybody"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-value": ["40px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background min-h-screen pt-20">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface/80 backdrop-blur-md dark:bg-surface/80 bg-surface-container-lowest/40 shadow-md">
+<div class="font-display-hero text-headline-lg-mobile text-primary tracking-tighter">
+            FutID Barcelona Chalco
+        </div>
+<div class="hidden md:flex gap-base">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors p-2" href="#">Players</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors p-2" href="#">Matches</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors p-2" href="#">Results</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors p-2" href="#">News</a>
+<a class="font-label-caps text-label-caps text-primary border-b-2 border-primary pb-1 p-2" href="#">Gallery</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors p-2" href="#">Registration</a>
+</div>
+<div>
+<button class="bg-primary-container text-on-primary-container px-4 py-2 font-label-caps text-label-caps rounded hover:shadow-lg transition-shadow">
+                Login
+            </button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
+<!-- Header Section -->
+<header class="mb-stack-lg flex flex-col items-center text-center">
+<h1 class="font-display-hero text-display-hero text-primary mb-stack-sm">CLUB GALLERY</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                The visual history of FutID Barcelona Chalco. Elite moments, match day posters, and behind-the-scenes access.
+            </p>
+</header>
+<!-- Gallery Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
+<!-- Gallery Item 1 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="Match Action" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A dramatic, high-contrast photograph of a soccer player mid-kick during a night game. The stadium lights create intense lens flares and deep shadows, highlighting the athlete's muscular definition and focus. The overall aesthetic is gritty and cinematic, typical of a high-end sports editorial. The color palette emphasizes the dark blue of the night sky, punctuated by the vibrant green of the pitch and golden stadium lights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAoy-atKGdpE6Rw3XKgDXqFwNw4P3A2JFQfwU6o7xU42ewUJ5LTTY51phYRHwWQ9xeCD_Wc7BYf0A0TaFh7p4AoTe9WyLgTXYYgtU7DWz6k9iOqM2_5iss7F-SmpBLEnJ3cDadZoS5udD4poRLbnICoJVZbzC3qCholWsmy8k5QYa-K8J4z-I2zFf9rX07EQ5SfrSdl935lVrrXy1wDB6snHBJdVkvQenlZVPq_Z5P_nEBmP5h9jruI6zB4FcawYPT6EhCy49Puw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">OCT 15, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">MATCH DAY ACTION</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Intense moments from our recent victory under the lights.</p>
+</div>
+</div>
+<!-- Gallery Item 2 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="Final Result Poster" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A stylized graphic poster announcing a 'Final Result' for a soccer match. The design features a prominent, textured gold and deep blue background. In the foreground, a silhouetted soccer player stands heroically. Bold, metallic typography dominates the composition, conveying the score and teams involved. The aesthetic is premium and modern, resembling a high-end social media post for an elite sports club." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnXL4ltp9seYqYkwb97qpgDixdpB8HHGV9CeNGWgeMle3nwNUC1uLjq-kkCXgV1xhElMpCidzHjUGcQed0e43dawnq0W8a8_t-p4XaqniZ_xgwaLICB1rDsx6iojS3yJcV8NB8KK1mDeOOfZH1fa-Arvgu2KqTW7zzpku6Iu-753uV-Quk4BOAEZinpvbO-VVv6Q5FXqCZC4oju6yceumFH3v89BX7yQt4XexaKmHSVY19qM7-2l3NIVoFj53x36InPDyta-MkPQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">OCT 12, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">FINAL SCORE: 3-1</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Dominant performance secures three points.</p>
+</div>
+</div>
+<!-- Gallery Item 3 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="MVP Highlight" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A close-up, dramatic portrait of a soccer player, styled as an 'MVP Highlight' graphic. The player is intensely focused, with sweat visible on their brow, illuminated by moody, high-contrast lighting. The background is a dark, out-of-focus stadium. Golden graphic overlays, including a subtle star motif and the letters 'MVP', are integrated into the composition. The aesthetic is premium, reflecting high-end athletic achievement." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_CZDK6lHptxMw6GC8gxT0d6vMVvZu6T2FnrxCrH0qY2uIsKMeP-95qSVD8SqJDNxto5MJPeEtndRuYCxUKoLZ_1Usu_mh02_DeFrXgWmvjMQTzQV1KgpnaFaAxP9LS9RPgNn1NX8URpxOsrwIVi110N7AMacRJKaq4LvmsDiPyFZ_e9ogjWRlMSy-axLgUiXSqTOp6456iKOazTB8I45jgmUkaE47aBzQDiSMCZ2qGVbc_h98c3pLTsL5D6SRNMdN0sgqN_uUkg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">OCT 10, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">MVP SPOTLIGHT</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Player of the Month highlights and stats breakdown.</p>
+</div>
+</div>
+<!-- Gallery Item 4 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="Team Huddle" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 grayscale group-hover:grayscale-0" data-alt="A candid, black and white photograph of a soccer team huddled together before a match. The focus is on the tight circle of players, conveying unity and determination. The lighting is natural but dramatic, highlighting the texture of their jerseys and the intensity on their faces. The aesthetic is raw and emotional, capturing the essence of team camaraderie in a high-stakes environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBc66zcB0z2zvYGRTYHa1jtatqNyS4Z5JwKxJkchuwOxlUXkcc3Z7bprHlg3ZldjS8X0FGNl8fogjN4wyUOdlwHpUFtt7d4_EEiHGOHtX2GisnbDeXJn_Kf1buFXZOwhCZOFpP7H3FPUH1n5_DvSSDTJf4xO3o3mQm9FUsBXc92RlhlgFyfD2o6daoGxu5e1UgSzIzJnLqvzgZCvz-1QzM9NGSjNbu-hJCNLxk9HyAie9hoDYFl-wR4_0v00RkSCf3PNNwPdzFo7w"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">OCT 05, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">BROTHERHOOD</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Pre-match focus and team unity in the locker room.</p>
+</div>
+</div>
+<!-- Gallery Item 5 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="Match Day Poster" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A highly stylized graphic poster for an upcoming match day. The design uses a deep blue and gold color scheme. It features a detailed rendering of a soccer ball surrounded by dynamic, abstract geometric shapes and subtle glowing effects. The typography is modern, bold, and metallic, listing the date, time, and opposing team. The aesthetic is sleek, digital, and aggressive, reflecting a premium sports brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj-Q2N_80g3LKVwsOyf6H8D8gkBOhxf_r4jtvGz7JWT1zB4ALDOD4HHAhjSfb8IKQVTQQK_9_Wjmj1pF-yX1kIaQ4ZyLjnJqwWHO-MWBFYY_JFo0CvrIm_tPNMfEA-pqWNuCFpQXRtIbmBkOenyGYJh6JlgsgD1OYSiufBQ1UDMPgesBSH1HVhm4H1y-YaTbbOro2vDUyQb_SvcWPIjE61D4Lj1-fjrrnqhIeVkhDU8758YVRpAI2OMgv_2RQZerCLrKVSOv4lGg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">OCT 01, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">UPCOMING FIXTURE</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Preparing for the weekend clash. Match day details inside.</p>
+</div>
+</div>
+<!-- Gallery Item 6 -->
+<div class="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
+<img alt="Training Ground" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A cinematic photograph of a soccer goal net taken from a low angle, looking up. The net is in sharp focus, while the background shows blurred, out-of-focus stadium lights against a dark twilight sky. A golden hour light reflects off the white mesh of the net. The mood is anticipatory and dramatic, symbolizing preparation and the elite environment of the club." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS5EgF3S4NGk8FbwfDWDn_8iDTGKaHTXtOva9ecPPDbPP71DQwIMitNVzsYmTRqxk-yPYZQeH9YsjDVRakuyAWSSHjzGvvA-kiEEBT9oifiGjHAjV113_DgX6LOEUk0n3-k3d4EkFCMWNvZK1OSZ-xiGpjVJa5DPVc8bPmqXViiZ69bG55SkFkNoJBQhzDFery6SykpAfTkUIxwR5DE0QKVbil0DuyOBGLyqP2gSS6he7yUVo73yLMPsMIbI9cigRJDpSOAM5qtg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+<div class="font-label-caps text-label-caps text-primary mb-2">SEP 28, 2024</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">TRAINING GROUND</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">Hard work continues behind the scenes. Elite performance preparation.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant/20 mt-stack-lg">
+<div class="font-display-hero text-primary text-display-hero text-center mb-stack-sm">
+            FutID Barcelona Chalco
+        </div>
+<div class="flex flex-wrap justify-center gap-stack-md">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Cookie Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mt-stack-md text-center opacity-80 hover:opacity-100">
+            © 2024 FutID Barcelona Chalco. Elite Performance &amp; Digital Identity.
+        </div>
+</footer>
+</body></html>

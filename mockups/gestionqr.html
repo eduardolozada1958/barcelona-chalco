@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FutID Barcelona Chalco - QR / Validaciones</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@400;700&amp;family=Inter:wght@400;500;600&amp;family=Montserrat:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#1c1b1b",
+                      "secondary": "#b3c5ff",
+                      "on-primary": "#3c2f00",
+                      "tertiary-container": "#d5af37",
+                      "surface-tint": "#e9c349",
+                      "on-error": "#690005",
+                      "on-surface": "#e5e2e1",
+                      "surface-variant": "#353534",
+                      "surface-container-highest": "#353534",
+                      "on-tertiary-fixed-variant": "#584400",
+                      "on-background": "#e5e2e1",
+                      "on-secondary-container": "#9bb3fd",
+                      "secondary-fixed": "#dbe1ff",
+                      "on-secondary-fixed-variant": "#2a4386",
+                      "primary": "#f2ca50",
+                      "surface-container": "#201f1f",
+                      "primary-container": "#d4af37",
+                      "on-secondary": "#0d2c6e",
+                      "surface-container-lowest": "#0e0e0e",
+                      "surface-dim": "#131313",
+                      "secondary-fixed-dim": "#b3c5ff",
+                      "on-secondary-fixed": "#00174a",
+                      "inverse-primary": "#735c00",
+                      "on-primary-fixed-variant": "#574500",
+                      "on-primary-container": "#554300",
+                      "tertiary": "#f3ca50",
+                      "primary-fixed-dim": "#e9c349",
+                      "surface-container-high": "#2a2a2a",
+                      "on-error-container": "#ffdad6",
+                      "outline": "#99907c",
+                      "inverse-surface": "#e5e2e1",
+                      "error-container": "#93000a",
+                      "background": "#131313",
+                      "outline-variant": "#4d4635",
+                      "error": "#ffb4ab",
+                      "tertiary-fixed": "#ffe08b",
+                      "on-surface-variant": "#d0c5af",
+                      "tertiary-fixed-dim": "#eac249",
+                      "primary-fixed": "#ffe088",
+                      "surface": "#131313",
+                      "on-tertiary-fixed": "#241a00",
+                      "secondary-container": "#2a4386",
+                      "on-tertiary-container": "#564300",
+                      "inverse-on-surface": "#313030",
+                      "on-tertiary": "#3d2f00",
+                      "on-primary-fixed": "#241a00",
+                      "surface-bright": "#3a3939"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "48px",
+                      "container-max": "1280px",
+                      "stack-sm": "12px",
+                      "stack-lg": "48px",
+                      "gutter": "24px",
+                      "base": "8px",
+                      "stack-md": "24px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "display-hero": [
+                              "Montserrat"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Montserrat"
+                      ],
+                      "label-caps": [
+                              "Anybody"
+                      ],
+                      "stat-value": [
+                              "Anybody"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "display-hero": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "stat-value": [
+                              "40px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low border-r border-outline-variant/10 shadow-lg h-screen w-64 fixed left-0 top-0 flex flex-col h-full py-base z-40 hidden md:flex">
+<div class="px-6 mb-8 flex items-center gap-4">
+<img alt="Club Logo" class="w-12 h-12 rounded-full border border-outline-variant/20 object-cover" data-alt="A high-contrast, premium metallic badge showing a football club logo. Deep atmospheric lighting highlights the gold trim against a dark blue background. High-end sport editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjMehrkGE92fpFjk-niPKS5VsWyYqPckqrBavwqIEQVtfmMjaIFMqKvYZVbiVDvPGbr_xIFISZyDX04CxdOC-m0tN0kE52VWdqyt2MyVI3bpeyWEiuFBBTP6oCenqnHYFHvb3vf2xf8IPIAu2YFS-s0ciKd3FLYbFOlXJz53OYIA5LQIBXbOzmfmAiCtxjJoAz2wxBWoEX6n3yYtGLJPf5oToI31E_MjQo4cRX4S32mXGc1PsmR3qH3Bg7oA7K--Vu67UNqEnagg"/>
+<div>
+<h1 class="font-display-hero text-primary text-body-lg">Barcelona Chalco</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Elite Management</p>
+</div>
+</div>
+<button class="mx-6 mb-8 bg-primary-container text-on-primary-container font-label-caps text-label-caps py-3 rounded-lg flex items-center justify-center gap-2 hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-shadow">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Report
+        </button>
+<div class="flex-1 flex flex-col gap-2 px-4">
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-caps text-label-caps">Roster</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps">Schedule</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">search_insights</span>
+<span class="font-label-caps text-label-caps">Scouting</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</div>
+<div class="mt-auto flex flex-col gap-2 px-4 pt-4 border-t border-outline-variant/10">
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 relative min-h-screen flex flex-col">
+<!-- TopAppBar (Mobile Only fallback for context, hiding full nav as requested for main canvas focus) -->
+<header class="md:hidden bg-background/80 backdrop-blur-md fixed top-0 w-full z-50 border-b border-outline-variant/20 shadow-sm flex justify-between items-center px-margin-mobile h-20">
+<h1 class="font-display-hero text-headline-lg-mobile text-primary tracking-tighter">FutID Barcelona Chalco</h1>
+<button class="text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<div class="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-container-max mx-auto w-full flex-1 mt-20 md:mt-0">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-stack-md">
+<div>
+<h2 class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-primary tracking-tighter mb-2">QR / Validaciones</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Gestión de identidad digital y estado de validación del plantel.</p>
+</div>
+<div class="flex gap-4 w-full md:w-auto">
+<div class="relative w-full md:w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-b-2 border-outline-variant focus:border-primary text-on-surface font-body-md pl-10 pr-4 py-2 outline-none transition-colors bg-transparent placeholder:text-on-surface-variant/50" placeholder="Buscar jugador o folio..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Data Table Grid -->
+<div class="bg-[#002366]/40 backdrop-blur-md rounded-xl border border-primary/20 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20 bg-surface-container-highest/50">
+<th class="font-label-caps text-label-caps text-on-surface-variant py-4 px-6">Jugador</th>
+<th class="font-label-caps text-label-caps text-on-surface-variant py-4 px-6">Posición</th>
+<th class="font-label-caps text-label-caps text-on-surface-variant py-4 px-6">Folio FutID</th>
+<th class="font-label-caps text-label-caps text-on-surface-variant py-4 px-6">Estado</th>
+<th class="font-label-caps text-label-caps text-on-surface-variant py-4 px-6 text-right">Acciones</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant/10 hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-primary/30">
+<img alt="Player" class="w-full h-full object-cover grayscale opacity-80" data-alt="A close-up portrait of an athletic male soccer player looking determined. Deep shadows and cinematic lighting highlight his features. High-contrast sports editorial style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLvWzJcM8VtD0dnFnBuD0CcNbHYhVChcFtcCtQmPnbbcSfTOW8vsIQ2AFbCpNAZipGbheCDEOZkPYze_6DkQB8vhnSrS2-8HBpErAGdtthJr1e4VmvOYfOqvIpN3ZqXsEIEK9CbtaYnWxlmIItRdwF2nwTLy_-WetYTakm0tPL5EGdSgGIRio14KV0SaG-_FAGmmI1MzrbLbyZQ6k3AaxSyWEkxpngl7WbCdNFICj_eVkt1TNGq1USjT9c3mxh0wc3TLO2jTGOWQ"/>
+</div>
+<span class="font-medium text-on-background">Carlos Mendoza</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">Delantero</td>
+<td class="py-4 px-6 font-label-caps text-primary tracking-widest">BCH-24-001</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary font-label-caps text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Validado
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver QR">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Descargar QR">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver Perfil Público">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant/10 hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-outline-variant/30">
+<img alt="Player" class="w-full h-full object-cover grayscale opacity-80" data-alt="A portrait of a male athlete in shadow, lit by a subtle golden rim light. The mood is intense and focused. Professional sports photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-z7Ls494z1AkD4b2iFplnVOGN6FB-yruLvSleXiFmTk4c_0QmxtSc-cHJHrrAv253OiRMqhQB55-BwLe0S2jxUYTA1d6IpsNLneMk53KsAU73x_qBm8JieK4tShMorZxu0dT991H79Zm1ixkpD_kfH6X5xAVcPbAInRbC3iMIa626IwKpVN3krqSwQzijgC6c-vo5YDg-pPjB6SH5HG3GSOI6z7AdGvb_Wwj19xuo1aI7EyhFjf-iVQdGQgRWSHELKl4cEcEHug"/>
+</div>
+<span class="font-medium text-on-background">Luis García</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">Mediocampista</td>
+<td class="py-4 px-6 font-label-caps text-on-surface-variant tracking-widest">BCH-24-012</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-error/10 border border-error/30 text-error font-label-caps text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> Pendiente
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver QR">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Descargar QR">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver Perfil Público">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-variant/20 transition-colors">
+<td class="py-4 px-6 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container overflow-hidden border border-primary/30">
+<img alt="Player" class="w-full h-full object-cover grayscale opacity-80" data-alt="Profile photo of a professional sports player. Dark atmospheric lighting with deep blues and subtle metallic gold highlights. Minimalist editorial aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlYGqOHMzNzr7jx4FgmHPgNgEKJD0PoVsy0fbGQmUlAM87-C-RHYNPHY7wnzRC9jB4HaW7Sy3kMbEJ968ROupk1rYfsCqC_2j1C3p6VkbE6v7eONm8Bum31zoXcg9xwhqNi0vXB9q2_aGTRGyXoyy2q-A5JePY3Mm32y8KDF9d6p0d0SonyYlNd-HG4ORL96NL30S5Wnre-vKqUJlgdI4n1kJuLTd80kkGlN2yRWkoQeL-LRIAHBiTFpnET0J7oYuOkvGoWelg7g"/>
+</div>
+<span class="font-medium text-on-background">Diego Torres</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant">Defensa Central</td>
+<td class="py-4 px-6 font-label-caps text-primary tracking-widest">BCH-24-004</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary font-label-caps text-[10px]">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> Validado
+                                    </span>
+</td>
+<td class="py-4 px-6 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver QR">
+<span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Descargar QR">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors group" title="Ver Perfil Público">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest w-full py-stack-lg border-t border-outline-variant/20 mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto gap-4">
+<span class="font-body-md text-body-md text-on-surface-variant">© 2024 FutID Barcelona Chalco. All Rights Reserved.</span>
+<div class="flex gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Club Rules</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-tertiary transition-colors" href="#">Contact Us</a>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

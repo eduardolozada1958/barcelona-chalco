@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FutID - Parent Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wght@700&amp;family=Inter:wght@400;500&amp;family=Montserrat:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1c1b1b",
+                        "secondary": "#b3c5ff",
+                        "on-primary": "#3c2f00",
+                        "tertiary-container": "#d5af37",
+                        "surface-tint": "#e9c349",
+                        "on-error": "#690005",
+                        "on-surface": "#e5e2e1",
+                        "surface-variant": "#353534",
+                        "surface-container-highest": "#353534",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-background": "#e5e2e1",
+                        "on-secondary-container": "#9bb3fd",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#2a4386",
+                        "primary": "#f2ca50",
+                        "surface-container": "#201f1f",
+                        "primary-container": "#d4af37",
+                        "on-secondary": "#0d2c6e",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-dim": "#131313",
+                        "secondary-fixed-dim": "#b3c5ff",
+                        "on-secondary-fixed": "#00174a",
+                        "inverse-primary": "#735c00",
+                        "on-primary-fixed-variant": "#574500",
+                        "on-primary-container": "#554300",
+                        "tertiary": "#f3ca50",
+                        "primary-fixed-dim": "#e9c349",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#99907c",
+                        "inverse-surface": "#e5e2e1",
+                        "error-container": "#93000a",
+                        "background": "#131313",
+                        "outline-variant": "#4d4635",
+                        "error": "#ffb4ab",
+                        "tertiary-fixed": "#ffe08b",
+                        "on-surface-variant": "#d0c5af",
+                        "tertiary-fixed-dim": "#eac249",
+                        "primary-fixed": "#ffe088",
+                        "surface": "#131313",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-container": "#2a4386",
+                        "on-tertiary-container": "#564300",
+                        "inverse-on-surface": "#313030",
+                        "on-tertiary": "#3d2f00",
+                        "on-primary-fixed": "#241a00",
+                        "surface-bright": "#3a3939"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "48px",
+                        "container-max": "1280px",
+                        "stack-sm": "12px",
+                        "stack-lg": "48px",
+                        "gutter": "24px",
+                        "base": "8px",
+                        "stack-md": "24px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-hero": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Montserrat"],
+                        "label-caps": ["Anybody"],
+                        "stat-value": ["Anybody"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-hero": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.1em", "fontWeight": "700" }],
+                        "stat-value": ["40px", { "lineHeight": "1.0", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-x-hidden">
+<!-- SideNavBar (From Shared Components JSON) -->
+<nav class="bg-surface-container-low h-screen w-64 fixed left-0 top-0 border-r border-outline-variant/10 shadow-lg flex flex-col h-full py-base z-50 hidden md:flex">
+<!-- Header -->
+<div class="px-gutter mb-stack-lg mt-stack-md flex items-center gap-stack-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img alt="Club Logo" class="w-full h-full object-cover" data-alt="A stylized, modern football crest featuring metallic gold accents against a deep navy blue background, with geometric shield elements, rendered in a crisp vector style on a dark textured surface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXowWcTfoXJZ3cu8v_u2chSYrolhLmUgw-VTL8aSAIz14NHQ2Tm-bUtUUNcA3A-C21dJ27ukqYaLKOj0hjRdKCFOD6NZwlLCxS4lYimSlAN-OMA2lP0e87GYfwQq0Sh57ICJEK0sqpkEKD3ON1ap9w14n7W-gW7OlT_cPcMLIlfB0iGmEd1H9HsWISAr1liuv2QxY4p8ClPxE1ZTZ9PymPzfVs5oHlm59KNmIxZDXEvIZQ0nKgVL2z8ysYCofDTSUWXcta2c7oGQ"/>
+</div>
+<div>
+<h1 class="font-display-hero text-primary text-body-lg">Barcelona Chalco</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant">Elite Management</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<ul class="flex-1 space-y-2 px-2">
+<!-- Active: Dashboard -->
+<li>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-3 cursor-pointer transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-3 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-caps text-label-caps">Roster</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-3 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-caps text-label-caps">Schedule</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-3 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">search_insights</span>
+<span class="font-label-caps text-label-caps">Scouting</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-3 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+</li>
+</ul>
+<!-- CTA & Footer Tabs -->
+<div class="px-4 mt-auto space-y-4 pb-stack-sm">
+<button class="w-full bg-primary text-on-primary font-label-caps text-label-caps py-3 rounded-DEFAULT hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                New Report
+            </button>
+<ul class="space-y-2">
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-2 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 flex items-center gap-stack-sm px-4 py-2 hover:bg-surface-variant transition-all cursor-pointer duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-caps text-label-caps">Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-64 p-margin-mobile md:p-margin-desktop bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-secondary-container/10 via-background to-background min-h-screen">
+<div class="max-w-container-max mx-auto">
+<!-- Welcome Header -->
+<header class="mb-stack-lg flex justify-between items-end">
+<div>
+<h2 class="font-label-caps text-label-caps text-primary tracking-widest mb-2">PORTAL DE FAMILIARES</h2>
+<h1 class="font-display-hero text-headline-lg-mobile md:text-headline-lg text-on-surface">Bienvenido, <span class="text-on-background">Carlos Mendoza</span></h1>
+</div>
+<div class="hidden md:flex gap-4">
+<button class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/30 hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-on-surface">notifications</span>
+</button>
+</div>
+</header>
+<!-- Bento Grid Dashboard -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Card: Mis Hijos (Spans 8 cols on large screens) -->
+<div class="lg:col-span-8 bg-secondary-container/30 backdrop-blur-md rounded-xl border border-primary/30 p-stack-md relative overflow-hidden group shadow-lg">
+<!-- Glass highlight -->
+<div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
+<div class="flex justify-between items-center mb-stack-md">
+<h3 class="font-label-caps text-label-caps text-on-secondary-container">MIS HIJOS</h3>
+<div class="flex items-center gap-1 bg-surface-container/80 px-3 py-1 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-caps text-[10px] text-primary">ID VERIFICADO</span>
+</div>
+</div>
+<div class="flex flex-col md:flex-row gap-stack-lg items-center md:items-start relative z-10">
+<!-- Player Image / Cut-out style -->
+<div class="relative w-48 h-64 shrink-0">
+<div class="absolute inset-0 bg-surface-variant rounded-lg transform -skew-x-6 border border-outline-variant/30 overflow-hidden">
+<img alt="Alex Mendoza" class="w-full h-full object-cover grayscale contrast-125 mix-blend-luminosity opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="A striking portrait of a young male football player in an athletic stance, looking intensely at the camera. The background is a stark, textured deep grey. The lighting is dramatic and cinematic, creating high contrast with a focus on his determined expression. Subtle metallic gold rim lighting highlights his profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0N2yB-c3JZ8OccF0UpL7LLc5L-_oWHYQRu92Ft-2okFndLXSedlFrleFHSr4y1GQz1iybxw3jCCOukmn7u-aOQ2hPU5ZETsQN6QJCW5lWdKZtVHVL-eHmlaWJLUClA6xMUPgYxxlA-wWn7wb14bm4nJRoMdW8zoc94dMMo7JhXOwD3RCHG-Y0dkmhl0CxIf5xp7L6LR1wg3OscmWSAOT45XjVakFFngOQrycjaDS6ZlUYECnSYX7HKSb-lnGJs6mh1bFURAyKrw"/>
+</div>
+<div class="absolute bottom-4 left-[-10px] bg-primary text-on-primary font-stat-value text-headline-lg px-3 py-1 skew-x-6 shadow-md border-r-2 border-white/20">
+<span class="block -skew-x-6">09</span>
+</div>
+</div>
+<!-- Player Details -->
+<div class="flex-1 w-full text-center md:text-left">
+<h2 class="font-display-hero text-headline-lg text-on-surface mb-1">Alex Mendoza</h2>
+<p class="font-label-caps text-primary mb-stack-md">DELANTERO CENTRAL • CAT 2008</p>
+<!-- Stat Grid inside the card -->
+<div class="grid grid-cols-3 gap-4 bg-surface-container-high/50 p-4 rounded-lg border border-outline-variant/10">
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">PARTIDOS</p>
+<p class="font-stat-value text-headline-lg-mobile text-on-surface">14</p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">GOLES</p>
+<p class="font-stat-value text-headline-lg-mobile text-on-surface">08</p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-on-surface-variant mb-1">ASISTENCIAS</p>
+<p class="font-stat-value text-headline-lg-mobile text-on-surface">05</p>
+</div>
+</div>
+<div class="mt-stack-sm flex gap-4 justify-center md:justify-start">
+<button class="bg-transparent border-2 border-primary text-primary font-label-caps text-label-caps px-6 py-2 rounded-DEFAULT hover:bg-primary hover:text-on-primary transition-colors">
+                                    Ver Ficha Técnica
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Column for Quick Info -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Próximo Partido -->
+<div class="bg-surface-container rounded-xl border border-outline-variant/20 p-stack-sm hover:border-primary/40 transition-colors">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-tertiary">event</span>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">PRÓXIMO PARTIDO</h3>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 border border-outline-variant/10">
+<div class="flex justify-between items-center mb-2">
+<span class="font-display-hero text-body-lg text-on-surface">FC Chalco</span>
+<span class="font-label-caps text-primary">VS</span>
+<span class="font-display-hero text-body-lg text-on-surface">Águilas</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant font-body-md text-sm mt-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Sab, 10:00 AM
+                                </div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span> Campo 2
+                                </div>
+</div>
+</div>
+</div>
+<!-- Último Resultado -->
+<div class="bg-surface-container rounded-xl border border-outline-variant/20 p-stack-sm hover:border-primary/40 transition-colors">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-tertiary">sports_score</span>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">ÚLTIMO RESULTADO</h3>
+</div>
+<div class="bg-surface-container-low rounded-lg p-4 border border-outline-variant/10 flex items-center justify-between">
+<div class="text-center w-1/3">
+<p class="font-display-hero text-body-lg text-on-surface">Chalco</p>
+</div>
+<div class="bg-secondary-container/50 px-4 py-2 rounded border border-primary/20 text-center w-1/3">
+<span class="font-stat-value text-headline-lg-mobile text-primary">2 - 1</span>
+</div>
+<div class="text-center w-1/3">
+<p class="font-display-hero text-body-lg text-on-surface-variant">Tigres</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Avisos del Entrenador (Spans full width below) -->
+<div class="lg:col-span-12 bg-surface-container rounded-xl border border-outline-variant/20 p-stack-md">
+<div class="flex justify-between items-center mb-stack-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">campaign</span>
+<h3 class="font-label-caps text-label-caps text-on-surface">AVISOS RECIENTES</h3>
+</div>
+<a class="font-label-caps text-[10px] text-primary hover:underline" href="#">VER TODOS</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Notice 1 -->
+<div class="bg-surface-container-low p-4 rounded-lg border-l-2 border-primary flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">sports</span>
+</div>
+<div>
+<h4 class="font-display-hero text-sm text-on-surface mb-1">Cambio de Horario - Entrenamiento</h4>
+<p class="font-body-md text-sm text-on-surface-variant">El entrenamiento del jueves se recorre a las 18:00 hrs debido a mantenimiento de cancha.</p>
+<span class="block mt-2 font-label-caps text-[10px] text-outline">HACE 2 HORAS • PROF. MÁRQUEZ</span>
+</div>
+</div>
+<!-- Notice 2 -->
+<div class="bg-surface-container-low p-4 rounded-lg border-l-2 border-surface-variant flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">description</span>
+</div>
+<div>
+<h4 class="font-display-hero text-sm text-on-surface mb-1">Entrega de Documentación</h4>
+<p class="font-body-md text-sm text-on-surface-variant">Recordatorio: Último día para entregar el certificado médico es este viernes.</p>
+<span class="block mt-2 font-label-caps text-[10px] text-outline">AYER • ADMINISTRACIÓN</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
