@@ -592,7 +592,7 @@ INSERT INTO inscriptions (
   player_first_name, player_last_name, player_birth_date, player_nationality,
   player_position, player_dominant_foot, player_height_cm, player_weight_kg,
   player_category, player_previous_club, player_sport_description,
-  status
+  status, rejection_reason
 ) VALUES
   -- Solicitud pendiente
   ('ac000000-0000-0000-0000-000000000001',
@@ -601,7 +601,7 @@ INSERT INTO inscriptions (
    'Mediocampista Central', 'right', 168, 62,
    'Sub-15', 'Tigres Juvenil',
    'Jugador con 3 años de experiencia en fútbol de liga. Buen físico y técnica básica sólida.',
-   'pending'),
+   'pending', NULL),
 
   -- Solicitud en revisión
   ('ac000000-0000-0000-0000-000000000002',
@@ -610,7 +610,7 @@ INSERT INTO inscriptions (
    'Portero', 'right', 155, 50,
    'Sub-13', NULL,
    'Mi hijo lleva 2 años entrenando fútbol. Tiene muchas ganas de aprender y mejorar.',
-   'under_review'),
+   'under_review', NULL),
 
   -- Solicitud aprobada (convertida a jugador)
   ('ac000000-0000-0000-0000-000000000003',
@@ -619,21 +619,20 @@ INSERT INTO inscriptions (
    'Delantero Centro', 'right', 175, 68,
    'Sub-17', 'América Juvenil',
    'Jugador con 5 años de experiencia. Gran goleador en su categoría.',
-   'approved'),
+   'approved', NULL),
 
-  -- Solicitud rechazada
+  -- Solicitud rechazada (con motivo incluido para cumplir constraint)
   ('ac000000-0000-0000-0000-000000000004',
    'Roberto', 'Castañeda López', 'rcastaneda@email.com', '+52 81 9999 0000', 'padre',
    'Marco', 'Castañeda Ruiz', '2005-01-10', 'Mexicana',
    'Delantero', 'right', 178, 70,
    'Sub-17', NULL,
    'Mi hijo quiere unirse a la academia.',
-   'rejected');
+   'rejected', 'El jugador supera la edad máxima permitida para la categoría Sub-17. Se recomienda intentar en la categoría Sub-19 cuando esté disponible.');
 
--- Actualizar inscripción rechazada con motivo
+-- Actualizar inscripción rechazada con datos de revisión
 UPDATE inscriptions
 SET
-  rejection_reason = 'El jugador supera la edad máxima permitida para la categoría Sub-17. Se recomienda intentar en la categoría Sub-19 cuando esté disponible.',
   reviewed_by      = 'b0000000-0000-0000-0000-000000000001',
   reviewed_at      = NOW() - INTERVAL '5 days'
 WHERE id = 'ac000000-0000-0000-0000-000000000004';
