@@ -245,7 +245,7 @@ export class PlayersService {
     return data.signedUrl;
   }
 
-  static async update(id: string, input: UpdatePlayerInput) {
+  static async update(id: string, input: UpdatePlayerInput, actor?: { userId: string }) {
     await PlayersService.getById(id);
 
     const updateData: Record<string, unknown> = {};
@@ -265,6 +265,22 @@ export class PlayersService {
     if (input.achievements !== undefined)      updateData.achievements       = input.achievements;
     if (input.notes !== undefined)             updateData.notes              = input.notes;
     if (input.curp !== undefined)              updateData.curp               = input.curp;
+
+    if (input.isVerified === true) {
+      updateData.is_verified = true;
+      updateData.verified_at = new Date().toISOString();
+      updateData.verified_by = actor?.userId ?? null;
+    } else if (input.isVerified === false) {
+      updateData.is_verified = false;
+      updateData.verified_at = null;
+      updateData.verified_by = null;
+    }
+
+    if (input.status !== undefined) {
+      updateData.status = input.status;
+    } else if (input.isVerified === true) {
+      updateData.status = 'active';
+    }
 
     const { data, error } = await supabaseAdmin
       .from('players')

@@ -80,7 +80,11 @@ export async function getPlayerCurpSignedUrl(playerId: string) {
   return data;
 }
 
-export type UpdatePlayerBody = Omit<Partial<CreatePlayerBody>, 'curp'> & { curp?: string | null };
+export type UpdatePlayerBody = Omit<Partial<CreatePlayerBody>, 'curp'> & {
+  curp?: string | null;
+  status?: 'active' | 'inactive';
+  isVerified?: boolean;
+};
 
 export async function updatePlayer(id: string, body: UpdatePlayerBody) {
   const { data } = await apiClient.put<ApiResponse<unknown>>(`/players/${id}`, body);

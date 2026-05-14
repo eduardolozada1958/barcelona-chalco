@@ -38,6 +38,10 @@ export const updatePlayerSchema = createPlayerSchema.partial().extend({
     ])
     .optional()
     .transform((v) => (v === '' ? null : v)),
+  /** Estado en plantilla (listados públicos filtran `active`). */
+  status: z.enum(['active', 'inactive']).optional(),
+  /** Marcar verificado registra fecha y usuario; desmarcar limpia verificación. */
+  isVerified: z.boolean().optional(),
 });
 
 export const listPlayersQuerySchema = z.object({

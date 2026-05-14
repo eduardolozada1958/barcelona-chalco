@@ -1,10 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { createPlayerWithDocuments, listPlayersAdmin, type CreatePlayerBody } from '@/api/players';
+import {
+  createPlayerWithDocuments,
+  listPlayersAdmin,
+  updatePlayer,
+  type CreatePlayerBody,
+  type UpdatePlayerBody,
+} from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -27,10 +33,20 @@ type PlayerForm = {
   curp: string;
 };
 
+type EditPlayerForm = {
+  firstName: string;
+  lastName: string;
+  category: CreatePlayerBody['category'];
+  status: 'active' | 'inactive';
+  isVerified: boolean;
+};
+
 export function DashboardPlayersPage() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
   const curpPdfRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
 
@@ -63,6 +79,19 @@ export function DashboardPlayersPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateMut = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdatePlayerBody }) => updatePlayer(id, body),
+    onSuccess: (_res, vars) => {
+      toast.success('Jugador actualizado');
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      void qc.invalidateQueries({ queryKey: ['player-admin', vars.id] });
+      setEditOpen(false);
+      setEditRow(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const {
     register,
     handleSubmit,
@@ -84,6 +113,52 @@ export function DashboardPlayersPage() {
       sportDescription: '',
       curp: '',
     },
+  });
+
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    control: editControl,
+    formState: { errors: editErrors },
+  } = useForm<EditPlayerForm>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      category: 'Sub-17',
+      status: 'active',
+      isVerified: false,
+    },
+  });
+
+  const openEdit = (p: Record<string, unknown>) => {
+    setEditRow(p);
+    const rawCat = String(p.category ?? 'Sub-17');
+    const category = (CATEGORIES as readonly string[]).includes(rawCat)
+      ? (rawCat as EditPlayerForm['category'])
+      : 'Sub-17';
+    resetEdit({
+      firstName: String(p.first_name ?? ''),
+      lastName: String(p.last_name ?? ''),
+      category,
+      status: p.status === 'inactive' ? 'inactive' : 'active',
+      isVerified: Boolean(p.is_verified),
+    });
+    setEditOpen(true);
+  };
+
+  const onEditSave = handleSubmitEdit((data) => {
+    if (!editRow) return;
+    updateMut.mutate({
+      id: String(editRow.id),
+      body: {
+        firstName: data.firstName.trim(),
+        lastName: data.lastName.trim(),
+        category: data.category,
+        status: data.status,
+        isVerified: data.isVerified,
+      },
+    });
   });
 
   const onCreate = handleSubmit((data) => {
@@ -161,7 +236,7 @@ export function DashboardPlayersPage() {
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Categoría</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Estado</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Verificado</th>
-              <th className="p-4" />
+              <th className="p-4 font-label-caps text-label-caps text-on-surface-variant text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -194,9 +269,18 @@ export function DashboardPlayersPage() {
                   )}
                 </td>
                 <td className="p-4">
-                  <Link to={`/dashboard/players/${p.id}`} className="text-primary hover:underline font-label-caps text-label-caps flex items-center gap-1">
-                    <MaterialIcon name="visibility" size={14} /> Ver
-                  </Link>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEdit(p)}
+                      className="text-on-surface-variant hover:text-primary font-label-caps text-label-caps inline-flex items-center gap-1"
+                    >
+                      <MaterialIcon name="edit" size={14} /> Editar
+                    </button>
+                    <Link to={`/dashboard/players/${p.id}`} className="text-primary hover:underline font-label-caps text-label-caps inline-flex items-center gap-1">
+                      <MaterialIcon name="visibility" size={14} /> Ver
+                    </Link>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -324,6 +408,92 @@ export function DashboardPlayersPage() {
               className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50"
             >
               {createMut.isPending ? 'Guardando…' : 'Crear jugador'}
+            </button>
+          </div>
+        </form>
+      </DashboardModal>
+
+      <DashboardModal
+        open={editOpen}
+        onClose={() => {
+          setEditOpen(false);
+          setEditRow(null);
+        }}
+        title="Editar jugador"
+        wide
+      >
+        <form onSubmit={onEditSave} className="space-y-3">
+          {editRow ? (
+            <p className="text-xs text-on-surface-variant">
+              ID: <code className="text-primary">{String(editRow.id)}</code>
+            </p>
+          ) : null}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={formLabelClass}>Nombre</label>
+              <input className={formInputClass} {...registerEdit('firstName', { required: 'Requerido', minLength: 2 })} />
+              {editErrors.firstName && <p className={formErrorClass}>{editErrors.firstName.message}</p>}
+            </div>
+            <div>
+              <label className={formLabelClass}>Apellidos</label>
+              <input className={formInputClass} {...registerEdit('lastName', { required: 'Requerido', minLength: 2 })} />
+              {editErrors.lastName && <p className={formErrorClass}>{editErrors.lastName.message}</p>}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={formLabelClass}>Categoría</label>
+              <select className={formInputClass} {...registerEdit('category', { required: true })}>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={formLabelClass}>Estado en plantilla</label>
+              <select className={formInputClass} {...registerEdit('status', { required: true })}>
+                <option value="active">Activo</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+              <p className="text-[11px] text-on-surface-variant mt-1">Solo los activos y verificados suelen mostrarse en el sitio público.</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-lg border border-outline-variant/30 bg-surface-container/40 px-3 py-3">
+            <Controller
+              name="isVerified"
+              control={editControl}
+              render={({ field }) => (
+                <input
+                  type="checkbox"
+                  id="edit-is-verified"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/40"
+                />
+              )}
+            />
+            <label htmlFor="edit-is-verified" className="text-sm text-on-surface cursor-pointer">
+              <span className="font-label-caps text-label-caps text-primary block">Verificación</span>
+              <span className="text-on-surface-variant text-xs">Marcar guarda fecha y responsable; desmarcar quita la verificación (no borra al jugador).</span>
+            </label>
+          </div>
+          <div className={formActionsClass}>
+            <button
+              type="button"
+              onClick={() => {
+                setEditOpen(false);
+                setEditRow(null);
+              }}
+              className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={updateMut.isPending}
+              className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50"
+            >
+              {updateMut.isPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>
         </form>

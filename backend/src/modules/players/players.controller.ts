@@ -113,7 +113,11 @@ export class PlayersController {
 
   static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const player = await PlayersService.update(routeParam(req, 'id'), req.body as UpdatePlayerInput);
+      const player = await PlayersService.update(
+        routeParam(req, 'id'),
+        req.body as UpdatePlayerInput,
+        { userId: req.user!.id },
+      );
       sendSuccess(res, forViewer(player), 'Jugador actualizado exitosamente');
     } catch (e) { next(e); }
   }
