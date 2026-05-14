@@ -11,8 +11,30 @@ export async function getPlayerPublic(id: string) {
   return data;
 }
 
+export interface CreatePlayerBody {
+  firstName:         string;
+  lastName:          string;
+  birthDate:         string;
+  nationality?:      string;
+  position:          string;
+  secondaryPosition?: string;
+  jerseyNumber?:     number;
+  dominantFoot?:     'right' | 'left' | 'both';
+  heightCm?:         number;
+  weightKg?:         number;
+  category:          'Sub-11' | 'Sub-13' | 'Sub-15' | 'Sub-17' | 'Sub-20';
+  sportDescription?: string;
+  achievements?:    string;
+  notes?:            string;
+}
+
 export async function listPlayersAdmin(params?: Record<string, string | number | undefined>) {
   const { data } = await apiClient.get<ApiResponse<unknown[]>>('/players', { params });
+  return data;
+}
+
+export async function createPlayer(body: CreatePlayerBody) {
+  const { data } = await apiClient.post<ApiResponse<unknown>>('/players', body);
   return data;
 }
 

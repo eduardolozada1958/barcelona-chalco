@@ -22,6 +22,7 @@ import { noticesRouter }      from '@modules/notices/notices.routes';
 import { galleryRouter }      from '@modules/gallery/gallery.routes';
 import { inscriptionsRouter } from '@modules/inscriptions/inscriptions.routes';
 import { settingsRouter }     from '@modules/settings/settings.routes';
+import { dashboardRouter }    from '@modules/dashboard/dashboard.routes';
 
 export function createApp(): Application {
   const app = express();
@@ -95,6 +96,7 @@ export function createApp(): Application {
   app.use(`${prefix}/gallery`,      galleryRouter);
   app.use(`${prefix}/inscriptions`, inscriptionsRouter);
   app.use(`${prefix}/settings`,     settingsRouter);
+  app.use(`${prefix}/dashboard`,    dashboardRouter);
 
   // ── Manejador de rutas no encontradas ────────────────────
   app.use((_req, res) => {

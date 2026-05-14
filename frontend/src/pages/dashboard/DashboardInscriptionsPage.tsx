@@ -17,6 +17,7 @@ export function DashboardInscriptionsPage() {
     onSuccess: () => {
       toast.success('Aprobada');
       void qc.invalidateQueries({ queryKey: ['inscriptions-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -30,6 +31,7 @@ export function DashboardInscriptionsPage() {
     onSuccess: () => {
       toast.success('Rechazada');
       void qc.invalidateQueries({ queryKey: ['inscriptions-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -39,6 +41,8 @@ export function DashboardInscriptionsPage() {
     onSuccess: (res) => {
       toast.success(`Jugador creado: ${res.data?.playerId ?? ''}`);
       void qc.invalidateQueries({ queryKey: ['inscriptions-admin'] });
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

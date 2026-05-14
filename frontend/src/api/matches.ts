@@ -16,7 +16,28 @@ export async function getMatchPublic(id: string) {
   return data;
 }
 
+export interface CreateMatchBody {
+  title:             string;
+  description?:      string | null;
+  opponentName:      string;
+  opponentLogoUrl?:  string | null;
+  matchDate:         string;
+  location:          string;
+  locationMapsUrl?:  string | null;
+  matchType?:        'league' | 'cup' | 'friendly' | 'tournament' | 'internal';
+  category:          string;
+  status?:           'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'postponed';
+  isHome?:           boolean;
+  bannerUrl?:        string | null;
+  season?:           string;
+}
+
 export async function listMatchesAdmin(params?: Record<string, string | number | undefined>) {
   const { data } = await apiClient.get<ApiResponse<unknown[]>>('/matches', { params });
+  return data;
+}
+
+export async function createMatch(body: CreateMatchBody) {
+  const { data } = await apiClient.post<ApiResponse<unknown>>('/matches', body);
   return data;
 }

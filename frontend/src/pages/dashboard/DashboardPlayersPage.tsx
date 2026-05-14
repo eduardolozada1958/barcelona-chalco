@@ -1,15 +1,109 @@
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
-import { listPlayersAdmin } from '@/api/players';
+import { createPlayer, listPlayersAdmin, type CreatePlayerBody } from '@/api/players';
+import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
+const CATEGORIES: CreatePlayerBody['category'][] = ['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20'];
+
+type PlayerForm = {
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  nationality: string;
+  position: string;
+  secondaryPosition: string;
+  jerseyNumber: string;
+  dominantFoot: 'right' | 'left' | 'both';
+  heightCm: string;
+  weightKg: string;
+  category: CreatePlayerBody['category'];
+  sportDescription: string;
+};
+
 export function DashboardPlayersPage() {
+  const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [createOpen, setCreateOpen] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get('crear') === '1') {
+      setCreateOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete('crear');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const q = useQuery({
     queryKey: ['players-admin'],
     queryFn: () => listPlayersAdmin({ page: 1, limit: 50 }),
   });
+
+  const createMut = useMutation({
+    mutationFn: (body: CreatePlayerBody) => createPlayer(body),
+    onSuccess: () => {
+      toast.success('Jugador creado');
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      setCreateOpen(false);
+      reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<PlayerForm>({
+    defaultValues: {
+      nationality:   'Mexicana',
+      dominantFoot:  'right',
+      category:      'Sub-17',
+      firstName:     '',
+      lastName:      '',
+      birthDate:     '',
+      position:      '',
+      secondaryPosition: '',
+      jerseyNumber:  '',
+      heightCm:      '',
+      weightKg:      '',
+      sportDescription: '',
+    },
+  });
+
+  const onCreate = handleSubmit((data) => {
+    const jersey = data.jerseyNumber.trim();
+    const h = data.heightCm.trim();
+    const w = data.weightKg.trim();
+    const body: CreatePlayerBody = {
+      firstName: data.firstName.trim(),
+      lastName:  data.lastName.trim(),
+      birthDate: data.birthDate,
+      nationality: data.nationality.trim() || 'Mexicana',
+      position:  data.position.trim(),
+      category:  data.category,
+      dominantFoot: data.dominantFoot,
+      secondaryPosition: data.secondaryPosition.trim() || undefined,
+      sportDescription: data.sportDescription.trim() || undefined,
+      jerseyNumber: jersey ? parseInt(jersey, 10) : undefined,
+      heightCm:     h ? parseInt(h, 10) : undefined,
+      weightKg:     w ? parseInt(w, 10) : undefined,
+    };
+    if (body.jerseyNumber !== undefined && (Number.isNaN(body.jerseyNumber) || body.jerseyNumber < 1)) {
+      toast.error('Número de camiseta inválido');
+      return;
+    }
+    createMut.mutate(body);
+  });
+
   if (q.isLoading) return <Spinner />;
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
 
@@ -20,7 +114,11 @@ export function DashboardPlayersPage() {
           <h1 className="font-headline-lg text-headline-lg text-on-surface">Plantilla</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">{rows.length} jugadores registrados</p>
         </div>
-        <button className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto">
+        <button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2 shrink-0 self-start sm:self-auto"
+        >
           <MaterialIcon name="person_add" size={18} /> Agregar
         </button>
       </div>
@@ -75,6 +173,89 @@ export function DashboardPlayersPage() {
           </tbody>
         </table>
       </div>
+
+      <DashboardModal open={createOpen} onClose={() => setCreateOpen(false)} title="Nuevo jugador" wide>
+        <form onSubmit={onCreate} className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={formLabelClass}>Nombre</label>
+              <input className={formInputClass} {...register('firstName', { required: 'Requerido', minLength: 2 })} />
+              {errors.firstName && <p className={formErrorClass}>{errors.firstName.message}</p>}
+            </div>
+            <div>
+              <label className={formLabelClass}>Apellidos</label>
+              <input className={formInputClass} {...register('lastName', { required: 'Requerido', minLength: 2 })} />
+              {errors.lastName && <p className={formErrorClass}>{errors.lastName.message}</p>}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={formLabelClass}>Fecha de nacimiento</label>
+              <input type="date" className={formInputClass} {...register('birthDate', { required: 'Requerido' })} />
+              {errors.birthDate && <p className={formErrorClass}>{errors.birthDate.message}</p>}
+            </div>
+            <div>
+              <label className={formLabelClass}>Nacionalidad</label>
+              <input className={formInputClass} {...register('nationality')} />
+            </div>
+          </div>
+          <div>
+            <label className={formLabelClass}>Categoría</label>
+            <select className={formInputClass} {...register('category', { required: true })}>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={formLabelClass}>Posición principal</label>
+            <input className={formInputClass} {...register('position', { required: 'Requerido', minLength: 2 })} />
+            {errors.position && <p className={formErrorClass}>{errors.position.message}</p>}
+          </div>
+          <div>
+            <label className={formLabelClass}>Posición secundaria (opcional)</label>
+            <input className={formInputClass} {...register('secondaryPosition')} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className={formLabelClass}>Pie dominante</label>
+              <select className={formInputClass} {...register('dominantFoot')}>
+                <option value="right">Derecho</option>
+                <option value="left">Zurdo</option>
+                <option value="both">Ambos</option>
+              </select>
+            </div>
+            <div>
+              <label className={formLabelClass}>Nº camiseta</label>
+              <input type="number" min={1} max={99} className={formInputClass} {...register('jerseyNumber')} />
+            </div>
+            <div>
+              <label className={formLabelClass}>Altura (cm)</label>
+              <input type="number" className={formInputClass} {...register('heightCm')} />
+            </div>
+          </div>
+          <div>
+            <label className={formLabelClass}>Peso (kg)</label>
+            <input type="number" className={formInputClass} {...register('weightKg')} />
+          </div>
+          <div>
+            <label className={formLabelClass}>Descripción deportiva (opcional)</label>
+            <textarea rows={3} className={formInputClass} {...register('sportDescription')} />
+          </div>
+          <div className={formActionsClass}>
+            <button type="button" onClick={() => setCreateOpen(false)} className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={createMut.isPending}
+              className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50"
+            >
+              {createMut.isPending ? 'Guardando…' : 'Crear jugador'}
+            </button>
+          </div>
+        </form>
+      </DashboardModal>
     </div>
   );
 }

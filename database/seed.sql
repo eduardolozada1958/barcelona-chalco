@@ -48,7 +48,7 @@ INSERT INTO users (
 ) VALUES (
   'b0000000-0000-0000-0000-000000000001',
   'admin@barcelonamty.com',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+  '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
   'admin',
   'active',
   'Carlos Rodríguez Martínez',
@@ -63,7 +63,7 @@ INSERT INTO users (
 ) VALUES (
   'b0000000-0000-0000-0000-000000000002',
   'entrenador@barcelonamty.com',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+  '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
   'coach',
   'active',
   'Miguel Ángel Torres Herrera',
@@ -78,7 +78,7 @@ INSERT INTO users (
 ) VALUES (
   'b0000000-0000-0000-0000-000000000003',
   'coach2@barcelonamty.com',
-  '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+  '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
   'coach',
   'active',
   'Roberto Sánchez López',
@@ -91,32 +91,32 @@ INSERT INTO users (id, email, password_hash, role, status, full_name, phone, ema
 VALUES
   ('b0000000-0000-0000-0000-000000000010',
    'padre1@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'Alejandro García Morales', '+52 81 1111 2222', TRUE),
 
   ('b0000000-0000-0000-0000-000000000011',
    'padre2@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'Fernando López Jiménez', '+52 81 2222 3333', TRUE),
 
   ('b0000000-0000-0000-0000-000000000012',
    'madre1@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'Ana Patricia Martínez Vega', '+52 81 3333 4444', TRUE),
 
   ('b0000000-0000-0000-0000-000000000013',
    'padre3@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'José Luis Hernández Cruz', '+52 81 4444 5555', TRUE),
 
   ('b0000000-0000-0000-0000-000000000014',
    'padre4@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'María Elena Ramírez Soto', '+52 81 5555 6666', TRUE),
 
   ('b0000000-0000-0000-0000-000000000015',
    'padre5@email.com',
-   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/Lewbp3mTzGm6p3.lm',
+   '$2a$12$hESw/sQwOmZssGOj0URl4.d25pwU8GrEGmLUUa9RqgUH3ojpvEQEe',
    'parent', 'active', 'David Flores Castillo', '+52 81 6666 7777', TRUE);
 
 -- ============================================================
