@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '@config/database';
-import { env } from '@config/env';
 import QRCode from 'qrcode';
 import { NotFoundError } from '@middlewares/error.middleware';
+import { maskCurpFragment } from '@shared/utils/curp-mask';
+import { publicSiteBaseUrl } from '@shared/utils/public-site-url';
 
 interface ValidateResult {
   isValid:  boolean;
@@ -27,14 +28,24 @@ export class QrService {
       return { isValid: false };
     }
 
-    // Obtener credencial pública del jugador
     const { data: player } = await supabaseAdmin
       .from('v_player_public_credential')
       .select('*')
       .eq('id', result.player_id)
       .single();
 
-    return { isValid: true, player: player ?? undefined };
+    const { data: sensitive } = await supabaseAdmin
+      .from('players')
+      .select('birth_date, curp')
+      .eq('id', result.player_id)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    const merged: Record<string, unknown> = { ...(player ?? {}) };
+    if (sensitive?.birth_date) merged.birth_date = sensitive.birth_date;
+    merged.curp_masked = maskCurpFragment(sensitive?.curp as string | null | undefined);
+
+    return { isValid: true, player: merged };
   }
 
   /**
@@ -52,7 +63,7 @@ export class QrService {
       throw new NotFoundError('Jugador no encontrado o sin QR generado');
     }
 
-    const qrUrl = `${env.CORS_ORIGIN}/credencial/${player.qr_token}`;
+    const qrUrl = `${publicSiteBaseUrl()}/credencial/${player.qr_token}`;
     const qrBuffer = await QRCode.toBuffer(qrUrl, {
       type: 'png',
       width: 300,

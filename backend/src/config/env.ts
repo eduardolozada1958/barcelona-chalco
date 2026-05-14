@@ -26,8 +26,14 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET debe tener al menos 32 caracteres'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
 
-  // CORS
+  // CORS (puede ser lista separada por comas; el QR usa el primer origen si no hay APP_PUBLIC_URL)
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+
+  /** URL pública del front (Pages), sin slash final. Si no se define, se usa el primer valor de CORS_ORIGIN. Importante para que el QR apunte a /credencial y no a otro host. */
+  APP_PUBLIC_URL: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().url().optional()
+  ),
 
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: z.string().default('900000').transform(Number),

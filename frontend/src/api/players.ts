@@ -26,6 +26,7 @@ export interface CreatePlayerBody {
   sportDescription?: string;
   achievements?:    string;
   notes?:            string;
+  curp?:             string;
 }
 
 export async function listPlayersAdmin(params?: Record<string, string | number | undefined>) {
@@ -35,6 +36,13 @@ export async function listPlayersAdmin(params?: Record<string, string | number |
 
 export async function createPlayer(body: CreatePlayerBody) {
   const { data } = await apiClient.post<ApiResponse<unknown>>('/players', body);
+  return data;
+}
+
+export type UpdatePlayerBody = Omit<Partial<CreatePlayerBody>, 'curp'> & { curp?: string | null };
+
+export async function updatePlayer(id: string, body: UpdatePlayerBody) {
+  const { data } = await apiClient.put<ApiResponse<unknown>>(`/players/${id}`, body);
   return data;
 }
 

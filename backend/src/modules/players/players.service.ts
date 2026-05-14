@@ -4,6 +4,10 @@ import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response
 import { CURRENT_SEASON } from '@config/constants';
 import type { CreatePlayerInput, UpdatePlayerInput } from './players.validation';
 
+/** Columnas en APIs públicas (sin `curp` completo). */
+const PUBLIC_PLAYER_COLUMNS =
+  'id, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
+
 interface ListOptions {
   page:        number;
   limit:       number;
@@ -46,21 +50,30 @@ export class PlayersService {
   }
 
   static async listPublic(opts: Omit<ListOptions, 'status' | 'isVerified' | 'season'>) {
-    const { data, error, count } = await supabaseAdmin
-      .from('v_player_career_stats')
-      .select('*', { count: 'exact' })
+    let query = supabaseAdmin
+      .from('players')
+      .select(PUBLIC_PLAYER_COLUMNS, { count: 'exact' })
       .eq('status', 'active')
       .eq('is_verified', true)
+      .is('deleted_at', null)
       .order('last_name', { ascending: true })
       .range(
         getPaginationOffset(opts.page, opts.limit),
         getPaginationOffset(opts.page, opts.limit) + opts.limit - 1
       );
 
+    if (opts.category) query = query.eq('category', opts.category);
+    if (opts.search) {
+      query = query.or(
+        `first_name.ilike.%${opts.search}%,last_name.ilike.%${opts.search}%`
+      );
+    }
+
+    const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
     return {
-      data,
+      data: data ?? [],
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
   }
@@ -79,10 +92,11 @@ export class PlayersService {
 
   static async getPublicProfile(id: string) {
     const { data, error } = await supabaseAdmin
-      .from('v_player_public_credential')
-      .select('*')
+      .from('players')
+      .select(PUBLIC_PLAYER_COLUMNS)
       .eq('id', id)
       .eq('is_verified', true)
+      .is('deleted_at', null)
       .single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
@@ -126,6 +140,7 @@ export class PlayersService {
         achievements:       input.achievements ?? null,
         notes:              input.notes ?? null,
         season:             CURRENT_SEASON,
+        curp:               input.curp ?? null,
       })
       .select()
       .single();
@@ -153,6 +168,7 @@ export class PlayersService {
     if (input.avatarUrl !== undefined)         updateData.avatar_url         = input.avatarUrl;
     if (input.achievements !== undefined)      updateData.achievements       = input.achievements;
     if (input.notes !== undefined)             updateData.notes              = input.notes;
+    if (input.curp !== undefined)              updateData.curp               = input.curp;
 
     const { data, error } = await supabaseAdmin
       .from('players')

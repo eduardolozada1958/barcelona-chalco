@@ -14,34 +14,33 @@ import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
-
-/** Build a masked CURP-like code: first 2 of lastName + first of firstName + YYMMDD */
-function buildPartialCurp(firstName: string, lastName: string, birthDate: string): string {
-  const ln = lastName.replace(/\s+/g, '').toUpperCase().slice(0, 2);
-  const fn = firstName.toUpperCase().charAt(0);
-  const d  = new Date(birthDate);
-  const yy = String(d.getFullYear()).slice(-2);
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${ln}${fn}${yy}${mm}${dd}`;
+function publicSiteOrigin(): string {
+  const fromEnv = String(import.meta.env.VITE_PUBLIC_APP_URL ?? '').replace(/\/$/, '');
+  return fromEnv || window.location.origin;
 }
 
-/** Calculate age from birth date */
-function calcAge(birthDate: string): number {
+/** Calculate age from birth date; invalid or missing returns null. */
+function calcAge(birthDate: string | undefined | null): number | null {
+  if (!birthDate) return null;
   const birth = new Date(birthDate);
-  const now   = new Date();
+  if (Number.isNaN(birth.getTime())) return null;
+  const now = new Date();
   let age = now.getFullYear() - birth.getFullYear();
   const m = now.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
   return age;
 }
 
+function formatBirthEs(iso: unknown): string {
+  if (!iso || typeof iso !== 'string') return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 /** QR code image URL via free API */
 function qrImageUrl(token: string): string {
-  const url = `${window.location.origin}/credencial/${token}`;
+  const url = `${publicSiteOrigin()}/credencial/${encodeURIComponent(token)}`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}&bgcolor=1a1a2e&color=d4af37&format=png`;
 }
 
@@ -50,9 +49,12 @@ function qrImageUrl(token: string): string {
 /* ------------------------------------------------------------------ */
 
 function CredentialCard({ player }: { player: Player }) {
-  const age        = calcAge(player.birth_date);
-  const partialId  = buildPartialCurp(player.first_name, player.last_name, player.birth_date);
-  const hasQr      = Boolean(player.qr_token);
+  const age       = calcAge(player.birth_date);
+  const headerRef =
+    player.jersey_number != null && !Number.isNaN(Number(player.jersey_number))
+      ? `#${player.jersey_number}`
+      : `ID·${player.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+  const hasQr     = Boolean(player.qr_token);
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-outline-variant/20 bg-gradient-to-br from-surface-container via-surface-container to-surface-container-high shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.15)] transition-all duration-500">
@@ -62,7 +64,7 @@ function CredentialCard({ player }: { player: Player }) {
           <MaterialIcon name="verified" size={16} className="text-primary" filled />
           <span className="text-xs font-medium text-primary tracking-wider uppercase">Credencial Oficial</span>
         </div>
-        <span className="text-xs text-on-surface-variant font-mono">{partialId}</span>
+        <span className="text-xs text-on-surface-variant font-mono tracking-tight">{headerRef}</span>
       </div>
 
       <div className="p-5 flex gap-5">
@@ -94,7 +96,7 @@ function CredentialCard({ player }: { player: Player }) {
           <div className="mt-2 space-y-1.5">
             <div className="flex items-center gap-2 text-sm">
               <MaterialIcon name="cake" size={14} className="text-primary/70 flex-shrink-0" />
-              <span className="text-on-surface-variant">{age} años</span>
+              <span className="text-on-surface-variant">{age !== null ? `${age} años` : '—'}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
               <MaterialIcon name="sports_soccer" size={14} className="text-primary/70 flex-shrink-0" />
@@ -116,7 +118,7 @@ function CredentialCard({ player }: { player: Player }) {
         {/* Right: QR */}
         <div className="flex flex-col items-center justify-center flex-shrink-0">
           {hasQr ? (
-            <Link to={`/credencial/${player.qr_token}`} className="block">
+            <Link to={`/credencial/${encodeURIComponent(player.qr_token!)}`} className="block">
               <img
                 src={qrImageUrl(player.qr_token!)}
                 alt={`QR ${player.first_name}`}
@@ -275,7 +277,8 @@ function CredentialResult() {
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
           <MaterialIcon name="qr_code_scanner" className="text-primary" size={48} />
-          <h1 className="mt-2 font-headline-lg text-headline-lg">Resultado de Validación</h1>
+          <h1 className="mt-2 font-headline-lg text-headline-lg">Validación de credencial</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Vista para cuerpo técnico tras escanear el QR del jugador.</p>
         </div>
 
         {!ok ? (
@@ -298,6 +301,14 @@ function CredentialResult() {
                 <div className="flex justify-between border-b border-outline-variant/20 py-2">
                   <dt className="text-on-surface-variant">Nombre</dt>
                   <dd className="font-medium">{String(player.first_name ?? '')} {String(player.last_name ?? '')}</dd>
+                </div>
+                <div className="flex justify-between border-b border-outline-variant/20 py-2">
+                  <dt className="text-on-surface-variant">Fecha de nacimiento</dt>
+                  <dd>{formatBirthEs(player.birth_date)}</dd>
+                </div>
+                <div className="flex justify-between border-b border-outline-variant/20 py-2">
+                  <dt className="text-on-surface-variant">CURP (fragmento)</dt>
+                  <dd className="font-mono text-xs tracking-wide">{String(player.curp_masked ?? 'No registrada')}</dd>
                 </div>
                 <div className="flex justify-between border-b border-outline-variant/20 py-2">
                   <dt className="text-on-surface-variant">Categoría</dt>

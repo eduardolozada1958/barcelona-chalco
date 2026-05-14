@@ -20,9 +20,25 @@ export const createPlayerSchema = z.object({
   avatarUrl:         z.string().url().optional(),
   achievements:      z.string().max(500).optional(),
   notes:             z.string().max(500).optional(),
+  curp: z
+    .union([
+      z.literal(''),
+      z.string().length(18).regex(/^[A-Z0-9Ñ]{18}$/i),
+    ])
+    .optional()
+    .transform((v) => (v === '' ? undefined : v)),
 });
 
-export const updatePlayerSchema = createPlayerSchema.partial();
+export const updatePlayerSchema = createPlayerSchema.partial().extend({
+  curp: z
+    .union([
+      z.literal(''),
+      z.string().length(18).regex(/^[A-Z0-9Ñ]{18}$/i),
+      z.null(),
+    ])
+    .optional()
+    .transform((v) => (v === '' ? null : v)),
+});
 
 export const listPlayersQuerySchema = z.object({
   page:       z.string().optional().transform(v => (v ? parseInt(v, 10) : 1)),
