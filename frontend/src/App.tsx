@@ -8,6 +8,7 @@ import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { CredentialPage } from '@/pages/CredentialPage';
+import { CredentialArPage } from '@/pages/CredentialArPage';
 import { InscriptionPublicPage } from '@/pages/InscriptionPublicPage';
 import { PublicMatchesPage } from '@/pages/PublicMatchesPage';
 import { PublicMatchDetailPage } from '@/pages/PublicMatchDetailPage';
@@ -34,6 +35,7 @@ import { DashboardSettingsPage } from '@/pages/dashboard/DashboardSettingsPage';
 export default function App() {
   return (
     <Routes>
+      <Route path="/credencial-ar/:token" element={<CredentialArPage />} />
       <Route path="/credencial/:token" element={<CredentialPage />} />
       <Route path="/credencial" element={<CredentialPage />} />
 

@@ -40,7 +40,7 @@ function formatBirthEs(iso: unknown): string {
 
 /** QR code image URL via free API */
 function qrImageUrl(token: string): string {
-  const url = `${publicSiteOrigin()}/credencial/${encodeURIComponent(token)}`;
+  const url = `${publicSiteOrigin()}/credencial-ar/${encodeURIComponent(token)}`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}&bgcolor=1a1a2e&color=d4af37&format=png`;
 }
 
@@ -118,7 +118,7 @@ function CredentialCard({ player }: { player: Player }) {
         {/* Right: QR */}
         <div className="flex flex-col items-center justify-center flex-shrink-0">
           {hasQr ? (
-            <Link to={`/credencial/${encodeURIComponent(player.qr_token!)}`} className="block">
+            <Link to={`/credencial-ar/${encodeURIComponent(player.qr_token!)}`} className="block">
               <img
                 src={qrImageUrl(player.qr_token!)}
                 alt={`QR ${player.first_name}`}

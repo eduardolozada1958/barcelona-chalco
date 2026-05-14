@@ -63,7 +63,7 @@ export class QrService {
       throw new NotFoundError('Jugador no encontrado o sin QR generado');
     }
 
-    const qrUrl = `${publicSiteBaseUrl()}/credencial/${player.qr_token}`;
+    const qrUrl = `${publicSiteBaseUrl()}/credencial-ar/${player.qr_token}`;
     const qrBuffer = await QRCode.toBuffer(qrUrl, {
       type: 'png',
       width: 300,

@@ -172,7 +172,7 @@ export function PublicPlayerDetailPage() {
             </p>
           </div>
           <Link
-            to={player.qr_token ? `/credencial/${player.qr_token}` : '#'}
+            to={player.qr_token ? `/credencial-ar/${player.qr_token}` : '#'}
             className="w-full md:w-auto bg-primary-container text-on-primary-container px-8 py-4 rounded font-label-caps text-label-caps flex items-center justify-center gap-2 hover:shadow-gold-lg hover:bg-primary transition-all duration-300"
           >
             <MaterialIcon name="qr_code_2" size={18} />
