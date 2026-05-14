@@ -43,6 +43,18 @@ export function createApp(): Application {
     })
   );
 
+  // ── Health (antes del rate limit: monitores tipo UptimeRobot no consumen cuota) ──
+  app.get('/health', (_req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.status(200).json({
+      success: true,
+      status:  'ok',
+      message: 'Academia Barcelona API',
+      env:     env.NODE_ENV,
+      version: '1.0.0',
+    });
+  });
+
   // ── Rate Limiting ─────────────────────────────────────────
   const limiter = rateLimit({
     windowMs: env.RATE_LIMIT_WINDOW_MS,
@@ -71,16 +83,6 @@ export function createApp(): Application {
       })
     );
   }
-
-  // ── Health check ──────────────────────────────────────────
-  app.get('/health', (_req, res) => {
-    res.json({
-      success: true,
-      message: 'Academia Barcelona API - OK',
-      env:     env.NODE_ENV,
-      version: '1.0.0',
-    });
-  });
 
   // ── Rutas de la API ───────────────────────────────────────
   const prefix = env.API_PREFIX;
