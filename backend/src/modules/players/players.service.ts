@@ -1,12 +1,26 @@
+import { randomUUID } from 'node:crypto';
 import { supabaseAdmin } from '@config/database';
-import { NotFoundError, ConflictError } from '@middlewares/error.middleware';
+import { env } from '@config/env';
+import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { CURRENT_SEASON } from '@config/constants';
-import type { CreatePlayerInput, UpdatePlayerInput } from './players.validation';
+import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
+import type { UserRole } from '@shared/types';
 
 /** Columnas en APIs públicas (sin `curp` completo). */
 const PUBLIC_PLAYER_COLUMNS =
   'id, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
+
+function extFromPhotoMime(mime: string): string {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/webp') return 'webp';
+  throw new BadRequestError('La foto debe ser PNG, JPEG o WebP');
+}
+
+function isPdfBuffer(buf: Buffer): boolean {
+  return buf.length >= 4 && buf.subarray(0, 4).toString('ascii') === '%PDF';
+}
 
 interface ListOptions {
   page:        number;
@@ -147,6 +161,88 @@ export class PlayersService {
 
     if (error) throw new Error(error.message);
     return data;
+  }
+
+  /**
+   * Alta con PDF de CURP (obligatorio) y foto opcional.
+   * El PDF queda en bucket privado; la fila guarda solo `curp_document_path` (inmutable vía API).
+   */
+  static async createWithDocuments(
+    input: CreatePlayerMultipartInput,
+    files: { curpPdf: Express.Multer.File; photo?: Express.Multer.File },
+  ) {
+    const pdfBuf = files.curpPdf.buffer as Buffer;
+    if (!isPdfBuffer(pdfBuf)) {
+      throw new BadRequestError('El archivo de CURP no es un PDF válido');
+    }
+    if (files.curpPdf.size > env.STORAGE_MAX_CURP_PDF_BYTES) {
+      throw new BadRequestError('El PDF de CURP supera el tamaño máximo permitido');
+    }
+
+    const base: CreatePlayerInput = { ...input };
+    const player = await PlayersService.create(base);
+
+    const curpBucket = env.STORAGE_BUCKET_PLAYER_CURP;
+    const avatarBucket = env.STORAGE_BUCKET_PLAYERS;
+    const curpPath = `${player.id}/${randomUUID()}.pdf`;
+    let avatarObjectPath: string | null = null;
+
+    try {
+      const { error: upPdf } = await supabaseAdmin.storage
+        .from(curpBucket)
+        .upload(curpPath, pdfBuf, { contentType: 'application/pdf', upsert: false });
+
+      if (upPdf) throw new Error(upPdf.message);
+
+      let avatarUrl: string | null = player.avatar_url ?? null;
+      if (files.photo) {
+        const ext = extFromPhotoMime(files.photo.mimetype);
+        avatarObjectPath = `${player.id}/${randomUUID()}.${ext}`;
+        const { error: upPh } = await supabaseAdmin.storage
+          .from(avatarBucket)
+          .upload(avatarObjectPath, files.photo.buffer as Buffer, {
+            contentType: files.photo.mimetype,
+            upsert: false,
+          });
+        if (upPh) throw new Error(upPh.message);
+        const { data: pub } = supabaseAdmin.storage.from(avatarBucket).getPublicUrl(avatarObjectPath);
+        avatarUrl = pub.publicUrl;
+      }
+
+      const { data: updated, error: upRow } = await supabaseAdmin
+        .from('players')
+        .update({ avatar_url: avatarUrl, curp_document_path: curpPath })
+        .eq('id', player.id)
+        .select()
+        .single();
+
+      if (upRow) throw new Error(upRow.message);
+      return updated;
+    } catch (err) {
+      await supabaseAdmin.storage.from(curpBucket).remove([curpPath]).catch(() => {});
+      if (avatarObjectPath) {
+        await supabaseAdmin.storage.from(avatarBucket).remove([avatarObjectPath]).catch(() => {});
+      }
+      await supabaseAdmin.from('players').delete().eq('id', player.id);
+      throw err;
+    }
+  }
+
+  /** URL firmada temporal solo para administración (no coaches). */
+  static async getSignedCurpDocumentUrl(playerId: string, role: UserRole): Promise<string> {
+    if (role !== 'admin') {
+      throw new ForbiddenError('Solo administración puede abrir el PDF de CURP');
+    }
+    const row = await PlayersService.getById(playerId);
+    const path = row.curp_document_path as string | null | undefined;
+    if (!path) throw new NotFoundError('Este jugador no tiene PDF de CURP registrado');
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(env.STORAGE_BUCKET_PLAYER_CURP)
+      .createSignedUrl(path, 120);
+
+    if (error || !data?.signedUrl) throw new Error(error?.message ?? 'No se pudo generar enlace al documento');
+    return data.signedUrl;
   }
 
   static async update(id: string, input: UpdatePlayerInput) {

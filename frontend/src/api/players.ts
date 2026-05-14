@@ -39,6 +39,47 @@ export async function createPlayer(body: CreatePlayerBody) {
   return data;
 }
 
+function appendIfForm(fd: FormData, key: string, value: string | number | undefined | null) {
+  if (value === undefined || value === null || value === '') return;
+  fd.append(key, String(value));
+}
+
+/** Alta desde el panel con PDF de CURP (obligatorio) y foto opcional (PNG/JPEG/WebP). */
+export async function createPlayerWithDocuments(
+  body: CreatePlayerBody,
+  files: { curpPdf: File; photo?: File | undefined },
+) {
+  const fd = new FormData();
+  fd.append('firstName', body.firstName);
+  fd.append('lastName', body.lastName);
+  fd.append('birthDate', body.birthDate);
+  appendIfForm(fd, 'nationality', body.nationality);
+  fd.append('position', body.position);
+  appendIfForm(fd, 'secondaryPosition', body.secondaryPosition);
+  appendIfForm(fd, 'jerseyNumber', body.jerseyNumber);
+  fd.append('dominantFoot', body.dominantFoot ?? 'right');
+  appendIfForm(fd, 'heightCm', body.heightCm);
+  appendIfForm(fd, 'weightKg', body.weightKg);
+  fd.append('category', body.category);
+  appendIfForm(fd, 'sportDescription', body.sportDescription);
+  appendIfForm(fd, 'achievements', body.achievements);
+  appendIfForm(fd, 'notes', body.notes);
+  appendIfForm(fd, 'curp', body.curp);
+  fd.append('curpPdf', files.curpPdf);
+  if (files.photo) fd.append('photo', files.photo);
+
+  const { data } = await apiClient.postForm<ApiResponse<unknown>>('/players/with-documents', fd, {
+    timeout: 120_000,
+  });
+  return data;
+}
+
+/** Solo admin: URL firmada (corta) para abrir el PDF de CURP en otra pestaña. */
+export async function getPlayerCurpSignedUrl(playerId: string) {
+  const { data } = await apiClient.get<ApiResponse<{ url: string }>>(`/players/${playerId}/curp-document`);
+  return data;
+}
+
 export type UpdatePlayerBody = Omit<Partial<CreatePlayerBody>, 'curp'> & { curp?: string | null };
 
 export async function updatePlayer(id: string, body: UpdatePlayerBody) {

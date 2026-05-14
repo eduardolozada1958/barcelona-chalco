@@ -50,7 +50,10 @@ const envSchema = z.object({
   STORAGE_BUCKET_PLAYERS: z.string().default('players-avatars'),
   STORAGE_BUCKET_GALLERY: z.string().default('gallery'),
   STORAGE_BUCKET_NOTICES: z.string().default('notices-covers'),
+  /** Bucket privado: PDF de CURP (solo service role / URLs firmadas admin). */
+  STORAGE_BUCKET_PLAYER_CURP: z.string().default('player-curp-documents'),
   STORAGE_MAX_FILE_SIZE: z.string().default('5242880').transform(Number),
+  STORAGE_MAX_CURP_PDF_BYTES: z.string().default('10485760').transform(Number),
 });
 
 const parsed = envSchema.safeParse(process.env);

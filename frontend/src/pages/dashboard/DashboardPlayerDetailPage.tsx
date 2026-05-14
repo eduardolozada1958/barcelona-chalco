@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { generatePlayerQr, getPlayerAdmin, updatePlayer, verifyPlayer } from '@/api/players';
+import { generatePlayerQr, getPlayerAdmin, getPlayerCurpSignedUrl, updatePlayer, verifyPlayer } from '@/api/players';
+import { useAuth } from '@/contexts/AuthContext';
 import { playerQrImageUrl } from '@/api/qr';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -18,6 +19,7 @@ function maskCurpPreview(curp: string): string {
 export function DashboardPlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const qc = useQueryClient();
+  const { user } = useAuth();
   const [curpDraft, setCurpDraft] = useState('');
 
   const q = useQuery({
@@ -66,6 +68,16 @@ export function DashboardPlayerDetailPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const openCurpPdfM = useMutation({
+    mutationFn: () => getPlayerCurpSignedUrl(id!),
+    onSuccess: (res) => {
+      const url = res.data?.url;
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      else toast.error('No se recibió enlace al documento');
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   if (!id || q.isLoading) return <Spinner />;
   const p = q.data?.data as Record<string, unknown> | undefined;
   if (!p) return <p className="text-on-surface">No encontrado.</p>;
@@ -82,8 +94,12 @@ export function DashboardPlayerDetailPage() {
       <div className="bg-[#002366]/20 backdrop-blur-md border border-primary/20 rounded-xl p-stack-lg relative overflow-hidden">
         <div className="absolute -top-16 -right-16 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
         <div className="flex items-start gap-6 relative z-10">
-          <div className="w-20 h-20 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/30">
-            <MaterialIcon name="person" className="text-primary" size={36} />
+          <div className="w-20 h-20 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/30 overflow-hidden">
+            {typeof p.avatar_url === 'string' && p.avatar_url ? (
+              <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <MaterialIcon name="person" className="text-primary" size={36} />
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="font-headline-lg text-headline-lg text-on-surface">
@@ -132,35 +148,60 @@ export function DashboardPlayerDetailPage() {
         </button>
       </div>
 
-      {/* CURP (admin) */}
+      {/* CURP: constancia (alta) + texto para QR */}
       <div className="mt-stack-lg bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-stack-md">
         <h3 className="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm flex items-center gap-2">
-          <MaterialIcon name="badge" size={18} className="text-primary" /> CURP
+          <MaterialIcon name="badge" size={18} className="text-primary" /> Constancia y CURP
         </h3>
         <p className="text-xs text-on-surface-variant mb-3">
-          Registro oficial de 18 caracteres. Al escanear el QR, el entrenador verá solo un fragmento (ej. LOQE980130…) y la fecha de nacimiento, nunca la CURP completa.
+          La <strong className="text-on-surface">constancia en PDF</strong> se adjunta al <strong className="text-on-surface">crear</strong> el jugador. Aquí solo revisas estado, abres el PDF (admin) o completas la CURP en texto para el QR si hace falta.
         </p>
-        <input
-          type="text"
-          inputMode="text"
-          autoComplete="off"
-          maxLength={18}
-          value={curpDraft}
-          onChange={(e) => setCurpDraft(e.target.value.toUpperCase())}
-          placeholder="18 caracteres alfanuméricos"
-          className="w-full max-w-md rounded-lg border border-outline-variant/40 bg-surface-container px-3 py-2 text-on-surface text-sm font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-primary/40"
-        />
-        <p className="text-xs text-on-surface-variant mt-2">
-          Vista entrenador (enmascarada): <span className="text-primary font-mono">{maskCurpPreview(curpDraft)}</span>
-        </p>
-        <button
-          type="button"
-          disabled={saveCurpM.isPending}
-          onClick={() => saveCurpM.mutate()}
-          className="mt-3 bg-surface-variant text-on-surface font-label-caps text-label-caps px-4 py-2 rounded-lg border border-outline-variant/40 hover:border-primary/40 disabled:opacity-50"
-        >
-          {saveCurpM.isPending ? 'Guardando…' : 'Guardar CURP'}
-        </button>
+        {Boolean(p.curp_document_registered) ? (
+          <p className="text-xs text-on-surface-variant mb-3">
+            Constancia CURP en <strong className="text-on-surface">PDF</strong> archivada; no puede modificarse desde el panel.
+          </p>
+        ) : user?.role === 'admin' ? (
+          <p className="text-xs text-amber-200/90 mb-3">Sin PDF de CURP en expediente (alta anterior). Los nuevos jugadores deben darse de alta con PDF desde &quot;Agregar&quot;.</p>
+        ) : null}
+        {user?.role === 'admin' && Boolean(p.curp_document_registered) ? (
+          <button
+            type="button"
+            disabled={openCurpPdfM.isPending}
+            onClick={() => openCurpPdfM.mutate()}
+            className="mb-4 inline-flex items-center gap-2 bg-primary/15 text-primary border border-primary/30 font-label-caps text-label-caps px-4 py-2 rounded-lg hover:bg-primary hover:text-on-primary disabled:opacity-50 transition-colors"
+          >
+            <MaterialIcon name="picture_as_pdf" size={18} />
+            {openCurpPdfM.isPending ? 'Generando enlace…' : 'Abrir PDF CURP (solo admin)'}
+          </button>
+        ) : null}
+
+        <div className="border-t border-outline-variant/20 pt-4 mt-1">
+          <p className="text-[11px] font-label-caps text-label-caps text-on-surface-variant mb-2">CURP alfanumérica (18 caracteres)</p>
+          <p className="text-xs text-on-surface-variant mb-3">
+            Sirve para el código QR (vista enmascarada para entrenadores). Si ya la capturaste al crear el jugador, solo verifica o corrige aquí.
+          </p>
+          <input
+            type="text"
+            inputMode="text"
+            autoComplete="off"
+            maxLength={18}
+            value={curpDraft}
+            onChange={(e) => setCurpDraft(e.target.value.toUpperCase())}
+            placeholder="18 caracteres alfanuméricos"
+            className="w-full max-w-md rounded-lg border border-outline-variant/40 bg-surface-container px-3 py-2 text-on-surface text-sm font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-primary/40"
+          />
+          <p className="text-xs text-on-surface-variant mt-2">
+            Vista entrenador (enmascarada): <span className="text-primary font-mono">{maskCurpPreview(curpDraft)}</span>
+          </p>
+          <button
+            type="button"
+            disabled={saveCurpM.isPending}
+            onClick={() => saveCurpM.mutate()}
+            className="mt-3 bg-surface-variant text-on-surface font-label-caps text-label-caps px-4 py-2 rounded-lg border border-outline-variant/40 hover:border-primary/40 disabled:opacity-50"
+          >
+            {saveCurpM.isPending ? 'Guardando…' : 'Guardar CURP (texto)'}
+          </button>
+        </div>
       </div>
 
       {/* QR Preview */}

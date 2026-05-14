@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { createPlayer, listPlayersAdmin, type CreatePlayerBody } from '@/api/players';
+import { createPlayerWithDocuments, listPlayersAdmin, type CreatePlayerBody } from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -24,12 +24,15 @@ type PlayerForm = {
   weightKg: string;
   category: CreatePlayerBody['category'];
   sportDescription: string;
+  curp: string;
 };
 
 export function DashboardPlayersPage() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
+  const curpPdfRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (searchParams.get('crear') === '1') {
@@ -46,13 +49,16 @@ export function DashboardPlayersPage() {
   });
 
   const createMut = useMutation({
-    mutationFn: (body: CreatePlayerBody) => createPlayer(body),
+    mutationFn: (args: { body: CreatePlayerBody; curpPdf: File; photo?: File }) =>
+      createPlayerWithDocuments(args.body, { curpPdf: args.curpPdf, photo: args.photo }),
     onSuccess: () => {
       toast.success('Jugador creado');
       void qc.invalidateQueries({ queryKey: ['players-admin'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setCreateOpen(false);
       reset();
+      if (curpPdfRef.current) curpPdfRef.current.value = '';
+      if (photoRef.current) photoRef.current.value = '';
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -76,13 +82,32 @@ export function DashboardPlayersPage() {
       heightCm:      '',
       weightKg:      '',
       sportDescription: '',
+      curp: '',
     },
   });
 
   const onCreate = handleSubmit((data) => {
+    const curpPdf = curpPdfRef.current?.files?.[0];
+    if (!curpPdf) {
+      toast.error('Debes adjuntar el PDF oficial de la CURP');
+      return;
+    }
+    if (curpPdf.type !== 'application/pdf' && !curpPdf.name.toLowerCase().endsWith('.pdf')) {
+      toast.error('El documento de CURP debe ser un archivo PDF');
+      return;
+    }
+    const photoFile = photoRef.current?.files?.[0];
+    if (photoFile) {
+      const ok = ['image/png', 'image/jpeg', 'image/webp'].includes(photoFile.type);
+      if (!ok) {
+        toast.error('La foto debe ser PNG, JPEG o WebP');
+        return;
+      }
+    }
     const jersey = data.jerseyNumber.trim();
     const h = data.heightCm.trim();
     const w = data.weightKg.trim();
+    const curpClean = data.curp.trim().toUpperCase().replace(/[^A-Z0-9Ñ]/g, '');
     const body: CreatePlayerBody = {
       firstName: data.firstName.trim(),
       lastName:  data.lastName.trim(),
@@ -96,12 +121,17 @@ export function DashboardPlayersPage() {
       jerseyNumber: jersey ? parseInt(jersey, 10) : undefined,
       heightCm:     h ? parseInt(h, 10) : undefined,
       weightKg:     w ? parseInt(w, 10) : undefined,
+      curp: curpClean.length === 0 ? undefined : curpClean.length === 18 ? curpClean : undefined,
     };
+    if (curpClean.length > 0 && curpClean.length !== 18) {
+      toast.error('La CURP debe tener 18 caracteres o dejar el campo vacío');
+      return;
+    }
     if (body.jerseyNumber !== undefined && (Number.isNaN(body.jerseyNumber) || body.jerseyNumber < 1)) {
       toast.error('Número de camiseta inválido');
       return;
     }
-    createMut.mutate(body);
+    createMut.mutate({ body, curpPdf, photo: photoFile || undefined });
   });
 
   if (q.isLoading) return <Spinner />;
@@ -176,6 +206,9 @@ export function DashboardPlayersPage() {
 
       <DashboardModal open={createOpen} onClose={() => setCreateOpen(false)} title="Nuevo jugador" wide>
         <form onSubmit={onCreate} className="space-y-3">
+          <p className="text-xs text-on-surface-variant rounded-lg border border-primary/25 bg-primary/5 px-3 py-2">
+            <strong className="text-primary">Documentación en el alta:</strong> constancia CURP en PDF (obligatoria) y foto del jugador (opcional). Esto se define aquí, no en &quot;Ver jugador&quot;.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={formLabelClass}>Nombre</label>
@@ -206,6 +239,45 @@ export function DashboardPlayersPage() {
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+          </div>
+
+          <div className="rounded-lg border border-outline-variant/30 bg-surface-container/50 p-3 space-y-3">
+            <h3 className="font-label-caps text-label-caps text-primary flex items-center gap-2">
+              <MaterialIcon name="folder_special" size={18} /> Constancia y foto (alta)
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className={formLabelClass}>Constancia CURP (PDF) <span className="text-primary">*</span></label>
+                <input
+                  ref={curpPdfRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className={`${formInputClass} py-2 file:mr-3 file:rounded file:border-0 file:bg-primary/20 file:px-3 file:py-1 file:text-xs file:font-label-caps file:text-primary`}
+                />
+                <p className="text-[11px] text-on-surface-variant mt-1">Solo PDF. Queda archivado; no se sustituye desde el panel.</p>
+              </div>
+              <div>
+                <label className={formLabelClass}>Foto del jugador (opcional)</label>
+                <input
+                  ref={photoRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                  className={`${formInputClass} py-2 file:mr-3 file:rounded file:border-0 file:bg-primary/20 file:px-3 file:py-1 file:text-xs file:font-label-caps file:text-primary`}
+                />
+                <p className="text-[11px] text-on-surface-variant mt-1">PNG, JPEG o WebP.</p>
+              </div>
+            </div>
+            <div>
+              <label className={formLabelClass}>CURP en texto (opcional)</label>
+              <input
+                maxLength={18}
+                autoComplete="off"
+                className={`${formInputClass} font-mono tracking-wide`}
+                placeholder="18 caracteres si la quieres guardar también"
+                {...register('curp')}
+              />
+              <p className="text-[11px] text-on-surface-variant mt-1">Opcional en el alta; el registro oficial del trámite es el PDF de arriba.</p>
+            </div>
           </div>
           <div>
             <label className={formLabelClass}>Posición principal</label>

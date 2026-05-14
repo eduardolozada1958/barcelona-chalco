@@ -4,14 +4,14 @@ import { API_PREFIX, STORAGE_KEYS } from '@utils/constants';
 import type { ApiResponse } from './types';
 
 /** En desarrollo usa el proxy de Vite (`/api` → backend). En prod, `VITE_API_URL` + prefijo. */
-function resolveBaseUrl(): string {
+export function resolveApiBaseUrl(): string {
   if (import.meta.env.DEV) return API_PREFIX;
   const host = String(import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
   return `${host}${API_PREFIX}`;
 }
 
 export const apiClient = axios.create({
-  baseURL: resolveBaseUrl(),
+  baseURL: resolveApiBaseUrl(),
   timeout: 30_000,
   headers: {
     Accept:       'application/json',

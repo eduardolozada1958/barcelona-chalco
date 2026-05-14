@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { PlayersController } from './players.controller';
 import { authMiddleware } from '@middlewares/auth.middleware';
-import { requireAdminOrCoach } from '@middlewares/role.middleware';
+import { requireAdmin, requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
+import { runPlayerCreateUpload } from './players.upload.middleware';
 import {
   createPlayerSchema,
+  createPlayerMultipartFieldsSchema,
   updatePlayerSchema,
   playerIdSchema,
   listPlayersQuerySchema,
@@ -24,6 +26,14 @@ playersRouter.get('/public',
 playersRouter.get('/public/:id',
   validateParams(playerIdSchema),
   PlayersController.getPublicProfile
+);
+
+// GET /api/v1/players/:id/curp-document — URL firmada al PDF (solo admin; antes de /:id)
+playersRouter.get('/:id/curp-document',
+  authMiddleware,
+  requireAdmin,
+  validateParams(playerIdSchema),
+  PlayersController.getCurpDocumentSigned
 );
 
 // ── Rutas protegidas (Admin / Coach) ──────────────────────────
@@ -50,6 +60,15 @@ playersRouter.post('/',
   requireAdminOrCoach,
   validateBody(createPlayerSchema),
   PlayersController.create
+);
+
+// POST /api/v1/players/with-documents — Alta con PDF de CURP + foto (panel)
+playersRouter.post('/with-documents',
+  authMiddleware,
+  requireAdminOrCoach,
+  runPlayerCreateUpload,
+  validateBody(createPlayerMultipartFieldsSchema),
+  PlayersController.createWithDocuments
 );
 
 // PUT /api/v1/players/:id - Actualizar jugador
