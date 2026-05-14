@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import multer, { MulterError } from 'multer';
+import multer from 'multer';
 import { env } from '@config/env';
 import { ValidationError } from '@middlewares/error.middleware';
 
@@ -14,10 +14,19 @@ const _multer = multer({
   { name: 'photo', maxCount: 1 },
 ]);
 
+function isMulterFileSizeLimit(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: string }).code === 'LIMIT_FILE_SIZE'
+  );
+}
+
 export function runPlayerCreateUpload(req: Request, res: Response, next: NextFunction): void {
   _multer(req, res, (err: unknown) => {
     if (err) {
-      if (err instanceof MulterError && err.code === 'LIMIT_FILE_SIZE') {
+      if (isMulterFileSizeLimit(err)) {
         return next(new ValidationError('Un archivo excede el tamaño máximo permitido'));
       }
       return next(err instanceof Error ? err : new Error(String(err)));
