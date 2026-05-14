@@ -39,7 +39,7 @@ export function PublicLayout() {
           className="flex items-center gap-3 shrink-0"
         >
           <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="h-12 w-12 object-contain drop-shadow-lg" />
-          <span className="font-display-hero text-headline-lg-mobile text-primary tracking-tighter hidden sm:inline">FutID Barcelona Chalco</span>
+          <span className="font-display-hero text-headline-lg-mobile text-primary tracking-tighter hidden sm:inline">F.C. BARCELONA CUPIDO</span>
         </NavLink>
 
         {/* Desktop navigation */}
@@ -151,7 +151,7 @@ export function PublicLayout() {
       <footer className="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
         <div className="flex items-center gap-4 justify-center">
           <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="h-14 w-14 object-contain drop-shadow-lg" />
-          <span className="font-display-hero text-primary text-2xl">FutID Barcelona Chalco</span>
+          <span className="font-display-hero text-primary text-2xl">F.C. BARCELONA CUPIDO</span>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           {footerLinks.map((l) => (
@@ -165,7 +165,7 @@ export function PublicLayout() {
           ))}
         </div>
         <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">
-          © {new Date().getFullYear()} FutID Barcelona Chalco. Rendimiento Élite & Identidad Digital.
+          © {new Date().getFullYear()} F.C. BARCELONA CUPIDO. Rendimiento Élite & Identidad Digital.
         </div>
       </footer>
     </div>

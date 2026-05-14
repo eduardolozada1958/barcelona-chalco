@@ -38,7 +38,7 @@ export function DashboardLayout() {
       <div className="px-gutter mb-stack-lg mt-stack-md flex items-center gap-stack-sm">
         <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-12 h-12 object-contain shrink-0 drop-shadow-lg" />
         <div className="min-w-0">
-          <h1 className="font-display-hero text-body-lg text-primary tracking-tight truncate">Barcelona Chalco</h1>
+          <h1 className="font-display-hero text-body-lg text-primary tracking-tight truncate">Barcelona Cupido</h1>
           <p className="font-label-caps text-label-caps text-on-surface-variant opacity-80">Gestión Élite</p>
         </div>
       </div>
@@ -88,7 +88,7 @@ export function DashboardLayout() {
           <button type="button" onClick={() => setMobileOpen(true)} className="p-2"><MaterialIcon name="menu" className="text-primary" size={28} /></button>
           <div className="flex items-center gap-2">
             <img src="/images/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-            <span className="font-display-hero text-body-lg text-primary">Barcelona Chalco</span>
+            <span className="font-display-hero text-body-lg text-primary">Barcelona Cupido</span>
           </div>
           <div className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30">
             <MaterialIcon name="person" className="text-on-surface-variant" size={18} />

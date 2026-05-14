@@ -97,7 +97,7 @@ export function PublicPlayerDetailPage() {
             {[
               { label: 'DATE OF BIRTH', value: player.birth_date ? new Date(player.birth_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase() : '—' },
               { label: 'AGE', value: age },
-              { label: 'CLUB', value: 'Barcelona Chalco Elite' },
+              { label: 'CLUB', value: 'Barcelona Cupido Elite' },
             ].map((row, i, arr) => (
               <div
                 key={row.label}
@@ -168,7 +168,7 @@ export function PublicPlayerDetailPage() {
           <div className="w-full bg-surface-container-lowest p-4 rounded-lg border border-outline-variant/30 mb-stack-md flex items-center gap-4">
             <MaterialIcon name="info" className="text-tertiary-fixed-dim" filled />
             <p className="font-body-md text-[14px] text-on-surface">
-              Este perfil digital está avalado oficialmente por la mesa directiva de FutID.
+              Este perfil digital está avalado oficialmente por la mesa directiva de Barcelona Cupido.
             </p>
           </div>
           <Link

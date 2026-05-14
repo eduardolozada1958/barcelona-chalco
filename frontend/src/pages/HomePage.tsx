@@ -12,7 +12,7 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018
 
 /**
  * Home Page – faithful translation of `home.html` mockup.
- * Sections: Hero → "¿Para qué sirve FutID?" → Info Cards → Highlights Bento Grid → Footer.
+ * Sections: Hero → "¿Para qué sirve Barcelona Cupido?" → Info Cards → Highlights Bento Grid → Footer.
  */
 export function HomePage() {
   // Fetch real data for highlights
@@ -33,7 +33,7 @@ export function HomePage() {
         <div className="absolute inset-0 z-0">
           <img
             src={HERO_IMAGE}
-            alt="FutID Hero – stadium"
+            alt="Barcelona Cupido Hero – stadium"
             className="w-full h-full object-cover opacity-30 mix-blend-overlay"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
@@ -43,7 +43,7 @@ export function HomePage() {
         <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-stack-md">
           <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-2" />
           <h1 className="font-display-hero text-display-hero text-primary tracking-tighter drop-shadow-2xl">
-            FutID Barcelona Chalco
+            F.C. BARCELONA CUPIDO
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
             Rendimiento Élite & Identidad Digital. Forjando campeones a través de la disciplina, los datos y la dedicación inquebrantable en la cancha.
@@ -71,13 +71,13 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ═══════════════════ WHAT IS FutID ═══════════════════ */}
+      {/* ═══════════════════ WHAT IS Barcelona Cupido ═══════════════════ */}
       <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-stack-lg items-center">
           <div className="flex flex-col gap-stack-sm">
-            <h2 className="font-headline-lg text-headline-lg text-primary">¿Para qué sirve FutID?</h2>
+            <h2 className="font-headline-lg text-headline-lg text-primary">¿Para qué sirve Barcelona Cupido?</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              FutID es el ecosistema digital definitivo para Barcelona Chalco Elite. Funciona como un centro seguro y centralizado para verificar identidades de jugadores, rastrear estadísticas de partidos y garantizar que las comunicaciones oficiales del club lleguen al público indicado al instante.
+              Barcelona Cupido es el ecosistema digital definitivo para Barcelona Cupido Elite. Funciona como un centro seguro y centralizado para verificar identidades de jugadores, rastrear estadísticas de partidos y garantizar que las comunicaciones oficiales del club lleguen al público indicado al instante.
             </p>
             <p className="font-body-md text-body-md text-on-surface-variant">
               Diseñado para el scouting moderno y la gestión de equipos sin fricciones, nuestra plataforma elimina el papeleo y eleva el estándar profesional de las operaciones futbolísticas semi-profesionales.
@@ -160,8 +160,8 @@ export function HomePage() {
             </div>
             <div className="relative z-20 flex items-center justify-start gap-6 mt-auto">
               <div className="flex flex-col items-center">
-                <img src="/images/logo.png" alt="B. Chalco" className="w-12 h-12 object-contain drop-shadow-lg" />
-                <span className="font-label-caps text-label-caps mt-2">B. Chalco</span>
+                <img src="/images/logo.png" alt="B. Cupido" className="w-12 h-12 object-contain drop-shadow-lg" />
+                <span className="font-label-caps text-label-caps mt-2">B. Cupido</span>
               </div>
               <span className="font-display-hero text-headline-lg-mobile text-on-surface-variant opacity-50">VS</span>
               <div className="flex flex-col items-center">
@@ -196,7 +196,7 @@ export function HomePage() {
             <span className="font-label-caps text-label-caps text-on-surface-variant mb-4">Último Resultado</span>
             {latest ? (
               <div className="flex items-center gap-4">
-                <span className="font-body-lg text-body-lg">B. Chalco</span>
+                <span className="font-body-lg text-body-lg">B. Cupido</span>
                 <span className="font-stat-value text-stat-value text-primary">
                   {latest.goals_scored} - {latest.goals_conceded}
                 </span>

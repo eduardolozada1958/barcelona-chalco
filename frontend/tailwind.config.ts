@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Design System – FutID Barcelona Chalco
+ * Design System – F.C. BARCELONA CUPIDO
  * Based on Material Design 3 palette extracted from Stitch mockups.
  * Tokens are intentionally kept with hyphenated names to match mockup class usage.
  */

@@ -135,7 +135,7 @@ function CredentialCard({ player }: { player: Player }) {
 
       {/* Footer */}
       <div className="px-5 py-2.5 bg-surface-container-high/50 border-t border-outline-variant/10 flex items-center justify-between">
-        <span className="text-[10px] text-on-surface-variant/50 tracking-widest uppercase">FutID Barcelona Chalco</span>
+        <span className="text-[10px] text-on-surface-variant/50 tracking-widest uppercase">F.C. BARCELONA CUPIDO</span>
         <div className="flex items-center gap-1">
           {player.is_verified && (
             <span className="flex items-center gap-1 text-[10px] text-primary font-medium">
@@ -313,7 +313,7 @@ function CredentialResult() {
                 </div>
                 <div className="flex justify-between py-2">
                   <dt className="text-on-surface-variant">Club</dt>
-                  <dd>Academia Barcelona Chalco</dd>
+                  <dd>Academia Barcelona Cupido</dd>
                 </div>
               </dl>
             ) : null}

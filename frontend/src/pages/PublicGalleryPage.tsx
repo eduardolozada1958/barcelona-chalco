@@ -28,7 +28,7 @@ export function PublicGalleryPage() {
       <header className="mb-stack-lg flex flex-col items-center text-center">
         <h1 className="font-display-hero text-display-hero text-primary mb-stack-sm">GALERÍA</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-          La historia visual de FutID Barcelona Chalco. Momentos élite, posters de jornada y acceso tras bastidores.
+          La historia visual de F.C. BARCELONA CUPIDO. Momentos élite, posters de jornada y acceso tras bastidores.
         </p>
       </header>
 

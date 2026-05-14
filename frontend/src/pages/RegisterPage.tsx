@@ -81,7 +81,7 @@ export function RegisterPage() {
             Registro
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">
-            Crea tu cuenta como padre o tutor para acceder a FutID.
+            Crea tu cuenta como padre o tutor para acceder a Barcelona Cupido.
           </p>
         </header>
 

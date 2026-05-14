@@ -42,7 +42,7 @@ export function MatchCard({ match }: MatchCardProps) {
             <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-primary/30 shadow-gold">
               <MaterialIcon name="sports_soccer" className="text-primary" size={28} filled />
             </div>
-            <span className="font-headline-lg-mobile text-headline-lg-mobile text-center">FC Chalco</span>
+            <span className="font-headline-lg-mobile text-headline-lg-mobile text-center">FC Cupido</span>
           </div>
           <div className="font-stat-value text-stat-value text-outline-variant px-stack-md">VS</div>
           <div className="flex flex-col items-center gap-stack-sm w-1/3">

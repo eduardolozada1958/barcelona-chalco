@@ -53,7 +53,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         <div className="mb-4">
           <h2 className="font-headline-lg text-headline-lg text-on-surface mb-1">{fullName}</h2>
           <p className="font-label-caps text-label-caps text-primary tracking-widest">
-            FUTID BARCELONA CHALCO
+            F.C. BARCELONA CUPIDO
           </p>
         </div>
 

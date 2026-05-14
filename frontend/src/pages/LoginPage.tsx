@@ -54,7 +54,7 @@ export function LoginPage() {
         <header className="text-center flex flex-col items-center gap-stack-sm">
           <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-24 h-24 object-contain drop-shadow-2xl" />
           <h1 className="font-display-hero text-headline-lg-mobile md:text-display-hero text-primary tracking-tighter">
-            FutID Barcelona Chalco
+            F.C. BARCELONA CUPIDO
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-lg">
             Rendimiento Élite &amp; Identidad Digital. Selecciona tu tipo de cuenta para continuar.
