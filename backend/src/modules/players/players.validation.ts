@@ -4,6 +4,26 @@ export const playerIdSchema = z.object({
   id: z.string().uuid('ID de jugador inválido'),
 });
 
+/** Altura: cm (175) o metros con decimal (1,75). Enteros 1–3 se interpretan como metros (2 → 200 cm). */
+function normalizeHeightCmInput(v: unknown): unknown {
+  if (v === undefined || v === null || v === '') return undefined;
+  const raw = String(v).trim().replace(',', '.');
+  if (raw === '') return undefined;
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n)) return undefined;
+  const hasDecimal = raw.includes('.');
+  if (hasDecimal && n > 0 && n < 10) return Math.round(n * 100);
+  if (!hasDecimal && Number.isInteger(n) && n >= 1 && n <= 3) return n * 100;
+  return Math.round(n);
+}
+
+function normalizeWeightKgInput(v: unknown): unknown {
+  if (v === undefined || v === null || v === '') return undefined;
+  const n = typeof v === 'number' ? v : parseFloat(String(v).trim().replace(',', '.'));
+  if (!Number.isFinite(n)) return undefined;
+  return Math.round(n);
+}
+
 export const createPlayerSchema = z.object({
   firstName:         z.string().min(2).max(100),
   lastName:          z.string().min(2).max(100),
@@ -13,8 +33,8 @@ export const createPlayerSchema = z.object({
   secondaryPosition: z.string().max(80).optional(),
   jerseyNumber:      z.number().int().min(1).max(99).optional(),
   dominantFoot:      z.enum(['right', 'left', 'both']).default('right'),
-  heightCm:          z.number().int().min(80).max(250).optional(),
-  weightKg:          z.number().int().min(15).max(150).optional(),
+  heightCm: z.preprocess(normalizeHeightCmInput, z.number().int().min(80).max(250).optional()),
+  weightKg: z.preprocess(normalizeWeightKgInput, z.number().int().min(15).max(150).optional()),
   category:          z.enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20']),
   sportDescription:  z.string().max(1000).optional(),
   avatarUrl:         z.string().url().optional(),
@@ -88,8 +108,22 @@ export const createPlayerMultipartFieldsSchema = z.object({
   secondaryPosition: z.string().max(80).optional().transform((v) => (v === '' ? undefined : v)),
   jerseyNumber:      optionalIntFromForm(1, 99),
   dominantFoot:      z.enum(['right', 'left', 'both']).default('right'),
-  heightCm:          optionalIntFromForm(80, 250),
-  weightKg:          optionalIntFromForm(15, 150),
+  heightCm: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => normalizeHeightCmInput(v) as number | undefined)
+    .refine(
+      (n) => n === undefined || (typeof n === 'number' && n >= 80 && n <= 250),
+      { message: 'Altura entre 80 y 250 cm (ej. 175, o metros: 1,75; entero 2 = 2 m).' },
+    ),
+  weightKg: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => normalizeWeightKgInput(v) as number | undefined)
+    .refine(
+      (n) => n === undefined || (typeof n === 'number' && n >= 15 && n <= 150),
+      { message: 'Peso entre 15 y 150 kg (admite decimales, ej. 70,5).' },
+    ),
   category:          z.enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20']),
   sportDescription:  z.string().max(1000).optional().transform((v) => (v === '' ? undefined : v)),
   achievements:      z.string().max(500).optional().transform((v) => (v === '' ? undefined : v)),

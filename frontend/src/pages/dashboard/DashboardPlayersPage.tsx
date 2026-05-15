@@ -17,6 +17,26 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 
 const CATEGORIES: CreatePlayerBody['category'][] = ['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20'];
 
+/** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
+function parseHeightCmForBody(raw: string): number | undefined {
+  const t = raw.trim().replace(',', '.');
+  if (!t) return undefined;
+  const n = parseFloat(t);
+  if (!Number.isFinite(n)) return undefined;
+  const hasDecimal = t.includes('.');
+  if (hasDecimal && n > 0 && n < 10) return Math.round(n * 100);
+  if (!hasDecimal && Number.isInteger(n) && n >= 1 && n <= 3) return n * 100;
+  return Math.round(n);
+}
+
+function parseWeightKgForBody(raw: string): number | undefined {
+  const t = raw.trim().replace(',', '.');
+  if (!t) return undefined;
+  const n = parseFloat(t);
+  if (!Number.isFinite(n)) return undefined;
+  return Math.round(n);
+}
+
 type PlayerForm = {
   firstName: string;
   lastName: string;
@@ -182,6 +202,8 @@ export function DashboardPlayersPage() {
     const jersey = data.jerseyNumber.trim();
     const h = data.heightCm.trim();
     const w = data.weightKg.trim();
+    const heightCm = h ? parseHeightCmForBody(h) : undefined;
+    const weightKg = w ? parseWeightKgForBody(w) : undefined;
     const curpClean = data.curp.trim().toUpperCase().replace(/[^A-Z0-9Ñ]/g, '');
     const body: CreatePlayerBody = {
       firstName: data.firstName.trim(),
@@ -194,8 +216,8 @@ export function DashboardPlayersPage() {
       secondaryPosition: data.secondaryPosition.trim() || undefined,
       sportDescription: data.sportDescription.trim() || undefined,
       jerseyNumber: jersey ? parseInt(jersey, 10) : undefined,
-      heightCm:     h ? parseInt(h, 10) : undefined,
-      weightKg:     w ? parseInt(w, 10) : undefined,
+      heightCm,
+      weightKg,
       curp: curpClean.length === 0 ? undefined : curpClean.length === 18 ? curpClean : undefined,
     };
     if (curpClean.length > 0 && curpClean.length !== 18) {
@@ -204,6 +226,14 @@ export function DashboardPlayersPage() {
     }
     if (body.jerseyNumber !== undefined && (Number.isNaN(body.jerseyNumber) || body.jerseyNumber < 1)) {
       toast.error('Número de camiseta inválido');
+      return;
+    }
+    if (h && (heightCm === undefined || heightCm < 80 || heightCm > 250)) {
+      toast.error('Altura: usa centímetros (ej. 175) o metros con coma/punto (1,75). Enteros 2 o 3 = 2 m / 3 m.');
+      return;
+    }
+    if (w && (weightKg === undefined || weightKg < 15 || weightKg > 150)) {
+      toast.error('Peso entre 15 y 150 kg (puedes usar decimales, ej. 70,5).');
       return;
     }
     createMut.mutate({ body, curpPdf, photo: photoFile || undefined });
@@ -386,13 +416,28 @@ export function DashboardPlayersPage() {
               <input type="number" min={1} max={99} className={formInputClass} {...register('jerseyNumber')} />
             </div>
             <div>
-              <label className={formLabelClass}>Altura (cm)</label>
-              <input type="number" className={formInputClass} {...register('heightCm')} />
+              <label className={formLabelClass}>Altura</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                placeholder="175 o 1,75 (metros)"
+                className={formInputClass}
+                {...register('heightCm')}
+              />
+              <p className="text-[10px] text-on-surface-variant mt-0.5">En centímetros (175) o en metros (1,75). 2 o 3 sin decimales = 2 m / 3 m.</p>
             </div>
           </div>
           <div>
             <label className={formLabelClass}>Peso (kg)</label>
-            <input type="number" className={formInputClass} {...register('weightKg')} />
+            <input
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              placeholder="ej. 70 o 70,5"
+              className={formInputClass}
+              {...register('weightKg')}
+            />
           </div>
           <div>
             <label className={formLabelClass}>Descripción deportiva (opcional)</label>
