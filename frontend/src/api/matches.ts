@@ -30,7 +30,11 @@ export interface CreateMatchBody {
   isHome?:           boolean;
   bannerUrl?:        string | null;
   season?:           string;
+  formationType?:    'football_7' | 'football_11' | null;
+  startingLineup?:   string[] | null;
 }
+
+export type UpdateMatchBody = Partial<CreateMatchBody>;
 
 export async function listMatchesAdmin(params?: Record<string, string | number | undefined>) {
   const { data } = await apiClient.get<ApiResponse<unknown[]>>('/matches', { params });
@@ -39,5 +43,10 @@ export async function listMatchesAdmin(params?: Record<string, string | number |
 
 export async function createMatch(body: CreateMatchBody) {
   const { data } = await apiClient.post<ApiResponse<unknown>>('/matches', body);
+  return data;
+}
+
+export async function updateMatch(id: string, body: UpdateMatchBody) {
+  const { data } = await apiClient.put<ApiResponse<unknown>>(`/matches/${id}`, body);
   return data;
 }

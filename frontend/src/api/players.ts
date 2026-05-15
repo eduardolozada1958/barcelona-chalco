@@ -96,6 +96,24 @@ export async function updatePlayer(id: string, body: UpdatePlayerBody) {
   return data;
 }
 
+/** Sube nueva foto del jugador (PNG/JPEG/WebP). */
+export async function uploadPlayerPhoto(playerId: string, file: File) {
+  const fd = new FormData();
+  fd.append('photo', file);
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/players/${playerId}/photo`, fd, {
+    timeout: 90_000,
+    transformRequest: [
+      (body, headers) => {
+        if (headers && typeof headers === 'object') {
+          delete (headers as Record<string, unknown>)['Content-Type'];
+        }
+        return body as FormData;
+      },
+    ],
+  });
+  return data;
+}
+
 export async function getPlayerAdmin(id: string) {
   const { data } = await apiClient.get<ApiResponse<unknown>>(`/players/${id}`);
   return data;

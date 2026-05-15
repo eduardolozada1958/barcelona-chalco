@@ -8,6 +8,7 @@ import {
   createPlayerWithDocuments,
   listPlayersAdmin,
   updatePlayer,
+  uploadPlayerPhoto,
   type CreatePlayerBody,
   type CreatePlayerWithDocumentsData,
   type UpdatePlayerBody,
@@ -71,6 +72,7 @@ export function DashboardPlayersPage() {
   const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
   const curpPdfRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
+  const editPhotoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (searchParams.get('crear') === '1') {
@@ -115,6 +117,25 @@ export function DashboardPlayersPage() {
       void qc.invalidateQueries({ queryKey: ['player-admin', vars.id] });
       setEditOpen(false);
       setEditRow(null);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const photoUploadMut = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => uploadPlayerPhoto(id, file),
+    onSuccess: (res) => {
+      toast.success(res.message || 'Foto actualizada');
+      const row = res.data as Record<string, unknown> | undefined;
+      if (row?.id) {
+        setEditRow((prev) => {
+          if (!prev || String(prev.id) !== String(row.id)) return prev;
+          return { ...prev, avatar_url: row.avatar_url };
+        });
+        void qc.invalidateQueries({ queryKey: ['player-admin', String(row.id)] });
+      }
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      if (editPhotoRef.current) editPhotoRef.current.value = '';
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -530,6 +551,50 @@ export function DashboardPlayersPage() {
               <span className="font-label-caps text-label-caps text-primary block">Verificación</span>
               <span className="text-on-surface-variant text-xs">Marcar guarda fecha y responsable; desmarcar quita la verificación (no borra al jugador).</span>
             </label>
+          </div>
+          <div className="rounded-lg border border-outline-variant/30 bg-surface-container/40 p-3 space-y-2">
+            <span className="font-label-caps text-label-caps text-primary block">Foto del jugador</span>
+            <div className="flex flex-wrap items-end gap-3">
+              {editRow?.avatar_url ? (
+                <img
+                  src={String(editRow.avatar_url)}
+                  alt=""
+                  className="w-16 h-16 rounded-lg object-cover border border-outline-variant/30 shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/20 shrink-0">
+                  <MaterialIcon name="person" size={32} className="text-on-surface-variant/50" />
+                </div>
+              )}
+              <div className="flex-1 min-w-[200px]">
+                <input
+                  ref={editPhotoRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
+                  className={`${formInputClass} py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary/20 file:px-2 file:py-1 file:text-[10px] file:font-label-caps file:text-primary`}
+                />
+                <p className="text-[10px] text-on-surface-variant mt-1">PNG, JPEG o WebP. Actualiza la imagen pública del jugador.</p>
+              </div>
+              <button
+                type="button"
+                disabled={photoUploadMut.isPending || !editRow}
+                onClick={() => {
+                  const file = editPhotoRef.current?.files?.[0];
+                  if (!file || !editRow) {
+                    toast.error('Selecciona una imagen');
+                    return;
+                  }
+                  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                    toast.error('Solo PNG, JPEG o WebP');
+                    return;
+                  }
+                  photoUploadMut.mutate({ id: String(editRow.id), file });
+                }}
+                className="shrink-0 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface font-label-caps text-[11px] border border-outline-variant/40 hover:border-primary/40 disabled:opacity-50"
+              >
+                {photoUploadMut.isPending ? 'Subiendo…' : 'Subir foto'}
+              </button>
+            </div>
           </div>
           <div className={formActionsClass}>
             <button

@@ -23,6 +23,8 @@ export const listMatchesQuerySchema = z.object({
   search:   z.string().optional(),
 });
 
+const lineupPlayerIds = z.array(z.string().uuid()).max(11);
+
 export const createMatchBodySchema = z.object({
   title:             z.string().min(3).max(200),
   description:       z.string().max(5000).nullable().optional(),
@@ -39,6 +41,8 @@ export const createMatchBodySchema = z.object({
   isHome:            z.boolean().default(true),
   bannerUrl:         z.string().url().nullable().optional(),
   season:            z.string().max(20).default(CURRENT_SEASON),
+  formationType:     z.enum(['football_7', 'football_11']).nullable().optional(),
+  startingLineup:    lineupPlayerIds.nullable().optional(),
 });
 
 export const updateMatchBodySchema = createMatchBodySchema.partial();

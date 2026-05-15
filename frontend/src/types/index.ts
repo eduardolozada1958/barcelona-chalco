@@ -122,6 +122,8 @@ export interface Match {
   created_by:        string;
   created_at:        string;
   updated_at:        string;
+  formation_type?:   'football_7' | 'football_11' | null;
+  starting_lineup?:  string[] | null;
 }
 
 export interface MatchConvocatory {

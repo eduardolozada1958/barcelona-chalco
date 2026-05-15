@@ -1,7 +1,52 @@
 import { supabaseAdmin } from '@config/database';
-import { NotFoundError } from '@middlewares/error.middleware';
+import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
+
+function normalizeLineup(raw: unknown): string[] {
+  if (!raw) return [];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((x): x is string => typeof x === 'string');
+}
+
+function validateLineupConsistency(
+  formationType: string | null | undefined,
+  startingLineup: string[] | null | undefined,
+): void {
+  const ft = formationType ?? null;
+  const ids = startingLineup ?? [];
+  if (!ft && ids.length === 0) return;
+  if (!ft && ids.length > 0) {
+    throw new BadRequestError('Indica formato Fútbol 7 u 11 si registras titulares');
+  }
+  if (ft && ids.length === 0) {
+    throw new BadRequestError('Indica los titulares en orden para el formato elegido');
+  }
+  if (ids.length > 0 && new Set(ids).size !== ids.length) {
+    throw new BadRequestError('Titulares duplicados');
+  }
+  if (ft === 'football_7' && ids.length !== 7) {
+    throw new BadRequestError('Fútbol 7 requiere exactamente 7 titulares');
+  }
+  if (ft === 'football_11' && ids.length !== 11) {
+    throw new BadRequestError('Fútbol 11 requiere exactamente 11 titulares');
+  }
+}
+
+async function assertLineupPlayersInCategory(playerIds: string[], category: string): Promise<void> {
+  if (playerIds.length === 0) return;
+  const { data, error } = await supabaseAdmin
+    .from('players')
+    .select('id')
+    .in('id', playerIds)
+    .eq('category', category)
+    .is('deleted_at', null);
+
+  if (error) throw new Error(error.message);
+  if ((data?.length ?? 0) !== playerIds.length) {
+    throw new BadRequestError('Un titular no existe o no pertenece a la categoría del partido');
+  }
+}
 
 export class MatchesService {
   static async listPublic(opts: ListMatchesQuery) {
@@ -66,6 +111,9 @@ export class MatchesService {
   }
 
   static async create(input: CreateMatchBody, createdBy: string) {
+    validateLineupConsistency(input.formationType ?? null, input.startingLineup ?? null);
+    await assertLineupPlayersInCategory(input.startingLineup ?? [], input.category);
+
     const { data, error } = await supabaseAdmin
       .from('matches')
       .insert({
@@ -82,6 +130,8 @@ export class MatchesService {
         is_home:             input.isHome,
         banner_url:          input.bannerUrl ?? null,
         season:              input.season,
+        formation_type:      input.formationType ?? null,
+        starting_lineup:     input.startingLineup?.length ? input.startingLineup : null,
         created_by:          createdBy,
       })
       .select()
@@ -92,7 +142,7 @@ export class MatchesService {
   }
 
   static async update(id: string, input: UpdateMatchBody) {
-    await MatchesService.getPublicById(id);
+    const existing = await MatchesService.getPublicById(id);
 
     const u: Record<string, unknown> = {};
     if (input.title !== undefined)             u.title               = input.title;
@@ -108,6 +158,26 @@ export class MatchesService {
     if (input.isHome !== undefined)            u.is_home             = input.isHome;
     if (input.bannerUrl !== undefined)         u.banner_url          = input.bannerUrl;
     if (input.season !== undefined)            u.season              = input.season;
+
+    const nextCategory = input.category !== undefined ? input.category : String(existing.category);
+    const nextFormation =
+      input.formationType !== undefined ? input.formationType : (existing.formation_type as string | null | undefined);
+    const nextLineupRaw =
+      input.startingLineup !== undefined
+        ? (input.startingLineup ?? [])
+        : normalizeLineup(existing.starting_lineup);
+
+    if (input.formationType !== undefined) u.formation_type = input.formationType;
+    if (input.startingLineup !== undefined) u.starting_lineup = input.startingLineup;
+
+    if (
+      input.category !== undefined ||
+      input.formationType !== undefined ||
+      input.startingLineup !== undefined
+    ) {
+      validateLineupConsistency(nextFormation ?? null, nextLineupRaw);
+      await assertLineupPlayersInCategory(nextLineupRaw, nextCategory);
+    }
 
     if (Object.keys(u).length === 0) return MatchesService.getPublicById(id);
 

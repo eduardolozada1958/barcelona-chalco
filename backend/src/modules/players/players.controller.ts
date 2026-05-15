@@ -118,6 +118,23 @@ export class PlayersController {
     } catch (e) { next(e); }
   }
 
+  static async uploadPhoto(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const f = req.file;
+      if (!f) {
+        return next(new ValidationError('Adjunta una imagen (PNG, JPEG o WebP)', [{ field: 'photo', message: 'Requerido' }]));
+      }
+      if (!PHOTO_MIMES.has(f.mimetype)) {
+        return next(new ValidationError('La foto debe ser PNG, JPEG o WebP', [{ field: 'photo', message: 'Formato no permitido' }]));
+      }
+      if (f.size > env.STORAGE_MAX_FILE_SIZE) {
+        return next(new ValidationError('La foto supera el tamaño máximo permitido', [{ field: 'photo', message: 'Muy grande' }]));
+      }
+      const player = await PlayersService.updateAvatarFromUpload(routeParam(req, 'id'), f);
+      sendSuccess(res, forViewer(player), 'Foto actualizada');
+    } catch (e) { next(e); }
+  }
+
   static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const player = await PlayersService.update(

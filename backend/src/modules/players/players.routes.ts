@@ -4,6 +4,7 @@ import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdmin, requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { runPlayerCreateUpload } from './players.upload.middleware';
+import { runPlayerPhotoUpload } from './players.photo.middleware';
 import { mergeCurpFromPdfIntoBody } from './players.curp-pdf.middleware';
 import {
   createPlayerSchema,
@@ -35,6 +36,14 @@ playersRouter.get('/:id/curp-document',
   requireAdmin,
   validateParams(playerIdSchema),
   PlayersController.getCurpDocumentSigned
+);
+
+playersRouter.post('/:id/photo',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(playerIdSchema),
+  runPlayerPhotoUpload,
+  PlayersController.uploadPhoto
 );
 
 // ── Rutas protegidas (Admin / Coach) ──────────────────────────

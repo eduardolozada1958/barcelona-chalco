@@ -335,4 +335,37 @@ export class PlayersService {
 
     if (error) throw new Error(error.message);
   }
+
+  /** Sube nueva foto pública y actualiza `avatar_url` (no borra archivos antiguos en Storage). */
+  static async updateAvatarFromUpload(id: string, file: Express.Multer.File) {
+    await PlayersService.getById(id);
+    if (file.size > env.STORAGE_MAX_FILE_SIZE) {
+      throw new BadRequestError('La foto supera el tamaño máximo permitido');
+    }
+    const ext = extFromPhotoMime(file.mimetype);
+    const avatarObjectPath = `${id}/${randomUUID()}.${ext}`;
+    const bucket = env.STORAGE_BUCKET_PLAYERS;
+
+    const { error: upPh } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(avatarObjectPath, file.buffer as Buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+    if (upPh) throw new Error(upPh.message);
+
+    const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(avatarObjectPath);
+    const avatarUrl = pub.publicUrl;
+
+    const { data, error } = await supabaseAdmin
+      .from('players')
+      .update({ avatar_url: avatarUrl })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
 }
