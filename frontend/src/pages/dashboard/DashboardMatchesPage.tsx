@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ import {
   createMatch,
   listMatchesAdmin,
   updateMatch,
+  uploadOpponentLogo,
   type CreateMatchBody,
   type UpdateMatchBody,
 } from '@/api/matches';
@@ -16,6 +17,7 @@ import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formL
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { LineupPitchEditor } from '@/components/LineupPitchEditor';
+import { OpponentLogoUpload } from '@/components/OpponentLogoUpload';
 import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config/formations';
 import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
 import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
@@ -50,6 +52,20 @@ export function DashboardMatchesPage() {
   const [lineupModalMatch, setLineupModalMatch] = useState<Record<string, unknown> | null>(null);
   const [lineupEditSlots, setLineupEditSlots] = useState<(string | null)[]>([]);
   const [lineupEditFormation, setLineupEditFormation] = useState<'football_7' | 'football_11'>('football_11');
+  const [createOpponentLogo, setCreateOpponentLogo] = useState<File | null>(null);
+  const [createOpponentLogoPreview, setCreateOpponentLogoPreview] = useState<string | null>(null);
+  const [editOpponentLogo, setEditOpponentLogo] = useState<File | null>(null);
+  const [editOpponentLogoPreview, setEditOpponentLogoPreview] = useState<string | null>(null);
+
+  const clearCreateLogo = useCallback(() => {
+    setCreateOpponentLogo(null);
+    setCreateOpponentLogoPreview(null);
+  }, []);
+
+  const clearEditLogo = useCallback(() => {
+    setEditOpponentLogo(null);
+    setEditOpponentLogoPreview(null);
+  }, []);
 
   useEffect(() => {
     if (searchParams.get('crear') === '1') {
@@ -66,14 +82,38 @@ export function DashboardMatchesPage() {
   });
 
   const createMut = useMutation({
-    mutationFn: (body: CreateMatchBody) => createMatch(body),
+    mutationFn: async ({ body, logoFile }: { body: CreateMatchBody; logoFile: File | null }) => {
+      const res = await createMatch(body);
+      const row = res.data as Record<string, unknown> | undefined;
+      const matchId = row?.id != null ? String(row.id) : '';
+      if (logoFile && matchId) {
+        await uploadOpponentLogo(matchId, logoFile);
+      }
+      return res;
+    },
     onSuccess: () => {
       toast.success('Partido creado');
       void qc.invalidateQueries({ queryKey: ['matches-admin'] });
+      void qc.invalidateQueries({ queryKey: ['matches-public'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setCreateOpen(false);
       setLineupSlots([]);
+      clearCreateLogo();
       reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const uploadLogoMut = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => uploadOpponentLogo(id, file),
+    onSuccess: (res) => {
+      toast.success('Logo del rival actualizado');
+      void qc.invalidateQueries({ queryKey: ['matches-admin'] });
+      void qc.invalidateQueries({ queryKey: ['matches-public'] });
+      if (res.data && typeof res.data === 'object') {
+        setLineupModalMatch(res.data as Record<string, unknown>);
+      }
+      clearEditLogo();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -198,14 +238,24 @@ export function DashboardMatchesPage() {
       body.formationType = data.formationType;
       body.startingLineup = ids;
     }
-    createMut.mutate(body);
+    if (createOpponentLogo && !['image/png', 'image/jpeg', 'image/webp'].includes(createOpponentLogo.type)) {
+      toast.error('El logo del rival debe ser PNG, JPEG o WebP');
+      return;
+    }
+    createMut.mutate({ body, logoFile: createOpponentLogo });
   });
 
   const openLineupModal = (m: Record<string, unknown>) => {
     setLineupModalMatch(m);
+    clearEditLogo();
     const ft = m.formation_type === 'football_7' || m.formation_type === 'football_11' ? m.formation_type : 'football_11';
     setLineupEditFormation(ft);
     setLineupEditSlots(lineupIdsToSlots(normalizeLineupFromRow(m.starting_lineup), ft));
+  };
+
+  const saveOpponentLogoEdit = () => {
+    if (!lineupModalMatch || !editOpponentLogo) return;
+    uploadLogoMut.mutate({ id: String(lineupModalMatch.id), file: editOpponentLogo });
   };
 
   const saveLineupEdit = () => {
@@ -309,6 +359,7 @@ export function DashboardMatchesPage() {
         onClose={() => {
           setCreateOpen(false);
           setLineupSlots([]);
+          clearCreateLogo();
           reset();
         }}
         title="Programar partido"
@@ -325,6 +376,22 @@ export function DashboardMatchesPage() {
             <input className={formInputClass} {...register('opponentName', { required: 'Requerido', minLength: 2 })} />
             {errors.opponentName && <p className={formErrorClass}>{errors.opponentName.message}</p>}
           </div>
+          <OpponentLogoUpload
+            previewUrl={createOpponentLogoPreview}
+            onFileSelect={(file, preview) => {
+              if (!file) {
+                clearCreateLogo();
+                return;
+              }
+              if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                toast.error('El logo debe ser PNG, JPEG o WebP');
+                return;
+              }
+              setCreateOpponentLogo(file);
+              setCreateOpponentLogoPreview(preview);
+            }}
+            disabled={createMut.isPending}
+          />
           <div>
             <label className={formLabelClass}>Fecha y hora</label>
             <input type="datetime-local" className={formInputClass} {...register('matchDateLocal', { required: true })} />
@@ -435,7 +502,10 @@ export function DashboardMatchesPage() {
 
       <DashboardModal
         open={Boolean(lineupModalMatch)}
-        onClose={() => setLineupModalMatch(null)}
+        onClose={() => {
+          setLineupModalMatch(null);
+          clearEditLogo();
+        }}
         title={lineupModalMatch ? `Plantilla · ${String(lineupModalMatch.title)}` : 'Plantilla'}
         wide
       >
@@ -444,6 +514,33 @@ export function DashboardMatchesPage() {
             <p className="text-xs text-on-surface-variant">
               Titulares desde toda la plantilla activa (sin categorías por edad en partidos).
             </p>
+            <OpponentLogoUpload
+              currentUrl={typeof lineupModalMatch.opponent_logo_url === 'string' ? lineupModalMatch.opponent_logo_url : null}
+              previewUrl={editOpponentLogoPreview}
+              onFileSelect={(file, preview) => {
+                if (!file) {
+                  clearEditLogo();
+                  return;
+                }
+                if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                  toast.error('El logo debe ser PNG, JPEG o WebP');
+                  return;
+                }
+                setEditOpponentLogo(file);
+                setEditOpponentLogoPreview(preview);
+              }}
+              disabled={uploadLogoMut.isPending || updateLineupMut.isPending}
+            />
+            {editOpponentLogo ? (
+              <button
+                type="button"
+                onClick={saveOpponentLogoEdit}
+                disabled={uploadLogoMut.isPending}
+                className="px-4 py-2 rounded-lg bg-secondary/20 text-secondary border border-secondary/40 font-label-caps text-[11px] disabled:opacity-50"
+              >
+                {uploadLogoMut.isPending ? 'Subiendo logo…' : 'Guardar logo del rival'}
+              </button>
+            ) : null}
             <div>
               <label className={formLabelClass}>Formato</label>
               <select

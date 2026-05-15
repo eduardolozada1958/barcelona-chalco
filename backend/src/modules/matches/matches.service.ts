@@ -1,4 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { supabaseAdmin } from '@config/database';
+import { env } from '@config/env';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
@@ -31,6 +33,13 @@ function validateLineupConsistency(
   if (ft === 'football_11' && ids.length !== 11) {
     throw new BadRequestError('Fútbol 11 requiere exactamente 11 titulares');
   }
+}
+
+function extFromLogoMime(mime: string): string {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/webp') return 'webp';
+  throw new BadRequestError('El logo debe ser PNG, JPEG o WebP');
 }
 
 async function assertLineupPlayersRegistered(playerIds: string[]): Promise<void> {
@@ -199,6 +208,39 @@ export class MatchesService {
       .eq('id', id);
 
     if (error) throw new Error(error.message);
+  }
+
+  /** Sube escudo del rival y actualiza `opponent_logo_url`. */
+  static async updateOpponentLogoFromUpload(id: string, file: Express.Multer.File) {
+    await MatchesService.getPublicById(id);
+    if (file.size > env.STORAGE_MAX_FILE_SIZE) {
+      throw new BadRequestError('El logo supera el tamaño máximo permitido');
+    }
+    const ext = extFromLogoMime(file.mimetype);
+    const objectPath = `${id}/${randomUUID()}.${ext}`;
+    const bucket = env.STORAGE_BUCKET_MATCH_LOGOS;
+
+    const { error: upErr } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(objectPath, file.buffer as Buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+    if (upErr) throw new Error(upErr.message);
+
+    const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
+    const logoUrl = pub.publicUrl;
+
+    const { data, error } = await supabaseAdmin
+      .from('matches')
+      .update({ opponent_logo_url: logoUrl })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
   }
 
   static async addConvocatories(matchId: string, body: ConvocatoryBody) {

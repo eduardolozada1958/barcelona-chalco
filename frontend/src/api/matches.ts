@@ -50,3 +50,20 @@ export async function updateMatch(id: string, body: UpdateMatchBody) {
   const { data } = await apiClient.put<ApiResponse<unknown>>(`/matches/${id}`, body);
   return data;
 }
+
+export async function uploadOpponentLogo(matchId: string, file: File) {
+  const fd = new FormData();
+  fd.append('logo', file);
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/matches/${matchId}/opponent-logo`, fd, {
+    timeout: 90_000,
+    transformRequest: [
+      (body, headers) => {
+        if (headers && typeof headers === 'object') {
+          delete (headers as Record<string, unknown>)['Content-Type'];
+        }
+        return body as FormData;
+      },
+    ],
+  });
+  return data;
+}

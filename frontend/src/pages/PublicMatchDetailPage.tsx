@@ -6,6 +6,8 @@ import { getMatchPublic } from '@/api/matches';
 import { fetchPlayersPublicByIds } from '@/api/players';
 import { MatchFormationPitch } from '@/components/MatchFormationPitch';
 import { MatchMapEmbed } from '@/components/MatchMapEmbed';
+import { MatchTeamCrest } from '@/components/MatchTeamCrest';
+import { CLUB_DISPLAY_NAME } from '@/config/club';
 import { Spinner } from '@/components/Spinner';
 import { lineupIdsToSlots } from '@/config/formations';
 import {
@@ -83,7 +85,22 @@ export function PublicMatchDetailPage() {
         ← Partidos
       </Link>
       <h1 className="mt-4 font-headline-lg text-3xl font-bold">{String(m.title)}</h1>
-      <p className="mt-2 text-lg text-on-surface-variant">vs {String(m.opponent_name)}</p>
+      <div className="mt-6 flex justify-center items-center gap-6">
+        <div className="flex flex-col items-center gap-2">
+          <MatchTeamCrest name={CLUB_DISPLAY_NAME} variant="home" size="lg" />
+          <span className="text-sm font-semibold">{CLUB_DISPLAY_NAME}</span>
+        </div>
+        <span className="font-stat-value text-2xl text-outline-variant">VS</span>
+        <div className="flex flex-col items-center gap-2">
+          <MatchTeamCrest
+            name={String(m.opponent_name ?? 'Rival')}
+            logoUrl={typeof m.opponent_logo_url === 'string' ? m.opponent_logo_url : null}
+            variant="away"
+            size="lg"
+          />
+          <span className="text-sm text-on-surface-variant">{String(m.opponent_name)}</span>
+        </div>
+      </div>
       <dl className="mt-8 space-y-2 text-sm">
         <Row label="Fecha" value={matchDateStr} />
         <Row label="Lugar" value={String(m.location)} />

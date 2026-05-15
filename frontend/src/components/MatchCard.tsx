@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Match } from '@/types';
+import { CLUB_DISPLAY_NAME } from '@/config/club';
+import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { MaterialIcon } from './MaterialIcon';
 import { isAllowedMapIframeSrc } from '@/components/MatchMapEmbed';
 
@@ -40,20 +42,16 @@ export function MatchCard({ match }: MatchCardProps) {
         {/* Teams VS */}
         <div className="flex justify-between items-center py-stack-sm">
           <div className="flex flex-col items-center gap-stack-sm w-1/3">
-            <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-primary/30 shadow-gold">
-              <MaterialIcon name="sports_soccer" className="text-primary" size={28} filled />
-            </div>
-            <span className="font-headline-lg-mobile text-headline-lg-mobile text-center">FC Cupido</span>
+            <MatchTeamCrest name={CLUB_DISPLAY_NAME} variant="home" />
+            <span className="font-headline-lg-mobile text-headline-lg-mobile text-center">{CLUB_DISPLAY_NAME}</span>
           </div>
           <div className="font-stat-value text-stat-value text-outline-variant px-stack-md">VS</div>
           <div className="flex flex-col items-center gap-stack-sm w-1/3">
-            <div className="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center border border-outline-variant/50">
-              {match.opponent_logo_url ? (
-                <img src={match.opponent_logo_url} alt={match.opponent_name} className="w-10 h-10 object-contain" />
-              ) : (
-                <MaterialIcon name="shield" className="text-on-surface-variant" size={28} />
-              )}
-            </div>
+            <MatchTeamCrest
+              name={match.opponent_name || 'Rival'}
+              logoUrl={match.opponent_logo_url}
+              variant="away"
+            />
             <span className="font-headline-lg-mobile text-headline-lg-mobile text-center text-on-surface-variant">
               {match.opponent_name || 'Rival'}
             </span>

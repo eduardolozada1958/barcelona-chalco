@@ -3,6 +3,7 @@ import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { MatchesController } from './matches.controller';
+import { runOpponentLogoUpload } from './matches.opponent-logo.middleware';
 import {
   listMatchesQuerySchema,
   matchIdParamSchema,
@@ -54,6 +55,15 @@ matchesRouter.put(
   validateParams(matchIdParamSchema),
   validateBody(updateMatchBodySchema),
   MatchesController.update
+);
+
+matchesRouter.post(
+  '/:id/opponent-logo',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(matchIdParamSchema),
+  runOpponentLogoUpload,
+  MatchesController.uploadOpponentLogo
 );
 
 matchesRouter.delete(

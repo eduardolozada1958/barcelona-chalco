@@ -1,0 +1,3 @@
+-- Bucket público para escudos de rivales en partidos.
+-- En Supabase Dashboard → Storage: crear bucket "match-logos" (público) si no existe.
+-- El backend usa STORAGE_BUCKET_MATCH_LOGOS=match-logos
