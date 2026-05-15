@@ -115,18 +115,23 @@ function CredentialCard({ player }: { player: Player }) {
           </div>
         </div>
 
-        {/* Right: QR */}
-        <div className="flex flex-col items-center justify-center flex-shrink-0">
+        {/* Right: QR — sin enlace táctil: el QR solo sirve escaneándolo con otra cámara; tocar aquí no navega */}
+        <div className="flex flex-col items-center justify-center flex-shrink-0 select-none [-webkit-touch-callout:none]">
           {hasQr ? (
-            <Link to={`/credencial-ar/${encodeURIComponent(player.qr_token!)}`} className="block">
+            <div className="flex flex-col items-center">
               <img
                 src={qrImageUrl(player.qr_token!)}
-                alt={`QR ${player.first_name}`}
-                className="w-20 h-20 rounded-lg border border-primary/20 hover:border-primary/60 transition-colors"
+                alt=""
+                role="presentation"
+                className="pointer-events-none w-20 h-20 rounded-lg border border-primary/20"
                 loading="lazy"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
               />
-              <p className="mt-1 text-[10px] text-center text-on-surface-variant/60">Escanear</p>
-            </Link>
+              <p className="mt-1 text-[10px] text-center text-on-surface-variant/60 pointer-events-none">
+                Escanear con la cámara
+              </p>
+            </div>
           ) : (
             <div className="w-20 h-20 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
               <MaterialIcon name="qr_code_2" size={32} className="text-on-surface-variant/30" />
@@ -177,7 +182,7 @@ function CredentialsGallery() {
             Credenciales Deportivas
           </h1>
           <p className="mt-2 text-on-surface-variant max-w-xl mx-auto">
-            Identidades verificadas de los jugadores de la academia. Escanea el código QR para validar.
+            Identidades verificadas de los jugadores de la academia. Usa la cámara de otro teléfono para escanear el QR; al tocarlo en pantalla no se abre el enlace.
           </p>
         </div>
 
