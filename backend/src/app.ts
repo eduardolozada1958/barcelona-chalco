@@ -24,8 +24,24 @@ import { inscriptionsRouter } from '@modules/inscriptions/inscriptions.routes';
 import { settingsRouter }     from '@modules/settings/settings.routes';
 import { dashboardRouter }    from '@modules/dashboard/dashboard.routes';
 
+/** Rutas de solo lectura pública: no deben agotar la cuota global tan rápido. */
+function isPublicReadRoute(path: string, method: string): boolean {
+  if (method !== 'GET') return false;
+  if (/\/qr\/player\/[^/]+\/image$/.test(path)) return true;
+  return (
+    path.includes('/public') ||
+    path.endsWith('/health') ||
+    path.includes('/qr/validate/')
+  );
+}
+
 export function createApp(): Application {
   const app = express();
+
+  // Render/proxies: sin esto, todas las visitas cuentan como una sola IP → 429 para todos.
+  if (isProd) {
+    app.set('trust proxy', 1);
+  }
 
   app.use(requestContextMiddleware);
 
@@ -61,12 +77,25 @@ export function createApp(): Application {
     max:      env.RATE_LIMIT_MAX_REQUESTS,
     standardHeaders: true,
     legacyHeaders:   false,
+    skip: (req) => isPublicReadRoute(req.path, req.method),
+    message: {
+      success: false,
+      message: 'Demasiadas peticiones. Intenta de nuevo más tarde.',
+    },
+  });
+  const writeLimiter = rateLimit({
+    windowMs: env.RATE_LIMIT_WINDOW_MS,
+    max:      Math.max(80, Math.floor(env.RATE_LIMIT_MAX_REQUESTS / 4)),
+    standardHeaders: true,
+    legacyHeaders:   false,
+    skip: (req) => req.method === 'GET' || isPublicReadRoute(req.path, req.method),
     message: {
       success: false,
       message: 'Demasiadas peticiones. Intenta de nuevo más tarde.',
     },
   });
   app.use(limiter);
+  app.use(writeLimiter);
 
   // ── Body parsing ──────────────────────────────────────────
   app.use(express.json({ limit: '10mb' }));

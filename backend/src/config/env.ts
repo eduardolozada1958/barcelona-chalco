@@ -37,7 +37,7 @@ const envSchema = z.object({
 
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: z.string().default('900000').transform(Number),
-  RATE_LIMIT_MAX_REQUESTS: z.string().default('100').transform(Number),
+  RATE_LIMIT_MAX_REQUESTS: z.string().default('600').transform(Number),
 
   // Bcrypt
   BCRYPT_ROUNDS: z.string().default('12').transform(Number),

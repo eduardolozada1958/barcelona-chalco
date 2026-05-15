@@ -35,7 +35,7 @@ services:
       - key: RATE_LIMIT_WINDOW_MS
         value: 900000
       - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
+        value: 600
       - key: BCRYPT_ROUNDS
         value: 12
       - key: LOG_LEVEL

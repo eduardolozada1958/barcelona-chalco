@@ -12,8 +12,13 @@ import '@/index.css';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
-      retry:     1,
+      staleTime: 5 * 60_000,
+      gcTime:    10 * 60_000,
+      retry: (failureCount, error) => {
+        const status = (error as Error & { status?: number }).status;
+        if (status === 429) return false;
+        return failureCount < 1;
+      },
     },
   },
 });
