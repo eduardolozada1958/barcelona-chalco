@@ -50,6 +50,15 @@ export class PlayersController {
     } catch (e) { next(e); }
   }
 
+  static async publicSeasonLeaders(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const raw = req.query.limit;
+      const n = raw != null ? parseInt(String(raw), 10) : 15;
+      const data = await PlayersService.publicSeasonLeaders(Number.isFinite(n) ? n : 15);
+      sendSuccess(res, data, 'Clasificación de temporada');
+    } catch (e) { next(e); }
+  }
+
   static async getById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const player = await PlayersService.getById(routeParam(req, 'id'));

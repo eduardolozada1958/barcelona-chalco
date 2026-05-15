@@ -24,6 +24,9 @@ playersRouter.get('/public',
   PlayersController.listPublic
 );
 
+// GET /api/v1/players/public/season-leaders — Goles y tarjetas (resultados publicados)
+playersRouter.get('/public/season-leaders', PlayersController.publicSeasonLeaders);
+
 // GET /api/v1/players/public/:id - Perfil público de un jugador
 playersRouter.get('/public/:id',
   validateParams(playerIdSchema),

@@ -1,6 +1,19 @@
 import { Link } from 'react-router-dom';
-import type { Result, Match } from '@/types';
+import type { Result, Match, MatchOutcome } from '@/types';
 import { MaterialIcon } from './MaterialIcon';
+
+function outcomeLabelEs(outcome: MatchOutcome | string | null | undefined): string {
+  switch (outcome) {
+    case 'win':
+      return 'Victoria';
+    case 'loss':
+      return 'Derrota';
+    case 'draw':
+      return 'Empate';
+    default:
+      return '—';
+  }
+}
 
 interface ResultCardProps {
   result: Result;
@@ -16,9 +29,9 @@ export function ResultCard({ result, match }: ResultCardProps) {
   const goalsConceded = result.goals_conceded;
   const isWin = result.outcome === 'win';
   const dateStr = match?.match_date
-    ? new Date(match.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
+    ? new Date(match.match_date).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
     : result.published_at
-      ? new Date(result.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
+      ? new Date(result.published_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
       : '—';
 
   return (
@@ -29,7 +42,7 @@ export function ResultCard({ result, match }: ResultCardProps) {
         <span className={`font-label-caps text-label-caps px-2 py-1 rounded ${
           isWin ? 'bg-primary/10 text-primary' : result.outcome === 'loss' ? 'bg-error/10 text-error' : 'bg-surface-variant text-on-surface-variant'
         }`}>
-          {result.outcome ? result.outcome.toUpperCase() : '—'}
+          {outcomeLabelEs(result.outcome as MatchOutcome | undefined)}
         </span>
       </div>
 
@@ -72,7 +85,7 @@ export function ResultCard({ result, match }: ResultCardProps) {
           to={`/resultados/${result.id}`}
           className="mt-auto pt-4 text-primary font-label-caps text-label-caps flex items-center gap-1 hover:text-white transition-colors"
         >
-          MATCH DETAILS <MaterialIcon name="arrow_forward" size={16} />
+          Ver detalle del partido <MaterialIcon name="arrow_forward" size={16} />
         </Link>
       )}
     </article>

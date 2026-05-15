@@ -5,6 +5,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { latestResultPublic } from '@/api/results';
 import { listMatchesPublic } from '@/api/matches';
 import { listNoticesPublic } from '@/api/notices';
+import { getSeasonLeadersPublic, type SeasonLeaderRow } from '@/api/players';
 import type { Result, Match, Notice } from '@/types';
 
 /* ─── Hero placeholder image (cinematic stadium) ─── */
@@ -19,11 +20,22 @@ export function HomePage() {
   const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
   const matchesQ = useQuery({ queryKey: ['matches-public'], queryFn: () => listMatchesPublic() });
   const noticesQ = useQuery({ queryKey: ['notices-public'], queryFn: () => listNoticesPublic() });
+  const leadersQ = useQuery({
+    queryKey: ['season-leaders-public'],
+    queryFn: () => getSeasonLeadersPublic(12),
+  });
 
   const latest = latestResult.data?.data as Result | undefined;
   const nextMatch = (matchesQ.data?.data as Match[] | undefined)?.[0];
   const urgentNotice = (noticesQ.data?.data as Notice[] | undefined)?.find((n) => n.type === 'urgent')
     ?? (noticesQ.data?.data as Notice[] | undefined)?.[0];
+
+  const scoring = (leadersQ.data?.data?.scoring ?? []) as SeasonLeaderRow[];
+  const discipline = (leadersQ.data?.data?.discipline ?? []) as SeasonLeaderRow[];
+
+  function leaderName(r: SeasonLeaderRow) {
+    return `${r.first_name} ${r.last_name}`.trim();
+  }
 
   return (
     <>
@@ -126,6 +138,129 @@ export function HomePage() {
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* ═══════════════════ GOLEO Y TARJETAS ═══════════════════ */}
+      <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto border-t border-outline-variant/20">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-stack-md">
+          <div>
+            <h2 className="font-display-hero text-headline-lg text-primary">⚽ Tabla de goleo y tarjetas</h2>
+            <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">
+              Estadísticas acumuladas de jugadores verificados en partidos cuyo resultado ya está publicado. Se actualiza al registrar
+              estadísticas por jugador en cada resultado.
+            </p>
+          </div>
+          <Link
+            to="/jugadores"
+            className="text-primary font-label-caps text-label-caps hover:underline shrink-0"
+          >
+            Ver plantilla →
+          </Link>
+        </div>
+
+        {leadersQ.isLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter animate-pulse">
+            <div className="h-48 rounded-xl bg-surface-container-low border border-outline-variant/20" />
+            <div className="h-48 rounded-xl bg-surface-container-low border border-outline-variant/20" />
+          </div>
+        ) : scoring.length === 0 && discipline.length === 0 ? (
+          <div className="glass-panel rounded-xl p-stack-md text-center text-on-surface-variant font-body-md">
+            Aún no hay estadísticas por jugador publicadas. Cuando el cuerpo técnico registre goles y tarjetas en los resultados,
+            aparecerán aquí automáticamente.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+            <div className="glass-panel rounded-xl border border-outline-variant/20 overflow-hidden">
+              <div className="px-4 py-3 bg-surface-container-low border-b border-outline-variant/20 flex items-center gap-2">
+                <MaterialIcon name="sports_soccer" className="text-primary" size={22} />
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Tabla de goleo</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-surface-container/50 text-on-surface-variant font-label-caps text-[10px] uppercase tracking-wide">
+                    <tr>
+                      <th className="p-3">#</th>
+                      <th className="p-3">Jugador</th>
+                      <th className="p-3">Cat.</th>
+                      <th className="p-3 text-right">Goles</th>
+                      <th className="p-3 text-right">Asist.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {scoring.map((row, i) => (
+                      <tr key={row.player_id} className="border-t border-outline-variant/10 hover:bg-surface-container/20">
+                        <td className="p-3 text-on-surface-variant">{i + 1}</td>
+                        <td className="p-3">
+                          <Link to={`/jugadores/${row.player_id}`} className="flex items-center gap-2 text-on-surface hover:text-primary">
+                            {row.avatar_url ? (
+                              <img src={row.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border border-outline-variant/30" />
+                            ) : (
+                              <span className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
+                                <MaterialIcon name="person" size={16} className="text-on-surface-variant" />
+                              </span>
+                            )}
+                            <span className="font-medium">{leaderName(row)}</span>
+                          </Link>
+                        </td>
+                        <td className="p-3 text-on-surface-variant">{row.category}</td>
+                        <td className="p-3 text-right font-stat-value text-primary">{row.goals}</td>
+                        <td className="p-3 text-right text-on-surface-variant">{row.assists}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {scoring.length === 0 && (
+                <p className="p-4 text-on-surface-variant text-sm">Sin goles registrados aún en resultados publicados.</p>
+              )}
+            </div>
+
+            <div className="glass-panel rounded-xl border border-outline-variant/20 overflow-hidden">
+              <div className="px-4 py-3 bg-surface-container-low border-b border-outline-variant/20 flex items-center gap-2">
+                <MaterialIcon name="style" className="text-secondary" size={22} />
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Tarjetas (disciplina)</h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm text-left">
+                  <thead className="bg-surface-container/50 text-on-surface-variant font-label-caps text-[10px] uppercase tracking-wide">
+                    <tr>
+                      <th className="p-3">#</th>
+                      <th className="p-3">Jugador</th>
+                      <th className="p-3">Cat.</th>
+                      <th className="p-3 text-right">Amarillas</th>
+                      <th className="p-3 text-right">Rojas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {discipline.map((row, i) => (
+                      <tr key={row.player_id} className="border-t border-outline-variant/10 hover:bg-surface-container/20">
+                        <td className="p-3 text-on-surface-variant">{i + 1}</td>
+                        <td className="p-3">
+                          <Link to={`/jugadores/${row.player_id}`} className="flex items-center gap-2 text-on-surface hover:text-primary">
+                            {row.avatar_url ? (
+                              <img src={row.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border border-outline-variant/30" />
+                            ) : (
+                              <span className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
+                                <MaterialIcon name="person" size={16} className="text-on-surface-variant" />
+                              </span>
+                            )}
+                            <span className="font-medium">{leaderName(row)}</span>
+                          </Link>
+                        </td>
+                        <td className="p-3 text-on-surface-variant">{row.category}</td>
+                        <td className="p-3 text-right text-yellow-500 font-medium">{row.yellow_cards}</td>
+                        <td className="p-3 text-right text-error font-medium">{row.red_cards}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {discipline.length === 0 && (
+                <p className="p-4 text-on-surface-variant text-sm">Sin tarjetas registradas en resultados publicados.</p>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ═══════════════════ HIGHLIGHTS BENTO GRID ═══════════════════ */}

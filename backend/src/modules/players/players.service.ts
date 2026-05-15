@@ -7,6 +7,19 @@ import { CURRENT_SEASON } from '@config/constants';
 import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
 import type { UserRole } from '@shared/types';
 
+export interface PublicLeaderRow {
+  player_id:     string;
+  first_name:    string;
+  last_name:     string;
+  avatar_url:    string | null;
+  category:      string;
+  jersey_number: number | null;
+  goals:         number;
+  assists:       number;
+  yellow_cards:  number;
+  red_cards:     number;
+}
+
 /** Columnas en APIs públicas (sin `curp` completo). */
 const PUBLIC_PLAYER_COLUMNS =
   'id, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
@@ -90,6 +103,96 @@ export class PlayersService {
       data: data ?? [],
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
+  }
+
+  /** Totales de goles/asistencias y tarjetas solo de resultados publicados (sitio público / inicio). */
+  static async publicSeasonLeaders(limit = 15) {
+    const cap = Math.min(50, Math.max(5, limit));
+
+    const { data: resultsRows, error: rErr } = await supabaseAdmin
+      .from('results')
+      .select('id')
+      .eq('published', true);
+    if (rErr) throw new Error(rErr.message);
+
+    const resultIds = (resultsRows ?? []).map((r: { id: string }) => r.id);
+    if (resultIds.length === 0) {
+      return { scoring: [] as PublicLeaderRow[], discipline: [] as PublicLeaderRow[] };
+    }
+
+    const { data: statsRows, error: sErr } = await supabaseAdmin
+      .from('player_stats')
+      .select('player_id, goals, assists, yellow_cards, red_cards')
+      .in('result_id', resultIds);
+    if (sErr) throw new Error(sErr.message);
+
+    type Agg = { goals: number; assists: number; yellow: number; red: number };
+    const agg = new Map<string, Agg>();
+    for (const row of statsRows ?? []) {
+      const pid = String((row as Record<string, unknown>).player_id ?? '');
+      if (!pid) continue;
+      const goals = Number((row as Record<string, unknown>).goals ?? 0) || 0;
+      const assists = Number((row as Record<string, unknown>).assists ?? 0) || 0;
+      const yellow = Number((row as Record<string, unknown>).yellow_cards ?? 0) || 0;
+      const red = Number((row as Record<string, unknown>).red_cards ?? 0) || 0;
+      const cur = agg.get(pid) ?? { goals: 0, assists: 0, yellow: 0, red: 0 };
+      cur.goals += goals;
+      cur.assists += assists;
+      cur.yellow += yellow;
+      cur.red += red;
+      agg.set(pid, cur);
+    }
+
+    const playerIds = [...agg.keys()];
+    if (playerIds.length === 0) {
+      return { scoring: [] as PublicLeaderRow[], discipline: [] as PublicLeaderRow[] };
+    }
+
+    const { data: playersRows, error: pErr } = await supabaseAdmin
+      .from('players')
+      .select('id, first_name, last_name, avatar_url, category, jersey_number')
+      .in('id', playerIds)
+      .eq('status', 'active')
+      .eq('is_verified', true)
+      .is('deleted_at', null);
+    if (pErr) throw new Error(pErr.message);
+
+    const pMap = new Map(
+      (playersRows ?? []).map((p: Record<string, unknown>) => [String(p.id), p]),
+    );
+
+    const baseRows: PublicLeaderRow[] = [];
+    for (const [playerId, a] of agg) {
+      const p = pMap.get(playerId);
+      if (!p) continue;
+      baseRows.push({
+        player_id:     playerId,
+        first_name:    String(p.first_name ?? ''),
+        last_name:     String(p.last_name ?? ''),
+        avatar_url:    typeof p.avatar_url === 'string' ? p.avatar_url : null,
+        category:      String(p.category ?? ''),
+        jersey_number: p.jersey_number != null ? Number(p.jersey_number) : null,
+        goals:         a.goals,
+        assists:       a.assists,
+        yellow_cards:  a.yellow,
+        red_cards:     a.red,
+      });
+    }
+
+    const scoring = [...baseRows]
+      .filter((r) => r.goals > 0 || r.assists > 0)
+      .sort((x, y) => y.goals - x.goals || y.assists - x.assists)
+      .slice(0, cap);
+
+    const discipline = [...baseRows]
+      .filter((r) => r.yellow_cards > 0 || r.red_cards > 0)
+      .sort((x, y) =>
+        y.yellow_cards + y.red_cards * 2 - (x.yellow_cards + x.red_cards * 2) ||
+        y.red_cards - x.red_cards,
+      )
+      .slice(0, cap);
+
+    return { scoring, discipline };
   }
 
   static async getById(id: string) {

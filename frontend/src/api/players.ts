@@ -11,6 +11,31 @@ export async function getPlayerPublic(id: string) {
   return data;
 }
 
+export interface SeasonLeaderRow {
+  player_id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+  category: string;
+  jersey_number: number | null;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+}
+
+export interface SeasonLeadersPayload {
+  scoring: SeasonLeaderRow[];
+  discipline: SeasonLeaderRow[];
+}
+
+export async function getSeasonLeadersPublic(limit = 15) {
+  const { data } = await apiClient.get<ApiResponse<SeasonLeadersPayload>>('/players/public/season-leaders', {
+    params: { limit },
+  });
+  return data;
+}
+
 /** Carga jugadores del once titular por ID (endpoint público por jugador). */
 export async function fetchPlayersPublicByIds(ids: string[]): Promise<Record<string, unknown>[]> {
   const unique = [...new Set(ids.filter(Boolean))];

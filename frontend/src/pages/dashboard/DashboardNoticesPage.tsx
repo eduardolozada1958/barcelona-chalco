@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
@@ -13,6 +13,7 @@ import {
   type CreateNoticeBody,
 } from '@/api/notices';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
+import { EmojiPickerBar } from '@/components/EmojiPickerBar';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -26,11 +27,38 @@ type NoticeForm = {
   isPinned: boolean;
 };
 
+function insertEmojiAtCursor(
+  el: HTMLInputElement | HTMLTextAreaElement | null,
+  emoji: string,
+  getValues: () => NoticeForm,
+  setValue: (name: 'title' | 'content', value: string, opts?: { shouldDirty?: boolean; shouldValidate?: boolean }) => void,
+  field: 'title' | 'content',
+) {
+  const fromForm = String(getValues()[field] ?? '');
+  const base = el?.value ?? fromForm;
+  const start = el ? (el.selectionStart ?? base.length) : base.length;
+  const end = el ? (el.selectionEnd ?? base.length) : base.length;
+  const next = base.slice(0, start) + emoji + base.slice(end);
+  setValue(field, next, { shouldDirty: true, shouldValidate: true });
+  if (el) {
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
+  }
+}
+
 export function DashboardNoticesPage() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
   const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
+
+  const createTitleRef = useRef<HTMLInputElement | null>(null);
+  const createContentRef = useRef<HTMLTextAreaElement | null>(null);
+  const editTitleRef = useRef<HTMLInputElement | null>(null);
+  const editContentRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (searchParams.get('crear') === '1') {
@@ -89,7 +117,7 @@ export function DashboardNoticesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<NoticeForm>({
+  const { register, handleSubmit, reset, setValue, getValues, formState: { errors } } = useForm<NoticeForm>({
     defaultValues: {
       title: '',
       content: '',
@@ -103,6 +131,8 @@ export function DashboardNoticesPage() {
     register: registerEdit,
     handleSubmit: handleSubmitEdit,
     reset: resetEdit,
+    setValue: setValueEdit,
+    getValues: getValuesEdit,
     formState: { errors: editErrors },
   } = useForm<NoticeForm>({
     defaultValues: {
@@ -159,6 +189,11 @@ export function DashboardNoticesPage() {
     });
   });
 
+  const regCreateTitle = register('title', { required: 'Requerido', minLength: 3 });
+  const regCreateContent = register('content', { required: 'Requerido', minLength: 10 });
+  const regEditTitle = registerEdit('title', { required: 'Requerido', minLength: 3 });
+  const regEditContent = registerEdit('content', { required: 'Requerido', minLength: 10 });
+
   if (q.isLoading) return <Spinner />;
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
 
@@ -212,8 +247,19 @@ export function DashboardNoticesPage() {
         <form onSubmit={onCreate} className="space-y-3">
           <div>
             <label className={formLabelClass}>Título</label>
-            <input className={formInputClass} {...register('title', { required: 'Requerido', minLength: 3 })} />
+            <input
+              className={formInputClass}
+              {...regCreateTitle}
+              ref={(e) => {
+                regCreateTitle.ref(e);
+                createTitleRef.current = e;
+              }}
+            />
             {errors.title && <p className={formErrorClass}>{errors.title.message}</p>}
+            <EmojiPickerBar
+              label="Emojis para el título"
+              onPick={(emoji) => insertEmojiAtCursor(createTitleRef.current, emoji, getValues, setValue, 'title')}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -239,8 +285,23 @@ export function DashboardNoticesPage() {
           </div>
           <div>
             <label className={formLabelClass}>Contenido</label>
-            <textarea rows={8} className={formInputClass} {...register('content', { required: 'Requerido', minLength: 10 })} />
+            <textarea
+              rows={8}
+              className={formInputClass}
+              {...regCreateContent}
+              ref={(e) => {
+                regCreateContent.ref(e);
+                createContentRef.current = e;
+              }}
+            />
             {errors.content && <p className={formErrorClass}>{errors.content.message}</p>}
+            <EmojiPickerBar
+              label="Emojis para el contenido"
+              onPick={(emoji) => insertEmojiAtCursor(createContentRef.current, emoji, getValues, setValue, 'content')}
+            />
+            <p className="text-[11px] text-on-surface-variant mt-1">
+              También puedes pegar cualquier emoji desde el teclado o portapapeles (UTF-8).
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned-create" className="rounded border-outline-variant" {...register('isPinned')} />
@@ -262,8 +323,19 @@ export function DashboardNoticesPage() {
         <form onSubmit={onEdit} className="space-y-3">
           <div>
             <label className={formLabelClass}>Título</label>
-            <input className={formInputClass} {...registerEdit('title', { required: 'Requerido', minLength: 3 })} />
+            <input
+              className={formInputClass}
+              {...regEditTitle}
+              ref={(e) => {
+                regEditTitle.ref(e);
+                editTitleRef.current = e;
+              }}
+            />
             {editErrors.title && <p className={formErrorClass}>{editErrors.title.message}</p>}
+            <EmojiPickerBar
+              label="Emojis para el título"
+              onPick={(emoji) => insertEmojiAtCursor(editTitleRef.current, emoji, getValuesEdit, setValueEdit, 'title')}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -289,8 +361,20 @@ export function DashboardNoticesPage() {
           </div>
           <div>
             <label className={formLabelClass}>Contenido</label>
-            <textarea rows={8} className={formInputClass} {...registerEdit('content', { required: 'Requerido', minLength: 10 })} />
+            <textarea
+              rows={8}
+              className={formInputClass}
+              {...regEditContent}
+              ref={(e) => {
+                regEditContent.ref(e);
+                editContentRef.current = e;
+              }}
+            />
             {editErrors.content && <p className={formErrorClass}>{editErrors.content.message}</p>}
+            <EmojiPickerBar
+              label="Emojis para el contenido"
+              onPick={(emoji) => insertEmojiAtCursor(editContentRef.current, emoji, getValuesEdit, setValueEdit, 'content')}
+            />
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned-edit" className="rounded border-outline-variant" {...registerEdit('isPinned')} />
