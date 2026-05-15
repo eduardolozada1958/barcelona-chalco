@@ -98,7 +98,7 @@ export function PublicPlayerDetailPage() {
             {[
               { label: 'DATE OF BIRTH', value: player.birth_date ? new Date(player.birth_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase() : '—' },
               { label: 'AGE', value: age },
-              { label: 'CLUB', value: 'Barcelona Cupido Elite' },
+              { label: 'CLUB', value: 'Barcelona Cupido' },
             ].map((row, i, arr) => (
               <div
                 key={row.label}

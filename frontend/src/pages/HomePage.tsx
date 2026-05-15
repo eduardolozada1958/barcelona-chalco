@@ -58,7 +58,7 @@ export function HomePage() {
             F.C. BARCELONA CUPIDO
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
-            Rendimiento Élite & Identidad Digital. Forjando campeones a través de la disciplina, los datos y la dedicación inquebrantable en la cancha.
+            Plantilla, resultados, avisos y credencial digital del club, reunidos en un solo lugar para padres, jugadores y el cuerpo técnico.
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-8 w-full sm:w-auto px-4 sm:px-0">
             <Link
@@ -89,10 +89,10 @@ export function HomePage() {
           <div className="flex flex-col gap-stack-sm">
             <h2 className="font-headline-lg text-headline-lg text-primary">¿Para qué sirve Barcelona Cupido?</h2>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Barcelona Cupido es el ecosistema digital definitivo para Barcelona Cupido Elite. Funciona como un centro seguro y centralizado para verificar identidades de jugadores, rastrear estadísticas de partidos y garantizar que las comunicaciones oficiales del club lleguen al público indicado al instante.
+              Barcelona Cupido es la plataforma web del club: un solo espacio para comprobar la identidad digital de los jugadores, revisar estadísticas de los partidos cuando ya hay resultado publicado y leer los avisos oficiales en cuanto los publica la directiva o el cuerpo técnico.
             </p>
             <p className="font-body-md text-body-md text-on-surface-variant">
-              Diseñado para el scouting moderno y la gestión de equipos sin fricciones, nuestra plataforma elimina el papeleo y eleva el estándar profesional de las operaciones futbolísticas semi-profesionales.
+              El objetivo es que todos vean la misma información, con datos claros, trámites ordenados y comunicados que no se pierden entre chats o papeles sueltos.
             </p>
           </div>
           <div className="glass-panel p-stack-md rounded-xl relative overflow-hidden group">
@@ -181,7 +181,6 @@ export function HomePage() {
                     <tr>
                       <th className="p-3">#</th>
                       <th className="p-3">Jugador</th>
-                      <th className="p-3">Cat.</th>
                       <th className="p-3 text-right">Goles</th>
                       <th className="p-3 text-right">Asist.</th>
                     </tr>
@@ -202,7 +201,6 @@ export function HomePage() {
                             <span className="font-medium">{leaderName(row)}</span>
                           </Link>
                         </td>
-                        <td className="p-3 text-on-surface-variant">{row.category}</td>
                         <td className="p-3 text-right font-stat-value text-primary">{row.goals}</td>
                         <td className="p-3 text-right text-on-surface-variant">{row.assists}</td>
                       </tr>
@@ -226,7 +224,6 @@ export function HomePage() {
                     <tr>
                       <th className="p-3">#</th>
                       <th className="p-3">Jugador</th>
-                      <th className="p-3">Cat.</th>
                       <th className="p-3 text-right">Amarillas</th>
                       <th className="p-3 text-right">Rojas</th>
                     </tr>
@@ -247,7 +244,6 @@ export function HomePage() {
                             <span className="font-medium">{leaderName(row)}</span>
                           </Link>
                         </td>
-                        <td className="p-3 text-on-surface-variant">{row.category}</td>
                         <td className="p-3 text-right text-yellow-500 font-medium">{row.yellow_cards}</td>
                         <td className="p-3 text-right text-error font-medium">{row.red_cards}</td>
                       </tr>
