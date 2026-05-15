@@ -17,6 +17,18 @@ function extFromImageMime(mime: string): string {
   throw new BadRequestError('La imagen debe ser PNG, JPEG o WebP');
 }
 
+function storageObjectPathFromGalleryPublicUrl(publicUrl: string): string | null {
+  const bucket = env.STORAGE_BUCKET_GALLERY;
+  const needle = `/object/public/${bucket}/`;
+  const i = publicUrl.indexOf(needle);
+  if (i === -1) return null;
+  try {
+    return decodeURIComponent(publicUrl.slice(i + needle.length));
+  } catch {
+    return publicUrl.slice(i + needle.length);
+  }
+}
+
 export class GalleryService {
   static async listPublic(opts: ListGalleryQuery) {
     let query = supabaseAdmin
@@ -187,6 +199,94 @@ export class GalleryService {
     }
 
     return GalleryService.getById(String(post.id));
+  }
+
+  static async addMediaToPost(postId: string, files: Express.Multer.File[]) {
+    if (!files.length) {
+      throw new BadRequestError('Adjunta al menos una imagen');
+    }
+    await GalleryService.getById(postId);
+
+    const { data: maxRows, error: maxErr } = await supabaseAdmin
+      .from('gallery_media')
+      .select('sort_order')
+      .eq('post_id', postId)
+      .order('sort_order', { ascending: false })
+      .limit(1);
+    if (maxErr) throw new Error(maxErr.message);
+    let sortBase =
+      maxRows?.[0] && typeof (maxRows[0] as { sort_order?: number }).sort_order === 'number'
+        ? Number((maxRows[0] as { sort_order: number }).sort_order) + 1
+        : 0;
+
+    const bucket = env.STORAGE_BUCKET_GALLERY;
+    const mediaRows: {
+      post_id: string;
+      url: string;
+      type: 'image';
+      sort_order: number;
+      file_size_bytes: number;
+    }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const ext = extFromImageMime(file.mimetype);
+      const objectPath = `${postId}/${randomUUID()}.${ext}`;
+
+      const { error: upErr } = await supabaseAdmin.storage
+        .from(bucket)
+        .upload(objectPath, file.buffer as Buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+      if (upErr) throw new Error(upErr.message);
+
+      const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
+      mediaRows.push({
+        post_id:         postId,
+        url:             pub.publicUrl,
+        type:            'image',
+        sort_order:      sortBase + i,
+        file_size_bytes: file.size,
+      });
+    }
+
+    const { error: insErr } = await supabaseAdmin.from('gallery_media').insert(mediaRows);
+    if (insErr) throw new Error(insErr.message);
+
+    return GalleryService.getById(postId);
+  }
+
+  static async removeMediaItem(postId: string, mediaId: string) {
+    await GalleryService.getById(postId);
+
+    const { data: row, error: fErr } = await supabaseAdmin
+      .from('gallery_media')
+      .select('id, post_id, url')
+      .eq('id', mediaId)
+      .eq('post_id', postId)
+      .single();
+
+    if (fErr || !row) throw new NotFoundError('Imagen no encontrada');
+
+    const objectPath = storageObjectPathFromGalleryPublicUrl(String((row as { url: string }).url));
+    if (objectPath) {
+      await supabaseAdmin.storage.from(env.STORAGE_BUCKET_GALLERY).remove([objectPath]);
+    }
+
+    const { error: dErr } = await supabaseAdmin.from('gallery_media').delete().eq('id', mediaId);
+    if (dErr) throw new Error(dErr.message);
+
+    const { count } = await supabaseAdmin
+      .from('gallery_media')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', postId);
+
+    if ((count ?? 0) === 0) {
+      throw new BadRequestError('La publicación debe tener al menos una imagen. Sube otra antes de eliminar esta.');
+    }
+
+    return GalleryService.getById(postId);
   }
 
   static async update(id: string, input: UpdateGalleryPostBody) {

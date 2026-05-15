@@ -64,7 +64,8 @@ export interface CreatePlayerBody {
   dominantFoot?:     'right' | 'left' | 'both';
   heightCm?:         number;
   weightKg?:         number;
-  category:          'Sub-11' | 'Sub-13' | 'Sub-15' | 'Sub-17' | 'Sub-20';
+  /** Si no se envía, el backend usa «General». */
+  category?:         'Sub-11' | 'Sub-13' | 'Sub-15' | 'Sub-17' | 'Sub-20' | 'General';
   sportDescription?: string;
   achievements?:    string;
   notes?:            string;
@@ -107,7 +108,7 @@ export async function createPlayerWithDocuments(
   fd.append('dominantFoot', body.dominantFoot ?? 'right');
   appendIfForm(fd, 'heightCm', body.heightCm);
   appendIfForm(fd, 'weightKg', body.weightKg);
-  fd.append('category', body.category);
+  appendIfForm(fd, 'category', body.category ?? 'General');
   appendIfForm(fd, 'sportDescription', body.sportDescription);
   appendIfForm(fd, 'achievements', body.achievements);
   appendIfForm(fd, 'notes', body.notes);

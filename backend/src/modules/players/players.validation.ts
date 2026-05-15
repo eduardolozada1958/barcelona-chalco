@@ -35,7 +35,10 @@ export const createPlayerSchema = z.object({
   dominantFoot:      z.enum(['right', 'left', 'both']).default('right'),
   heightCm: z.preprocess(normalizeHeightCmInput, z.number().int().min(80).max(250).optional()),
   weightKg: z.preprocess(normalizeWeightKgInput, z.number().int().min(15).max(150).optional()),
-  category:          z.enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20']),
+  category: z
+    .enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20', 'General'])
+    .optional()
+    .default('General'),
   sportDescription:  z.string().max(1000).optional(),
   avatarUrl:         z.string().url().optional(),
   achievements:      z.string().max(500).optional(),
@@ -124,7 +127,10 @@ export const createPlayerMultipartFieldsSchema = z.object({
       (n) => n === undefined || (typeof n === 'number' && n >= 15 && n <= 150),
       { message: 'Peso entre 15 y 150 kg (admite decimales, ej. 70,5).' },
     ),
-  category:          z.enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20']),
+  category: z
+    .enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20', 'General'])
+    .optional()
+    .transform((v) => (v === undefined || v === '' ? 'General' : v)),
   sportDescription:  z.string().max(1000).optional().transform((v) => (v === '' ? undefined : v)),
   achievements:      z.string().max(500).optional().transform((v) => (v === '' ? undefined : v)),
   notes:             z.string().max(500).optional().transform((v) => (v === '' ? undefined : v)),

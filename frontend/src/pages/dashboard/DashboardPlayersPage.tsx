@@ -19,8 +19,6 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerStatusLabel } from '@/config/labels';
 
-const CATEGORIES: CreatePlayerBody['category'][] = ['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20'];
-
 /** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
 function parseHeightCmForBody(raw: string): number | undefined {
   const t = raw.trim().replace(',', '.');
@@ -52,7 +50,6 @@ type PlayerForm = {
   dominantFoot: 'right' | 'left' | 'both';
   heightCm: string;
   weightKg: string;
-  category: CreatePlayerBody['category'];
   sportDescription: string;
   curp: string;
 };
@@ -60,7 +57,6 @@ type PlayerForm = {
 type EditPlayerForm = {
   firstName: string;
   lastName: string;
-  category: CreatePlayerBody['category'];
   status: 'active' | 'inactive';
   isVerified: boolean;
 };
@@ -150,7 +146,6 @@ export function DashboardPlayersPage() {
     defaultValues: {
       nationality:   'Mexicana',
       dominantFoot:  'right',
-      category:      'Sub-17',
       firstName:     '',
       lastName:      '',
       birthDate:     '',
@@ -174,7 +169,6 @@ export function DashboardPlayersPage() {
     defaultValues: {
       firstName: '',
       lastName: '',
-      category: 'Sub-17',
       status: 'active',
       isVerified: false,
     },
@@ -182,14 +176,9 @@ export function DashboardPlayersPage() {
 
   const openEdit = (p: Record<string, unknown>) => {
     setEditRow(p);
-    const rawCat = String(p.category ?? 'Sub-17');
-    const category = (CATEGORIES as readonly string[]).includes(rawCat)
-      ? (rawCat as EditPlayerForm['category'])
-      : 'Sub-17';
     resetEdit({
       firstName: String(p.first_name ?? ''),
       lastName: String(p.last_name ?? ''),
-      category,
       status: p.status === 'inactive' ? 'inactive' : 'active',
       isVerified: Boolean(p.is_verified),
     });
@@ -203,7 +192,6 @@ export function DashboardPlayersPage() {
       body: {
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
-        category: data.category,
         status: data.status,
         isVerified: data.isVerified,
       },
@@ -240,7 +228,6 @@ export function DashboardPlayersPage() {
       birthDate: data.birthDate,
       nationality: data.nationality.trim() || 'Mexicana',
       position:  data.position.trim(),
-      category:  data.category,
       dominantFoot: data.dominantFoot,
       secondaryPosition: data.secondaryPosition.trim() || undefined,
       sportDescription: data.sportDescription.trim() || undefined,
@@ -292,7 +279,6 @@ export function DashboardPlayersPage() {
           <thead className="bg-surface-container border-b border-outline-variant/20">
             <tr>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Jugador</th>
-              <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Categoría</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Estado</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Verificado</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant text-right">Acciones</th>
@@ -313,7 +299,6 @@ export function DashboardPlayersPage() {
                     <span className="font-medium text-on-surface">{String(p.first_name)} {String(p.last_name)}</span>
                   </div>
                 </td>
-                <td className="p-4 text-on-surface-variant">{String(p.category)}</td>
                 <td className="p-4">
                   <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps ${
                     p.status === 'active'
@@ -378,14 +363,6 @@ export function DashboardPlayersPage() {
               <label className={formLabelClass}>Nacionalidad</label>
               <input className={formInputClass} {...register('nationality')} />
             </div>
-          </div>
-          <div>
-            <label className={formLabelClass}>Categoría</label>
-            <select className={formInputClass} {...register('category', { required: true })}>
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
           </div>
 
           <div className="rounded-lg border border-outline-variant/30 bg-surface-container/50 p-3 space-y-3">
@@ -520,23 +497,13 @@ export function DashboardPlayersPage() {
               {editErrors.lastName && <p className={formErrorClass}>{editErrors.lastName.message}</p>}
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={formLabelClass}>Categoría</label>
-              <select className={formInputClass} {...registerEdit('category', { required: true })}>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={formLabelClass}>Estado en plantilla</label>
-              <select className={formInputClass} {...registerEdit('status', { required: true })}>
-                <option value="active">Activo</option>
-                <option value="inactive">Inactivo</option>
-              </select>
-              <p className="text-[11px] text-on-surface-variant mt-1">Solo los activos y verificados suelen mostrarse en el sitio público.</p>
-            </div>
+          <div>
+            <label className={formLabelClass}>Estado en plantilla</label>
+            <select className={formInputClass} {...registerEdit('status', { required: true })}>
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+            <p className="text-[11px] text-on-surface-variant mt-1">Solo los activos y verificados suelen mostrarse en el sitio público.</p>
           </div>
           <div className="flex items-start gap-3 rounded-lg border border-outline-variant/30 bg-surface-container/40 px-3 py-3">
             <Controller

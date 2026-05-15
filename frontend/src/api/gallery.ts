@@ -85,3 +85,26 @@ export async function publishGalleryPost(id: string) {
   const { data } = await apiClient.patch<ApiResponse<unknown>>(`/gallery/${id}/publish`);
   return data;
 }
+
+/** Añade imágenes a una publicación existente (campo multipart `images`, igual que en el alta). */
+export async function addGalleryPostMedia(postId: string, files: File[]) {
+  const fd = new FormData();
+  files.forEach((file) => fd.append('images', file));
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/gallery/${postId}/media`, fd, {
+    timeout: 120_000,
+    transformRequest: [
+      (body, headers) => {
+        if (headers && typeof headers === 'object') {
+          delete (headers as Record<string, unknown>)['Content-Type'];
+        }
+        return body as FormData;
+      },
+    ],
+  });
+  return data;
+}
+
+export async function removeGalleryPostMedia(postId: string, mediaId: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/gallery/${postId}/media/${mediaId}`);
+  return data;
+}

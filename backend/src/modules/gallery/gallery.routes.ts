@@ -7,6 +7,7 @@ import { runGalleryMediaUpload } from './gallery.media.middleware';
 import {
   listGalleryQuerySchema,
   galleryPostIdParamSchema,
+  galleryMediaRouteParamSchema,
   createGalleryPostBodySchema,
   updateGalleryPostBodySchema,
 } from './gallery.validation';
@@ -56,6 +57,23 @@ galleryRouter.put(
   validateParams(galleryPostIdParamSchema),
   validateBody(updateGalleryPostBodySchema),
   GalleryController.update
+);
+
+galleryRouter.post(
+  '/:id/media',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(galleryPostIdParamSchema),
+  runGalleryMediaUpload,
+  GalleryController.addMedia
+);
+
+galleryRouter.delete(
+  '/:id/media/:mediaId',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(galleryMediaRouteParamSchema),
+  GalleryController.removeMedia
 );
 
 galleryRouter.patch(

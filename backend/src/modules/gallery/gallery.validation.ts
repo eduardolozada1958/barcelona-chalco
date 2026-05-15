@@ -13,6 +13,11 @@ export const galleryPostIdParamSchema = z.object({
   id: z.string().uuid('ID inválido'),
 });
 
+export const galleryMediaRouteParamSchema = z.object({
+  id:      z.string().uuid('ID inválido'),
+  mediaId: z.string().uuid('ID de imagen inválido'),
+});
+
 export const listGalleryQuerySchema = z.object({
   ...pagination,
   type:   z

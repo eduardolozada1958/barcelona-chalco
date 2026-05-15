@@ -5,10 +5,12 @@ import { useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 import {
+  addGalleryPostMedia,
   createGalleryPostWithMedia,
   deleteGalleryPost,
   listGalleryAdmin,
   publishGalleryPost,
+  removeGalleryPostMedia,
   updateGalleryPost,
   type CreateGalleryPostBody,
 } from '@/api/gallery';
@@ -36,9 +38,35 @@ const MAX_IMAGES = 20;
 function firstMediaUrl(post: Record<string, unknown>): string | null {
   const media = post.gallery_media;
   if (!Array.isArray(media) || media.length === 0) return null;
-  const first = media[0] as Record<string, unknown>;
-  const url = first?.url;
-  return typeof url === 'string' ? url : null;
+  const sorted = [...media]
+    .map((item) => {
+      const o = item as Record<string, unknown>;
+      const sort = typeof o.sort_order === 'number' ? o.sort_order : 0;
+      const url = typeof o.url === 'string' ? o.url : null;
+      return url ? { sort, url } : null;
+    })
+    .filter((x): x is { sort: number; url: string } => x != null)
+    .sort((a, b) => a.sort - b.sort);
+  return sorted[0]?.url ?? null;
+}
+
+/** Filas de `gallery_media` ordenadas por `sort_order`. */
+function galleryMediaFromPost(post: Record<string, unknown> | null): { id: string; url: string }[] {
+  if (!post) return [];
+  const media = post.gallery_media;
+  if (!Array.isArray(media)) return [];
+  const rows = media
+    .map((item) => {
+      const o = item as Record<string, unknown>;
+      const id = o.id != null ? String(o.id) : '';
+      const url = typeof o.url === 'string' ? o.url : '';
+      const sort = typeof o.sort_order === 'number' ? o.sort_order : 0;
+      if (!id || !url) return null;
+      return { id, url, sort };
+    })
+    .filter((x): x is { id: string; url: string; sort: number } => x != null)
+    .sort((a, b) => a.sort - b.sort);
+  return rows.map(({ id, url }) => ({ id, url }));
 }
 
 export function DashboardGalleryPage() {
@@ -49,6 +77,7 @@ export function DashboardGalleryPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (searchParams.get('crear') === '1') {
@@ -112,6 +141,31 @@ export function DashboardGalleryPage() {
       void qc.invalidateQueries({ queryKey: ['gallery-admin'] });
       void qc.invalidateQueries({ queryKey: ['gallery-public'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const addMediaMut = useMutation({
+    mutationFn: ({ id, files }: { id: string; files: File[] }) => addGalleryPostMedia(id, files),
+    onSuccess: (res, _vars) => {
+      const row = res.data as Record<string, unknown> | undefined;
+      if (row) setEditRow(row);
+      toast.success(res.message || 'Imágenes añadidas');
+      void qc.invalidateQueries({ queryKey: ['gallery-admin'] });
+      void qc.invalidateQueries({ queryKey: ['gallery-public'] });
+      if (editFileInputRef.current) editFileInputRef.current.value = '';
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const removeMediaMut = useMutation({
+    mutationFn: ({ id, mediaId }: { id: string; mediaId: string }) => removeGalleryPostMedia(id, mediaId),
+    onSuccess: (res) => {
+      const row = res.data as Record<string, unknown> | undefined;
+      if (row) setEditRow(row);
+      toast.success(res.message || 'Imagen eliminada');
+      void qc.invalidateQueries({ queryKey: ['gallery-admin'] });
+      void qc.invalidateQueries({ queryKey: ['gallery-public'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -189,6 +243,30 @@ export function DashboardGalleryPage() {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function onPickEditImages(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!editRow) return;
+    const picked = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    if (!picked.length) return;
+
+    const valid = picked.filter((f) => ['image/png', 'image/jpeg', 'image/webp'].includes(f.type));
+    if (valid.length < picked.length) {
+      toast.error('Solo se permiten imágenes PNG, JPEG o WebP');
+    }
+    const currentCount = galleryMediaFromPost(editRow).length;
+    const room = MAX_IMAGES - currentCount;
+    if (room <= 0) {
+      toast.error(`Máximo ${MAX_IMAGES} imágenes por publicación`);
+      return;
+    }
+    const toAdd = valid.slice(0, room);
+    if (toAdd.length < valid.length) {
+      toast.error(`Solo caben ${room} imagen(es) más`);
+    }
+    if (!toAdd.length) return;
+    addMediaMut.mutate({ id: String(editRow.id), files: toAdd });
+  }
+
   const onCreate = handleSubmit((data) => {
     if (imageFiles.length === 0) {
       toast.error('Adjunta al menos una imagen');
@@ -205,6 +283,7 @@ export function DashboardGalleryPage() {
 
   if (q.isLoading) return <Spinner />;
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
+  const editMediaList = galleryMediaFromPost(editRow);
 
   return (
     <div>
@@ -336,6 +415,53 @@ export function DashboardGalleryPage() {
 
       <DashboardModal open={Boolean(editRow)} onClose={closeEditModal} title="Editar publicación">
         <form onSubmit={onEdit} className="space-y-3">
+          {editRow && (
+            <div>
+              <label className={formLabelClass}>Imágenes</label>
+              <p className="text-[11px] text-on-surface-variant mb-2">
+                Elimina fotos o añade más (máximo {MAX_IMAGES} en total). Debe quedar al menos una imagen en la publicación.
+              </p>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                className="hidden"
+                onChange={onPickEditImages}
+              />
+              <button
+                type="button"
+                onClick={() => editFileInputRef.current?.click()}
+                disabled={addMediaMut.isPending || editMediaList.length >= MAX_IMAGES}
+                className="mb-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+              >
+                <MaterialIcon name="add_photo_alternate" size={20} />
+                {addMediaMut.isPending ? 'Subiendo…' : 'Añadir imágenes'}
+              </button>
+              {editMediaList.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {editMediaList.map((m) => {
+                    const onlyOne = editMediaList.length <= 1;
+                    return (
+                      <div key={m.id} className="relative aspect-square rounded-lg overflow-hidden border border-outline-variant/30">
+                        <img src={m.url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          title={onlyOne ? 'Sube otra imagen antes de borrar esta' : 'Eliminar imagen'}
+                          disabled={removeMediaMut.isPending || onlyOne}
+                          onClick={() => removeMediaMut.mutate({ id: String(editRow.id), mediaId: m.id })}
+                          className="absolute top-1 right-1 bg-background/90 text-on-surface rounded-full p-0.5 hover:bg-error/80 hover:text-on-error disabled:opacity-40 disabled:pointer-events-none"
+                          aria-label="Eliminar imagen"
+                        >
+                          <MaterialIcon name="delete" size={16} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
           <div>
             <label className={formLabelClass}>Título</label>
             <input className={formInputClass} {...registerEdit('title', { required: 'El título es obligatorio', minLength: { value: 3, message: 'Mínimo 3 caracteres' } })} />

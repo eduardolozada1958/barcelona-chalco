@@ -77,6 +77,28 @@ export class GalleryController {
     }
   }
 
+  static async addMedia(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const files = (req.files as Express.Multer.File[] | undefined) ?? [];
+      assertGalleryImageFiles(files);
+      const row = await GalleryService.addMediaToPost(routeParam(req, 'id'), files);
+      sendSuccess(res, row, 'Imágenes añadidas');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async removeMedia(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = routeParam(req, 'id');
+      const mediaId = routeParam(req, 'mediaId');
+      const row = await GalleryService.removeMediaItem(id, mediaId);
+      sendSuccess(res, row, 'Imagen eliminada');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async publish(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const row = await GalleryService.publish(routeParam(req, 'id'));
