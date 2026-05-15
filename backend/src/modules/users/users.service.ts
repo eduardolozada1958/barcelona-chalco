@@ -1,7 +1,9 @@
+import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@config/database';
+import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
-import type { ListUsersQuery, UpdateUserBody } from './users.validation';
+import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
   'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, created_at, updated_at';
@@ -42,6 +44,39 @@ export class UsersService {
       .single();
 
     if (error || !data) throw new NotFoundError('Usuario no encontrado');
+    return data;
+  }
+
+  static async create(input: CreateUserBody) {
+    const email = input.email.toLowerCase();
+    const { data: existing } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (existing) throw new ConflictError('El correo ya está registrado');
+
+    const passwordHash = await bcrypt.hash(input.password, env.BCRYPT_ROUNDS);
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        email,
+        password_hash: passwordHash,
+        role:          input.role,
+        full_name:     input.fullName,
+        phone:         input.phone ?? null,
+        status:        'active',
+        email_verified: true,
+      })
+      .select(USER_SELECT)
+      .single();
+
+    if (error) {
+      if (error.code === '23505') throw new ConflictError('El correo ya está registrado');
+      throw new Error(error.message);
+    }
     return data;
   }
 

@@ -6,10 +6,13 @@ import toast from 'react-hot-toast';
 
 import {
   createGalleryPostWithMedia,
+  deleteGalleryPost,
   listGalleryAdmin,
   publishGalleryPost,
+  updateGalleryPost,
   type CreateGalleryPostBody,
 } from '@/api/gallery';
+import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -20,6 +23,12 @@ type GalleryForm = {
   caption: string;
   type: NonNullable<CreateGalleryPostBody['type']>;
   publish: boolean;
+};
+
+type GalleryEditForm = {
+  title: string;
+  caption: string;
+  type: NonNullable<CreateGalleryPostBody['type']>;
 };
 
 const MAX_IMAGES = 20;
@@ -36,6 +45,7 @@ export function DashboardGalleryPage() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
+  const [editRow, setEditRow] = useState<Record<string, unknown> | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,8 +92,72 @@ export function DashboardGalleryPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateMut = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateGalleryPost>[1] }) =>
+      updateGalleryPost(id, body),
+    onSuccess: () => {
+      toast.success('Publicación actualizada');
+      void qc.invalidateQueries({ queryKey: ['gallery-admin'] });
+      void qc.invalidateQueries({ queryKey: ['gallery-public'] });
+      setEditRow(null);
+      resetEdit();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteGalleryPost(id),
+    onSuccess: () => {
+      toast.success('Publicación eliminada');
+      void qc.invalidateQueries({ queryKey: ['gallery-admin'] });
+      void qc.invalidateQueries({ queryKey: ['gallery-public'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<GalleryForm>({
     defaultValues: { title: '', caption: '', type: 'general', publish: false },
+  });
+
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    formState: { errors: editErrors },
+  } = useForm<GalleryEditForm>({
+    defaultValues: { title: '', caption: '', type: 'general' },
+  });
+
+  function openEdit(post: Record<string, unknown>) {
+    setEditRow(post);
+    resetEdit({
+      title: String(post.title ?? ''),
+      caption: typeof post.caption === 'string' ? post.caption : '',
+      type: (post.type as GalleryEditForm['type']) ?? 'general',
+    });
+  }
+
+  function closeEditModal() {
+    setEditRow(null);
+    resetEdit();
+  }
+
+  function confirmDelete(id: string, title: string) {
+    if (!window.confirm(`¿Eliminar la publicación «${title}»? Esta acción no se puede deshacer.`)) return;
+    deleteMut.mutate(id);
+  }
+
+  const onEdit = handleSubmitEdit((data) => {
+    if (!editRow) return;
+    updateMut.mutate({
+      id: String(editRow.id),
+      body: {
+        title: data.title.trim(),
+        caption: data.caption.trim() || null,
+        type: data.type,
+      },
+    });
   });
 
   function closeCreateModal() {
@@ -135,13 +209,13 @@ export function DashboardGalleryPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Galería</h1>
+        <h1 className="font-headline-lg text-headline-lg text-on-surface">📸 Galería</h1>
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
           className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2"
         >
-          <MaterialIcon name="add_photo_alternate" size={18} /> Nueva publicación
+          ➕ Nueva publicación
         </button>
       </div>
 
@@ -169,16 +243,15 @@ export function DashboardGalleryPage() {
                     </span>
                   </div>
                 </div>
-                {!post.is_published && (
-                  <button
-                    type="button"
-                    onClick={() => publishMut.mutate(String(post.id))}
-                    disabled={publishMut.isPending}
-                    className="shrink-0 text-primary font-label-caps text-[10px] hover:underline disabled:opacity-50"
-                  >
-                    Publicar
-                  </button>
-                )}
+                <DashboardRowActions
+                  onEdit={() => openEdit(post)}
+                  onDelete={() => confirmDelete(String(post.id), String(post.title))}
+                  onPublish={() => publishMut.mutate(String(post.id))}
+                  showPublish={!post.is_published}
+                  isPublished={Boolean(post.is_published)}
+                  publishPending={publishMut.isPending}
+                  deletePending={deleteMut.isPending}
+                />
               </div>
             </div>
           );
@@ -256,6 +329,36 @@ export function DashboardGalleryPage() {
             </button>
             <button type="submit" disabled={createMut.isPending} className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50">
               {createMut.isPending ? 'Subiendo…' : 'Crear publicación'}
+            </button>
+          </div>
+        </form>
+      </DashboardModal>
+
+      <DashboardModal open={Boolean(editRow)} onClose={closeEditModal} title="Editar publicación">
+        <form onSubmit={onEdit} className="space-y-3">
+          <div>
+            <label className={formLabelClass}>Título</label>
+            <input className={formInputClass} {...registerEdit('title', { required: 'El título es obligatorio', minLength: { value: 3, message: 'Mínimo 3 caracteres' } })} />
+            {editErrors.title && <p className={formErrorClass}>{editErrors.title.message}</p>}
+          </div>
+          <div>
+            <label className={formLabelClass}>Tipo</label>
+            <select className={formInputClass} {...registerEdit('type')}>
+              {GALLERY_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={formLabelClass}>Pie de foto / descripción (opcional)</label>
+            <textarea rows={3} className={formInputClass} {...registerEdit('caption')} />
+          </div>
+          <div className={formActionsClass}>
+            <button type="button" onClick={closeEditModal} className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">
+              Cancelar
+            </button>
+            <button type="submit" disabled={updateMut.isPending} className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50">
+              {updateMut.isPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>
         </form>

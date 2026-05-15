@@ -25,7 +25,28 @@ export async function listResultsAdmin(params?: Record<string, string | number |
   return data;
 }
 
+export interface UpdateResultBody {
+  goalsScored?: number;
+  goalsConceded?: number;
+  matchReport?: string | null;
+}
+
 export async function createResult(body: CreateResultBody) {
   const { data } = await apiClient.post<ApiResponse<unknown>>('/results', body);
+  return data;
+}
+
+export async function updateResult(id: string, body: UpdateResultBody) {
+  const { data } = await apiClient.put<ApiResponse<unknown>>(`/results/${id}`, body);
+  return data;
+}
+
+export async function publishResult(id: string) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/results/${id}/publish`);
+  return data;
+}
+
+export async function deleteResult(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/results/${id}`);
   return data;
 }

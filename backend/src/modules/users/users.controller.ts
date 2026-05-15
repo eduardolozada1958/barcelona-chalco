@@ -3,8 +3,7 @@ import { UsersService } from './users.service';
 import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
-import type { UpdateUserBody } from './users.validation';
-import type { ListUsersQuery } from './users.validation';
+import type { CreateUserBody, UpdateUserBody, ListUsersQuery } from './users.validation';
 
 export class UsersController {
   static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -21,6 +20,15 @@ export class UsersController {
     try {
       const user = await UsersService.getById(routeParam(req, 'id'));
       sendSuccess(res, user, 'Usuario obtenido');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = await UsersService.create(req.body as CreateUserBody);
+      sendSuccess(res, user, 'Usuario creado', HTTP_STATUS.CREATED);
     } catch (e) {
       next(e);
     }

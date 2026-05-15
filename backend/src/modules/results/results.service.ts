@@ -127,6 +127,14 @@ export class ResultsService {
     if (insErr) throw new Error(insErr.message);
   }
 
+  static async remove(id: string) {
+    await ResultsService.getById(id);
+    const { error: statsErr } = await supabaseAdmin.from('player_stats').delete().eq('result_id', id);
+    if (statsErr) throw new Error(statsErr.message);
+    const { error } = await supabaseAdmin.from('results').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  }
+
   static async publish(id: string) {
     await ResultsService.getById(id);
 

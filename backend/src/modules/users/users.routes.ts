@@ -6,6 +6,7 @@ import { UsersController } from './users.controller';
 import {
   listUsersQuerySchema,
   userIdParamSchema,
+  createUserBodySchema,
   updateUserBodySchema,
 } from './users.validation';
 
@@ -17,6 +18,14 @@ usersRouter.get(
   requireAdmin,
   validateQuery(listUsersQuerySchema),
   UsersController.list
+);
+
+usersRouter.post(
+  '/',
+  authMiddleware,
+  requireAdmin,
+  validateBody(createUserBodySchema),
+  UsersController.create
 );
 
 usersRouter.get(

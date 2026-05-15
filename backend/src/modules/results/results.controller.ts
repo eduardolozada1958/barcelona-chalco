@@ -61,4 +61,13 @@ export class ResultsController {
       next(e);
     }
   }
+
+  static async remove(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await ResultsService.remove(routeParam(req, 'id'));
+      sendSuccess(res, null, 'Resultado eliminado');
+    } catch (e) {
+      next(e);
+    }
+  }
 }

@@ -6,12 +6,14 @@ import toast from 'react-hot-toast';
 
 import {
   createMatch,
+  deleteMatch,
   listMatchesAdmin,
   updateMatch,
   uploadOpponentLogo,
   type CreateMatchBody,
   type UpdateMatchBody,
 } from '@/api/matches';
+import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -20,6 +22,7 @@ import { LineupPitchEditor } from '@/components/LineupPitchEditor';
 import { OpponentLogoUpload } from '@/components/OpponentLogoUpload';
 import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config/formations';
 import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
+import { matchStatusLabel } from '@/config/labels';
 import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
 
 /** Partidos sin ramas Sub-XX: una sola categoría lógica en base de datos. */
@@ -39,6 +42,24 @@ type MatchForm = {
   formationType: '' | 'football_7' | 'football_11';
 };
 
+type MatchEditForm = {
+  title: string;
+  opponentName: string;
+  matchDateLocal: string;
+  location: string;
+  matchType: NonNullable<CreateMatchBody['matchType']>;
+  status: NonNullable<CreateMatchBody['status']>;
+  isHome: boolean;
+};
+
+function isoToDatetimeLocal(iso: string | unknown): string {
+  if (typeof iso !== 'string' || !iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function normalizeLineupFromRow(raw: unknown): string[] {
   if (!raw || !Array.isArray(raw)) return [];
   return raw.filter((x): x is string => typeof x === 'string');
@@ -50,6 +71,7 @@ export function DashboardMatchesPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [lineupSlots, setLineupSlots] = useState<(string | null)[]>([]);
   const [lineupModalMatch, setLineupModalMatch] = useState<Record<string, unknown> | null>(null);
+  const [editMatchRow, setEditMatchRow] = useState<Record<string, unknown> | null>(null);
   const [lineupEditSlots, setLineupEditSlots] = useState<(string | null)[]>([]);
   const [lineupEditFormation, setLineupEditFormation] = useState<'football_7' | 'football_11'>('football_11');
   const [createOpponentLogo, setCreateOpponentLogo] = useState<File | null>(null);
@@ -128,6 +150,29 @@ export function DashboardMatchesPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const updateMatchMut = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateMatchBody }) => updateMatch(id, body),
+    onSuccess: () => {
+      toast.success('Partido actualizado');
+      void qc.invalidateQueries({ queryKey: ['matches-admin'] });
+      void qc.invalidateQueries({ queryKey: ['matches-public'] });
+      setEditMatchRow(null);
+      resetEdit();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteMatch(id),
+    onSuccess: () => {
+      toast.success('Partido eliminado');
+      void qc.invalidateQueries({ queryKey: ['matches-admin'] });
+      void qc.invalidateQueries({ queryKey: ['matches-public'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<MatchForm>({
     defaultValues: {
       title: '',
@@ -142,6 +187,66 @@ export function DashboardMatchesPage() {
       description: '',
       formationType: '',
     },
+  });
+
+  const {
+    register: registerEdit,
+    handleSubmit: handleSubmitEdit,
+    reset: resetEdit,
+    formState: { errors: editErrors },
+  } = useForm<MatchEditForm>({
+    defaultValues: {
+      title: '',
+      opponentName: '',
+      matchDateLocal: '',
+      location: '',
+      matchType: 'league',
+      status: 'scheduled',
+      isHome: true,
+    },
+  });
+
+  function openEditMatch(m: Record<string, unknown>) {
+    setEditMatchRow(m);
+    resetEdit({
+      title: String(m.title ?? ''),
+      opponentName: String(m.opponent_name ?? ''),
+      matchDateLocal: isoToDatetimeLocal(m.match_date),
+      location: String(m.location ?? ''),
+      matchType: (m.match_type as MatchEditForm['matchType']) ?? 'league',
+      status: (m.status as MatchEditForm['status']) ?? 'scheduled',
+      isHome: m.is_home !== false,
+    });
+  }
+
+  function closeEditMatchModal() {
+    setEditMatchRow(null);
+    resetEdit();
+  }
+
+  function confirmDeleteMatch(id: string, title: string) {
+    if (!window.confirm(`¿Eliminar el partido «${title}»? Esta acción no se puede deshacer.`)) return;
+    deleteMut.mutate(id);
+  }
+
+  const onEditMatch = handleSubmitEdit((data) => {
+    if (!editMatchRow) return;
+    if (!data.matchDateLocal) {
+      toast.error('Indica fecha y hora del partido');
+      return;
+    }
+    updateMatchMut.mutate({
+      id: String(editMatchRow.id),
+      body: {
+        title:        data.title.trim(),
+        opponentName: data.opponentName.trim(),
+        matchDate:    new Date(data.matchDateLocal).toISOString(),
+        location:     data.location.trim(),
+        matchType:    data.matchType,
+        status:       data.status,
+        isHome:       data.isHome,
+      },
+    });
   });
 
   const formationWatch = watch('formationType');
@@ -290,7 +395,7 @@ export function DashboardMatchesPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Partidos</h1>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">📅 Partidos</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">Gestión de calendario deportivo</p>
         </div>
         <button
@@ -332,7 +437,7 @@ export function DashboardMatchesPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+              <div className="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-auto justify-end">
                 <button
                   type="button"
                   onClick={() => openLineupModal(m)}
@@ -346,8 +451,13 @@ export function DashboardMatchesPage() {
                   'bg-surface-variant text-on-surface-variant'
                 }`}>
                   <MaterialIcon name={status === 'completed' ? 'check_circle' : 'schedule'} size={12} />
-                  {status}
+                  {matchStatusLabel(status)}
                 </span>
+                <DashboardRowActions
+                  onEdit={() => openEditMatch(m)}
+                  onDelete={() => confirmDeleteMatch(String(m.id), String(m.title))}
+                  deletePending={deleteMut.isPending}
+                />
               </div>
             </div>
           );
@@ -602,6 +712,64 @@ export function DashboardMatchesPage() {
             </div>
           </div>
         ) : null}
+      </DashboardModal>
+
+      <DashboardModal open={Boolean(editMatchRow)} onClose={closeEditMatchModal} title="Editar partido" wide>
+        <form onSubmit={onEditMatch} className="space-y-3">
+          <div>
+            <label className={formLabelClass}>Título del partido</label>
+            <input className={formInputClass} {...registerEdit('title', { required: 'Requerido', minLength: 3 })} />
+            {editErrors.title && <p className={formErrorClass}>{editErrors.title.message}</p>}
+          </div>
+          <div>
+            <label className={formLabelClass}>Rival</label>
+            <input className={formInputClass} {...registerEdit('opponentName', { required: 'Requerido', minLength: 2 })} />
+            {editErrors.opponentName && <p className={formErrorClass}>{editErrors.opponentName.message}</p>}
+          </div>
+          <div>
+            <label className={formLabelClass}>Fecha y hora</label>
+            <input type="datetime-local" className={formInputClass} {...registerEdit('matchDateLocal', { required: true })} />
+          </div>
+          <div>
+            <label className={formLabelClass}>Ubicación</label>
+            <input className={formInputClass} {...registerEdit('location', { required: 'Requerido', minLength: 2 })} />
+            {editErrors.location && <p className={formErrorClass}>{editErrors.location.message}</p>}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={formLabelClass}>Tipo</label>
+              <select className={formInputClass} {...registerEdit('matchType')}>
+                <option value="league">Liga</option>
+                <option value="cup">Copa</option>
+                <option value="friendly">Amistoso</option>
+                <option value="tournament">Torneo</option>
+                <option value="internal">Interno</option>
+              </select>
+            </div>
+            <div>
+              <label className={formLabelClass}>Estado</label>
+              <select className={formInputClass} {...registerEdit('status')}>
+                <option value="scheduled">Programado</option>
+                <option value="in_progress">En juego</option>
+                <option value="completed">Finalizado</option>
+                <option value="cancelled">Cancelado</option>
+                <option value="postponed">Aplazado</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="isHomeEdit" className="rounded border-outline-variant" {...registerEdit('isHome')} />
+            <label htmlFor="isHomeEdit" className="text-sm text-on-surface">Partido en casa</label>
+          </div>
+          <div className={formActionsClass}>
+            <button type="button" onClick={closeEditMatchModal} className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">
+              Cancelar
+            </button>
+            <button type="submit" disabled={updateMatchMut.isPending} className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50">
+              {updateMatchMut.isPending ? 'Guardando…' : 'Guardar cambios'}
+            </button>
+          </div>
+        </form>
       </DashboardModal>
     </div>
   );

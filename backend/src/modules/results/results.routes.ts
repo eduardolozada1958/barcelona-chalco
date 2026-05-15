@@ -52,3 +52,11 @@ resultsRouter.patch(
   validateParams(resultIdParamSchema),
   ResultsController.publish
 );
+
+resultsRouter.delete(
+  '/:id',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(resultIdParamSchema),
+  ResultsController.remove
+);

@@ -13,16 +13,16 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { to: '/dashboard',               label: 'Inicio',        icon: 'dashboard',       roles: ['admin','coach','parent'], end: true },
-  { to: '/dashboard/mis-jugadores', label: 'Mis Jugadores', icon: 'family_restroom', roles: ['parent'] },
-  { to: '/dashboard/players',       label: 'Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
-  { to: '/dashboard/matches',       label: 'Partidos',      icon: 'calendar_today',  roles: ['admin','coach'] },
-  { to: '/dashboard/results',       label: 'Resultados',    icon: 'sports_score',    roles: ['admin','coach'] },
-  { to: '/dashboard/notices',       label: 'Avisos',        icon: 'campaign',        roles: ['admin','coach'] },
-  { to: '/dashboard/gallery',       label: 'Galería',       icon: 'photo_library',   roles: ['admin','coach'] },
-  { to: '/dashboard/inscriptions',  label: 'Inscripciones', icon: 'assignment',      roles: ['admin','coach'] },
-  { to: '/dashboard/users',         label: 'Usuarios',      icon: 'manage_accounts', roles: ['admin'] },
-  { to: '/dashboard/settings',      label: 'Ajustes',       icon: 'settings',        roles: ['admin'] },
+  { to: '/dashboard',               label: '🏠 Inicio',        icon: 'dashboard',       roles: ['admin','coach','parent'], end: true },
+  { to: '/dashboard/mis-jugadores', label: '👨‍👩‍👦 Mis Jugadores', icon: 'family_restroom', roles: ['parent'] },
+  { to: '/dashboard/players',       label: '⚽ Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
+  { to: '/dashboard/matches',       label: '📅 Partidos',      icon: 'calendar_today',  roles: ['admin','coach'] },
+  { to: '/dashboard/results',       label: '🏆 Resultados',    icon: 'sports_score',    roles: ['admin','coach'] },
+  { to: '/dashboard/notices',       label: '📢 Avisos',        icon: 'campaign',        roles: ['admin','coach'] },
+  { to: '/dashboard/gallery',       label: '📸 Galería',       icon: 'photo_library',   roles: ['admin','coach'] },
+  { to: '/dashboard/inscriptions',  label: '📝 Inscripciones', icon: 'assignment',      roles: ['admin','coach'] },
+  { to: '/dashboard/users',         label: '👥 Usuarios',      icon: 'manage_accounts', roles: ['admin'] },
+  { to: '/dashboard/settings',      label: '⚙️ Ajustes',       icon: 'settings',        roles: ['admin'] },
 ];
 
 export function DashboardLayout() {
@@ -58,7 +58,7 @@ export function DashboardLayout() {
       </ul>
       <div className="px-4 mt-auto space-y-3 pb-stack-sm border-t border-outline-variant/10 pt-4">
         <NavLink to="/" className="w-full bg-primary text-on-primary font-label-caps text-label-caps py-3 rounded hover:shadow-gold-glow transition-all flex items-center justify-center gap-2">
-          <MaterialIcon name="public" size={18} /> Sitio Público
+          <MaterialIcon name="public" size={18} /> 🌐 Sitio Público
         </NavLink>
         <button type="button" onClick={() => void handleLogout()} className="w-full flex items-center gap-stack-sm px-4 py-2 text-on-surface-variant hover:text-error transition-colors rounded-lg font-label-caps text-label-caps">
           <MaterialIcon name="logout" size={20} /> Cerrar Sesión

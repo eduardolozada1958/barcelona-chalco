@@ -17,6 +17,7 @@ import type { ApiResponse } from '@/api/types';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { playerStatusLabel } from '@/config/labels';
 
 const CATEGORIES: CreatePlayerBody['category'][] = ['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20'];
 
@@ -274,7 +275,7 @@ export function DashboardPlayersPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
         <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Plantilla</h1>
+          <h1 className="font-headline-lg text-headline-lg text-on-surface">⚽ Plantilla</h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">{rows.length} jugadores registrados</p>
         </div>
         <button
@@ -302,8 +303,12 @@ export function DashboardPlayersPage() {
               <tr key={String(p.id)} className="border-t border-outline-variant/10 hover:bg-surface-container/30 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/20">
-                      <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
+                    <div className="w-9 h-9 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/20 overflow-hidden">
+                      {typeof p.avatar_url === 'string' && p.avatar_url ? (
+                        <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
+                      )}
                     </div>
                     <span className="font-medium text-on-surface">{String(p.first_name)} {String(p.last_name)}</span>
                   </div>
@@ -316,7 +321,7 @@ export function DashboardPlayersPage() {
                       : 'bg-surface-variant text-on-surface-variant'
                   }`}>
                     <MaterialIcon name={p.status === 'active' ? 'check_circle' : 'pause_circle'} size={12} />
-                    {String(p.status)}
+                    {playerStatusLabel(String(p.status))}
                   </span>
                 </td>
                 <td className="p-4">

@@ -25,6 +25,7 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
   const [selectedRole, setSelectedRole] = useState<'parent' | 'admin' | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -156,14 +157,24 @@ export function LoginPage() {
                   <label htmlFor="password" className="font-label-caps text-label-caps text-on-surface-variant block mb-2">
                     CONTRASEÑA
                   </label>
-                  <input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40"
-                    {...register('password')}
-                  />
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 pr-12 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40"
+                      {...register('password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary p-1"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                    >
+                      <MaterialIcon name={showPassword ? 'visibility_off' : 'visibility'} size={22} />
+                    </button>
+                  </div>
                   {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
                 </div>
 
@@ -194,3 +205,5 @@ export function LoginPage() {
     </div>
   );
 }
+
+

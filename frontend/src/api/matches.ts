@@ -51,6 +51,11 @@ export async function updateMatch(id: string, body: UpdateMatchBody) {
   return data;
 }
 
+export async function deleteMatch(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/matches/${id}`);
+  return data;
+}
+
 export async function uploadOpponentLogo(matchId: string, file: File) {
   const fd = new FormData();
   fd.append('logo', file);

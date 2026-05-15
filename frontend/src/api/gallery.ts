@@ -64,6 +64,23 @@ export async function createGalleryPostWithMedia(input: CreateGalleryWithMediaIn
   return data;
 }
 
+export interface UpdateGalleryPostBody {
+  title?: string;
+  caption?: string | null;
+  type?: CreateGalleryPostBody['type'];
+  isFeatured?: boolean;
+}
+
+export async function updateGalleryPost(id: string, body: UpdateGalleryPostBody) {
+  const { data } = await apiClient.put<ApiResponse<unknown>>(`/gallery/${id}`, body);
+  return data;
+}
+
+export async function deleteGalleryPost(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/gallery/${id}`);
+  return data;
+}
+
 export async function publishGalleryPost(id: string) {
   const { data } = await apiClient.patch<ApiResponse<unknown>>(`/gallery/${id}/publish`);
   return data;

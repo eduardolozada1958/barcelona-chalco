@@ -19,6 +19,14 @@ export const userIdParamSchema = z.object({
   id: z.string().uuid('ID inválido'),
 });
 
+export const createUserBodySchema = z.object({
+  email:    z.string().email('Correo inválido'),
+  password: z.string().min(8, 'Mínimo 8 caracteres'),
+  fullName: z.string().min(2).max(150),
+  role:     z.enum(['admin', 'coach']),
+  phone:    z.string().max(30).nullable().optional(),
+});
+
 export const updateUserBodySchema = z.object({
   fullName:  z.string().min(2).max(150).optional(),
   phone:     z.string().max(30).nullable().optional(),
@@ -28,4 +36,5 @@ export const updateUserBodySchema = z.object({
 });
 
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;

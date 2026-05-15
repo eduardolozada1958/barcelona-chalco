@@ -32,6 +32,18 @@ export async function createNotice(body: CreateNoticeBody) {
   return data;
 }
 
+export type UpdateNoticeBody = Partial<CreateNoticeBody>;
+
+export async function updateNotice(id: string, body: UpdateNoticeBody) {
+  const { data } = await apiClient.put<ApiResponse<unknown>>(`/notices/${id}`, body);
+  return data;
+}
+
+export async function deleteNotice(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/notices/${id}`);
+  return data;
+}
+
 export async function publishNotice(id: string) {
   const { data } = await apiClient.patch<ApiResponse<unknown>>(`/notices/${id}/publish`);
   return data;
