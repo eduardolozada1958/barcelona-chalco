@@ -128,7 +128,10 @@ export const createPlayerMultipartFieldsSchema = z.object({
       { message: 'Peso entre 15 y 150 kg (admite decimales, ej. 70,5).' },
     ),
   category: z
-    .enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20', 'General'])
+    .union([
+      z.literal(''),
+      z.enum(['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20', 'General']),
+    ])
     .optional()
     .transform((v) => (v === undefined || v === '' ? 'General' : v)),
   sportDescription:  z.string().max(1000).optional().transform((v) => (v === '' ? undefined : v)),
