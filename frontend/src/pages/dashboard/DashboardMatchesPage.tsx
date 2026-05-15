@@ -15,7 +15,10 @@ import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { LineupPitchEditor } from '@/components/LineupPitchEditor';
+import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config/formations';
 import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
+import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
 
 /** Partidos sin ramas Sub-XX: una sola categoría lógica en base de datos. */
 const MATCH_CATEGORY_GENERAL = 'General';
@@ -43,9 +46,9 @@ export function DashboardMatchesPage() {
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
-  const [lineupIds, setLineupIds] = useState<string[]>([]);
+  const [lineupSlots, setLineupSlots] = useState<(string | null)[]>([]);
   const [lineupModalMatch, setLineupModalMatch] = useState<Record<string, unknown> | null>(null);
-  const [lineupEditIds, setLineupEditIds] = useState<string[]>([]);
+  const [lineupEditSlots, setLineupEditSlots] = useState<(string | null)[]>([]);
   const [lineupEditFormation, setLineupEditFormation] = useState<'football_7' | 'football_11'>('football_11');
 
   useEffect(() => {
@@ -69,7 +72,7 @@ export function DashboardMatchesPage() {
       void qc.invalidateQueries({ queryKey: ['matches-admin'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setCreateOpen(false);
-      setLineupIds([]);
+      setLineupSlots([]);
       reset();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -116,15 +119,18 @@ export function DashboardMatchesPage() {
     enabled: Boolean(lineupModalMatch),
   });
 
-  const maxStarters = formationWatch === 'football_7' ? 7 : formationWatch === 'football_11' ? 11 : 0;
-
   useEffect(() => {
     if (!formationWatch) {
-      setLineupIds([]);
+      setLineupSlots([]);
       return;
     }
-    setLineupIds((prev) => prev.slice(0, maxStarters));
-  }, [formationWatch, maxStarters]);
+    setLineupSlots((prev) => {
+      const n = formationSlotCount(formationWatch);
+      const next = Array<string | null>(n).fill(null);
+      for (let i = 0; i < Math.min(n, prev.length); i++) next[i] = prev[i];
+      return next;
+    });
+  }, [formationWatch]);
 
   const playerRowsCreate = useMemo(() => {
     const rows = (playersLineupQ.data?.data ?? []) as Record<string, unknown>[];
@@ -136,32 +142,15 @@ export function DashboardMatchesPage() {
     return rows.filter((p) => p.status === 'active');
   }, [playersEditLineupQ.data?.data]);
 
-  const toggleLineup = (id: string) => {
-    if (maxStarters === 0) return;
-    setLineupIds((prev) => {
-      const i = prev.indexOf(id);
-      if (i >= 0) return prev.filter((x) => x !== id);
-      if (prev.length >= maxStarters) {
-        toast.error(`Máximo ${maxStarters} titulares`);
-        return prev;
-      }
-      return [...prev, id];
-    });
-  };
+  const rosterCreate = useMemo(
+    () => playerRowsCreate.map((r) => rosterRowToPitchPlayer(r)),
+    [playerRowsCreate],
+  );
 
-  const maxEdit = lineupEditFormation === 'football_7' ? 7 : 11;
-
-  const toggleLineupEdit = (id: string) => {
-    setLineupEditIds((prev) => {
-      const i = prev.indexOf(id);
-      if (i >= 0) return prev.filter((x) => x !== id);
-      if (prev.length >= maxEdit) {
-        toast.error(`Máximo ${maxEdit} titulares`);
-        return prev;
-      }
-      return [...prev, id];
-    });
-  };
+  const rosterEdit = useMemo(
+    () => playerRowsEdit.map((r) => rosterRowToPitchPlayer(r)),
+    [playerRowsEdit],
+  );
 
   const onCreate = handleSubmit((data) => {
     if (!data.matchDateLocal) {
@@ -200,13 +189,14 @@ export function DashboardMatchesPage() {
       description:  data.description.trim() || null,
     };
     if (data.formationType) {
-      const need = data.formationType === 'football_7' ? 7 : 11;
-      if (lineupIds.length !== need) {
-        toast.error(`Selecciona exactamente ${need} titulares para ${data.formationType === 'football_7' ? 'Fútbol 7' : 'Fútbol 11'}`);
+      const need = formationSlotCount(data.formationType);
+      const ids = slotsToLineupIds(lineupSlots);
+      if (ids.length !== need) {
+        toast.error(`Completa las ${need} casillas en la cancha (${data.formationType === 'football_7' ? 'Fútbol 7' : 'Fútbol 11'})`);
         return;
       }
       body.formationType = data.formationType;
-      body.startingLineup = [...lineupIds];
+      body.startingLineup = ids;
     }
     createMut.mutate(body);
   });
@@ -215,21 +205,22 @@ export function DashboardMatchesPage() {
     setLineupModalMatch(m);
     const ft = m.formation_type === 'football_7' || m.formation_type === 'football_11' ? m.formation_type : 'football_11';
     setLineupEditFormation(ft);
-    setLineupEditIds(normalizeLineupFromRow(m.starting_lineup));
+    setLineupEditSlots(lineupIdsToSlots(normalizeLineupFromRow(m.starting_lineup), ft));
   };
 
   const saveLineupEdit = () => {
     if (!lineupModalMatch) return;
-    const need = lineupEditFormation === 'football_7' ? 7 : 11;
-    if (lineupEditIds.length !== need) {
-      toast.error(`Debes elegir ${need} titulares`);
+    const need = formationSlotCount(lineupEditFormation);
+    const ids = slotsToLineupIds(lineupEditSlots);
+    if (ids.length !== need) {
+      toast.error(`Completa las ${need} casillas en la cancha`);
       return;
     }
     updateLineupMut.mutate({
       id: String(lineupModalMatch.id),
       body: {
         formationType: lineupEditFormation,
-        startingLineup: [...lineupEditIds],
+        startingLineup: ids,
       },
     });
   };
@@ -317,7 +308,7 @@ export function DashboardMatchesPage() {
         open={createOpen}
         onClose={() => {
           setCreateOpen(false);
-          setLineupIds([]);
+          setLineupSlots([]);
           reset();
         }}
         title="Programar partido"
@@ -405,7 +396,7 @@ export function DashboardMatchesPage() {
               <MaterialIcon name="groups" size={18} /> Plantilla titular (opcional)
             </h3>
             <p className="text-[11px] text-on-surface-variant">
-              Elige Fútbol 7 (7 jugadores) o Fútbol 11 (11). Lista: todos los jugadores activos de la plantilla (sin ramas por edad). Orden = orden de selección.
+              Elige Fútbol 7 u 11 y arma la plantilla en la cancha: toca cada posición y asigna jugadores de la lista.
             </p>
             <div>
               <label className={formLabelClass}>Formato</label>
@@ -415,51 +406,18 @@ export function DashboardMatchesPage() {
                 <option value="football_11">Fútbol 11 — 11 titulares</option>
               </select>
             </div>
-            {formationWatch ? (
+            {formationWatch === 'football_7' || formationWatch === 'football_11' ? (
               playersLineupQ.isLoading ? (
                 <p className="text-sm text-on-surface-variant">Cargando jugadores…</p>
-              ) : playerRowsCreate.length === 0 ? (
+              ) : rosterCreate.length === 0 ? (
                 <p className="text-sm text-on-surface-variant">No hay jugadores activos en la plantilla.</p>
               ) : (
-                <>
-                  {lineupIds.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {lineupIds.map((pid, idx) => {
-                        const pl = playerRowsCreate.find((r) => String(r.id) === pid);
-                        const label = pl ? `${String(pl.first_name)} ${String(pl.last_name)}`.trim() : pid.slice(0, 8);
-                        return (
-                          <span key={pid} className="text-[10px] px-2 py-1 rounded bg-primary/15 text-primary border border-primary/30">
-                            {idx + 1}. {label}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                  <div className="max-h-48 overflow-y-auto rounded border border-outline-variant/20 divide-y divide-outline-variant/10">
-                    {playerRowsCreate.map((p) => {
-                      const id = String(p.id);
-                      const sel = lineupIds.includes(id);
-                      return (
-                        <button
-                          key={id}
-                          type="button"
-                          onClick={() => toggleLineup(id)}
-                          className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 hover:bg-surface-container-high/50 ${
-                            sel ? 'bg-primary/10 text-primary' : 'text-on-surface'
-                          }`}
-                        >
-                          <span>
-                            {String(p.jersey_number ?? '—')} · {String(p.first_name)} {String(p.last_name)}
-                          </span>
-                          {sel ? <MaterialIcon name="check_circle" size={16} filled /> : <MaterialIcon name="add_circle_outline" size={16} />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px] text-on-surface-variant">
-                    Seleccionados: {lineupIds.length} / {maxStarters}
-                  </p>
-                </>
+                <LineupPitchEditor
+                  formation={formationWatch}
+                  slots={lineupSlots}
+                  onChange={setLineupSlots}
+                  roster={rosterCreate}
+                />
               )
             ) : null}
           </div>
@@ -494,7 +452,12 @@ export function DashboardMatchesPage() {
                 onChange={(e) => {
                   const v = e.target.value as 'football_7' | 'football_11';
                   setLineupEditFormation(v);
-                  setLineupEditIds((prev) => prev.slice(0, v === 'football_7' ? 7 : 11));
+                  setLineupEditSlots((prev) => {
+                    const n = formationSlotCount(v);
+                    const next = Array<string | null>(n).fill(null);
+                    for (let i = 0; i < Math.min(n, prev.length); i++) next[i] = prev[i];
+                    return next;
+                  });
                 }}
               >
                 <option value="football_7">Fútbol 7 — 7 titulares</option>
@@ -503,48 +466,15 @@ export function DashboardMatchesPage() {
             </div>
             {playersEditLineupQ.isLoading ? (
               <p className="text-sm text-on-surface-variant">Cargando jugadores…</p>
-            ) : playerRowsEdit.length === 0 ? (
-              <p className="text-sm text-on-surface-variant">No hay jugadores activos en esta categoría.</p>
+            ) : rosterEdit.length === 0 ? (
+              <p className="text-sm text-on-surface-variant">No hay jugadores activos en la plantilla.</p>
             ) : (
-              <>
-                {lineupEditIds.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {lineupEditIds.map((pid, idx) => {
-                      const pl = playerRowsEdit.find((r) => String(r.id) === pid);
-                      const label = pl ? `${String(pl.first_name)} ${String(pl.last_name)}`.trim() : pid.slice(0, 8);
-                      return (
-                        <span key={pid} className="text-[10px] px-2 py-1 rounded bg-primary/15 text-primary border border-primary/30">
-                          {idx + 1}. {label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-                <div className="max-h-52 overflow-y-auto rounded border border-outline-variant/20 divide-y divide-outline-variant/10">
-                  {playerRowsEdit.map((p) => {
-                    const id = String(p.id);
-                    const sel = lineupEditIds.includes(id);
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        onClick={() => toggleLineupEdit(id)}
-                        className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 hover:bg-surface-container-high/50 ${
-                          sel ? 'bg-primary/10 text-primary' : 'text-on-surface'
-                        }`}
-                      >
-                        <span>
-                          {String(p.jersey_number ?? '—')} · {String(p.first_name)} {String(p.last_name)}
-                        </span>
-                        {sel ? <MaterialIcon name="check_circle" size={16} filled /> : <MaterialIcon name="add_circle_outline" size={16} />}
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-[10px] text-on-surface-variant">
-                  Seleccionados: {lineupEditIds.length} / {maxEdit}
-                </p>
-              </>
+              <LineupPitchEditor
+                formation={lineupEditFormation}
+                slots={lineupEditSlots}
+                onChange={setLineupEditSlots}
+                roster={rosterEdit}
+              />
             )}
             <div className={formActionsClass}>
               <button
