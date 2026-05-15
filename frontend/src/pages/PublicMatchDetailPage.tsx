@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { getMatchPublic } from '@/api/matches';
+import { MatchMapEmbed } from '@/components/MatchMapEmbed';
 import { Spinner } from '@/components/Spinner';
 
 export function PublicMatchDetailPage() {
@@ -17,6 +18,8 @@ export function PublicMatchDetailPage() {
   const m = q.data?.data as Record<string, unknown> | undefined;
   if (!m) return <p className="p-8 text-white">Partido no encontrado.</p>;
 
+  const mapUrl = typeof m.location_maps_url === 'string' ? m.location_maps_url : '';
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 text-white">
       <Link to="/partidos" className="text-sm text-primary hover:underline">
@@ -27,9 +30,9 @@ export function PublicMatchDetailPage() {
       <dl className="mt-8 space-y-2 text-sm">
         <Row label="Fecha" value={String(m.match_date)} />
         <Row label="Lugar" value={String(m.location)} />
-        <Row label="Categoría" value={String(m.category)} />
         <Row label="Estado" value={String(m.status)} />
       </dl>
+      {mapUrl ? <MatchMapEmbed url={mapUrl} className="mt-8" /> : null}
     </div>
   );
 }

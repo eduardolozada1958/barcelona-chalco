@@ -34,7 +34,7 @@ export const createMatchBodySchema = z.object({
   location:          z.string().min(2).max(200),
   locationMapsUrl:   z.string().url().nullable().optional(),
   matchType:         z.enum(['league', 'cup', 'friendly', 'tournament', 'internal']).default('league'),
-  category:          z.string().min(1).max(50),
+  category:          z.enum(['General']).default('General'),
   status:            z
     .enum(['scheduled', 'in_progress', 'completed', 'cancelled', 'postponed'])
     .default('scheduled'),

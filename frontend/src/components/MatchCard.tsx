@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Match } from '@/types';
 import { MaterialIcon } from './MaterialIcon';
+import { isAllowedMapIframeSrc } from '@/components/MatchMapEmbed';
 
 interface MatchCardProps {
   match: Match;
@@ -59,16 +60,20 @@ export function MatchCard({ match }: MatchCardProps) {
           </div>
         </div>
 
-        {/* Venue info */}
-        <div className="grid grid-cols-2 gap-stack-sm bg-surface-container/50 p-stack-sm rounded-lg border border-outline-variant/20 mt-stack-sm">
-          <div className="flex flex-col">
-            <span className="font-label-caps text-label-caps text-on-surface-variant mb-1">SEDE</span>
-            <span className="font-body-md text-body-md text-on-surface truncate">{match.location || '—'}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-label-caps text-label-caps text-on-surface-variant mb-1">CATEGORÍA</span>
-            <span className="font-body-md text-body-md text-on-surface truncate">{match.category || '—'}</span>
-          </div>
+        {/* Venue */}
+        <div className="bg-surface-container/50 p-stack-sm rounded-lg border border-outline-variant/20 mt-stack-sm">
+          <span className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">SEDE</span>
+          <span className="font-body-md text-body-md text-on-surface">{match.location || '—'}</span>
+          {match.location_maps_url && isAllowedMapIframeSrc(match.location_maps_url) ? (
+            <a
+              href={match.location_maps_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-label-caps text-primary hover:underline"
+            >
+              <MaterialIcon name="map" size={14} /> Ver mapa
+            </a>
+          ) : null}
         </div>
 
         {/* CTA */}

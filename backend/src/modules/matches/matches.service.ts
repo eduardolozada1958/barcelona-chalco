@@ -33,18 +33,17 @@ function validateLineupConsistency(
   }
 }
 
-async function assertLineupPlayersInCategory(playerIds: string[], category: string): Promise<void> {
+async function assertLineupPlayersRegistered(playerIds: string[]): Promise<void> {
   if (playerIds.length === 0) return;
   const { data, error } = await supabaseAdmin
     .from('players')
     .select('id')
     .in('id', playerIds)
-    .eq('category', category)
     .is('deleted_at', null);
 
   if (error) throw new Error(error.message);
   if ((data?.length ?? 0) !== playerIds.length) {
-    throw new BadRequestError('Un titular no existe o no pertenece a la categoría del partido');
+    throw new BadRequestError('Un titular no existe o fue dado de baja');
   }
 }
 
@@ -112,7 +111,7 @@ export class MatchesService {
 
   static async create(input: CreateMatchBody, createdBy: string) {
     validateLineupConsistency(input.formationType ?? null, input.startingLineup ?? null);
-    await assertLineupPlayersInCategory(input.startingLineup ?? [], input.category);
+    await assertLineupPlayersRegistered(input.startingLineup ?? []);
 
     const { data, error } = await supabaseAdmin
       .from('matches')
@@ -159,7 +158,6 @@ export class MatchesService {
     if (input.bannerUrl !== undefined)         u.banner_url          = input.bannerUrl;
     if (input.season !== undefined)            u.season              = input.season;
 
-    const nextCategory = input.category !== undefined ? input.category : String(existing.category);
     const nextFormation =
       input.formationType !== undefined ? input.formationType : (existing.formation_type as string | null | undefined);
     const nextLineupRaw =
@@ -176,7 +174,7 @@ export class MatchesService {
       input.startingLineup !== undefined
     ) {
       validateLineupConsistency(nextFormation ?? null, nextLineupRaw);
-      await assertLineupPlayersInCategory(nextLineupRaw, nextCategory);
+      await assertLineupPlayersRegistered(nextLineupRaw);
     }
 
     if (Object.keys(u).length === 0) return MatchesService.getPublicById(id);

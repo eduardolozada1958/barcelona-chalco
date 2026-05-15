@@ -15,15 +15,18 @@ import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
 
-const CATEGORIES = ['Sub-11', 'Sub-13', 'Sub-15', 'Sub-17', 'Sub-20'] as const;
+/** Partidos sin ramas Sub-XX: una sola categoría lógica en base de datos. */
+const MATCH_CATEGORY_GENERAL = 'General';
 
 type MatchForm = {
   title: string;
   opponentName: string;
   matchDateLocal: string;
-  location: string;
-  category: (typeof CATEGORIES)[number];
+  venuePreset: VenuePresetId;
+  locationOther: string;
+  mapsUrlOther: string;
   matchType: NonNullable<CreateMatchBody['matchType']>;
   status: NonNullable<CreateMatchBody['status']>;
   isHome: boolean;
@@ -87,8 +90,9 @@ export function DashboardMatchesPage() {
       title: '',
       opponentName: '',
       matchDateLocal: '',
-      location: '',
-      category: 'Sub-17',
+      venuePreset: 'walmart',
+      locationOther: '',
+      mapsUrlOther: '',
       matchType: 'league',
       status: 'scheduled',
       isHome: true,
@@ -98,18 +102,17 @@ export function DashboardMatchesPage() {
   });
 
   const formationWatch = watch('formationType');
-  const categoryWatch = watch('category');
+  const venuePresetWatch = watch('venuePreset');
 
   const playersLineupQ = useQuery({
-    queryKey: ['players-admin', 'for-lineup', categoryWatch],
-    queryFn: () => listPlayersAdmin({ page: 1, limit: 100, category: categoryWatch }),
+    queryKey: ['players-admin', 'for-lineup-all'],
+    queryFn: () => listPlayersAdmin({ page: 1, limit: 200 }),
     enabled: createOpen && Boolean(formationWatch),
   });
 
   const playersEditLineupQ = useQuery({
-    queryKey: ['players-admin', 'for-lineup-edit', lineupModalMatch?.category],
-    queryFn: () =>
-      listPlayersAdmin({ page: 1, limit: 100, category: String(lineupModalMatch?.category ?? '') }),
+    queryKey: ['players-admin', 'for-lineup-edit-all'],
+    queryFn: () => listPlayersAdmin({ page: 1, limit: 200 }),
     enabled: Boolean(lineupModalMatch),
   });
 
@@ -166,12 +169,31 @@ export function DashboardMatchesPage() {
       return;
     }
     const matchDate = new Date(data.matchDateLocal).toISOString();
+    const resolved = resolveVenueSelection(
+      data.venuePreset,
+      data.locationOther ?? '',
+      data.mapsUrlOther ?? '',
+    );
+    if (!resolved.location || resolved.location.length < 2) {
+      toast.error('Elige una cancha o escribe el nombre de la sede');
+      return;
+    }
+    if (resolved.locationMapsUrl) {
+      try {
+        const u = new URL(resolved.locationMapsUrl);
+        if (u.protocol !== 'https:') throw new Error('not https');
+      } catch {
+        toast.error('La URL del mapa debe ser https (pega solo el enlace del src del iframe)');
+        return;
+      }
+    }
     const body: CreateMatchBody = {
       title:        data.title.trim(),
       opponentName: data.opponentName.trim(),
       matchDate,
-      location:     data.location.trim(),
-      category:     data.category,
+      location:        resolved.location,
+      locationMapsUrl: resolved.locationMapsUrl,
+      category:     MATCH_CATEGORY_GENERAL,
       matchType:    data.matchType,
       status:       data.status,
       isHome:       data.isHome,
@@ -312,25 +334,41 @@ export function DashboardMatchesPage() {
             <input className={formInputClass} {...register('opponentName', { required: 'Requerido', minLength: 2 })} />
             {errors.opponentName && <p className={formErrorClass}>{errors.opponentName.message}</p>}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className={formLabelClass}>Fecha y hora</label>
-              <input type="datetime-local" className={formInputClass} {...register('matchDateLocal', { required: true })} />
-            </div>
-            <div>
-              <label className={formLabelClass}>Categoría</label>
-              <select className={formInputClass} {...register('category', { required: true })}>
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className={formLabelClass}>Fecha y hora</label>
+            <input type="datetime-local" className={formInputClass} {...register('matchDateLocal', { required: true })} />
           </div>
           <div>
-            <label className={formLabelClass}>Sede / ubicación</label>
-            <input className={formInputClass} {...register('location', { required: 'Requerido', minLength: 2 })} />
-            {errors.location && <p className={formErrorClass}>{errors.location.message}</p>}
+            <label className={formLabelClass}>Sede (cancha)</label>
+            <select className={formInputClass} {...register('venuePreset')}>
+              {CANCHAS_PRESETS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+              <option value="other">Otra sede…</option>
+            </select>
+            <p className="text-[10px] text-on-surface-variant mt-1">
+              Las tres canchas ya incluyen mapa. Si quieres cambiar enlaces en producción, usa en Cloudflare Pages las variables VITE_VENUE_WALMART_MAP_EMBED_URL, VITE_VENUE_ATLAS_MAP_EMBED_URL y VITE_VENUE_CANCHAS100_MAP_EMBED_URL (solo la URL del src del iframe).
+            </p>
           </div>
+          {venuePresetWatch === 'other' ? (
+            <div className="space-y-2 rounded-lg border border-outline-variant/25 bg-surface-container/30 p-3">
+              <div>
+                <label className={formLabelClass}>Nombre de la sede</label>
+                <input className={formInputClass} {...register('locationOther', { minLength: 2 })} placeholder="Ej. Polideportivo Norte" />
+              </div>
+              <div>
+                <label className={formLabelClass}>URL del mapa embebido (opcional)</label>
+                <input
+                  className={formInputClass}
+                  {...register('mapsUrlOther')}
+                  placeholder="https://www.google.com/maps/embed?pb=…"
+                />
+                <p className="text-[10px] text-on-surface-variant mt-1">Solo el enlace https del atributo src del iframe (Google Maps).</p>
+              </div>
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={formLabelClass}>Tipo</label>
@@ -367,7 +405,7 @@ export function DashboardMatchesPage() {
               <MaterialIcon name="groups" size={18} /> Plantilla titular (opcional)
             </h3>
             <p className="text-[11px] text-on-surface-variant">
-              Como en competición profesional: elige Fútbol 7 (7 jugadores) o Fútbol 11 (11). Solo jugadores activos de la categoría del partido. Orden = orden de selección.
+              Elige Fútbol 7 (7 jugadores) o Fútbol 11 (11). Lista: todos los jugadores activos de la plantilla (sin ramas por edad). Orden = orden de selección.
             </p>
             <div>
               <label className={formLabelClass}>Formato</label>
@@ -381,7 +419,7 @@ export function DashboardMatchesPage() {
               playersLineupQ.isLoading ? (
                 <p className="text-sm text-on-surface-variant">Cargando jugadores…</p>
               ) : playerRowsCreate.length === 0 ? (
-                <p className="text-sm text-on-surface-variant">No hay jugadores activos en esta categoría.</p>
+                <p className="text-sm text-on-surface-variant">No hay jugadores activos en la plantilla.</p>
               ) : (
                 <>
                   {lineupIds.length > 0 && (
@@ -446,7 +484,7 @@ export function DashboardMatchesPage() {
         {lineupModalMatch ? (
           <div className="space-y-3">
             <p className="text-xs text-on-surface-variant">
-              Categoría del partido: <strong className="text-on-surface">{String(lineupModalMatch.category)}</strong>
+              Titulares desde toda la plantilla activa (sin categorías por edad en partidos).
             </p>
             <div>
               <label className={formLabelClass}>Formato</label>
