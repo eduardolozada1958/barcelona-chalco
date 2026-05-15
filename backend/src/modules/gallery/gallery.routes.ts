@@ -3,6 +3,7 @@ import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { GalleryController } from './gallery.controller';
+import { runGalleryMediaUpload } from './gallery.media.middleware';
 import {
   listGalleryQuerySchema,
   galleryPostIdParamSchema,
@@ -30,6 +31,14 @@ galleryRouter.get(
   requireAdminOrCoach,
   validateQuery(listGalleryQuerySchema),
   GalleryController.listAdmin
+);
+
+galleryRouter.post(
+  '/with-media',
+  authMiddleware,
+  requireAdminOrCoach,
+  runGalleryMediaUpload,
+  GalleryController.createWithMedia
 );
 
 galleryRouter.post(

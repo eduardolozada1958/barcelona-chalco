@@ -1,22 +1,37 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 
 import { listGalleryPublic } from '@/api/gallery';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 
+interface GalleryMediaRow {
+  url?: string;
+  type?: string;
+}
+
 interface GalleryItem {
   id: string;
   title?: string;
-  description?: string;
+  caption?: string;
   image_url?: string;
-  media_type?: string;
+  gallery_media?: GalleryMediaRow[];
   published_at?: string;
 }
 
+function galleryItemImageUrl(item: GalleryItem): string | null {
+  const media = item.gallery_media;
+  if (Array.isArray(media) && media.length > 0) {
+    const url = media[0]?.url;
+    if (typeof url === 'string' && url.length > 0) return url;
+  }
+  if (typeof item.image_url === 'string' && item.image_url.length > 0) return item.image_url;
+  return null;
+}
+
 /**
- * Public gallery page – faithful translation of `galeria.html` mockup.
- * Masonry-style grid with hover overlay showing title, date, and description.
+ * Galería pública — rejilla con título, fecha y descripción al pasar el cursor.
  */
 export function PublicGalleryPage() {
   const q = useQuery({ queryKey: ['gallery-public'], queryFn: () => listGalleryPublic() });
@@ -24,7 +39,6 @@ export function PublicGalleryPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg">
-      {/* Header */}
       <header className="mb-stack-lg flex flex-col items-center text-center">
         <h1 className="font-display-hero text-display-hero text-primary mb-stack-sm">GALERÍA</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
@@ -32,7 +46,6 @@ export function PublicGalleryPage() {
         </p>
       </header>
 
-      {/* Grid */}
       {q.isLoading ? (
         <SkeletonGrid count={6} type="player" />
       ) : items.length === 0 ? (
@@ -43,38 +56,48 @@ export function PublicGalleryPage() {
         </div>
       ) : (
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
-          {items.map((item) => (
-            <StaggerItem key={item.id}>
-              <div className="relative group aspect-square overflow-hidden bg-surface-container-low cursor-pointer">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.title || 'Gallery'}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <MaterialIcon name="image" className="text-surface-container-high" size={64} />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
-                  {item.published_at && (
-                    <div className="font-label-caps text-label-caps text-primary mb-2">
-                      {new Date(item.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()}
+          {items.map((item) => {
+            const imgUrl = galleryItemImageUrl(item);
+            return (
+              <StaggerItem key={item.id}>
+                <Link
+                  to={`/galeria/${item.id}`}
+                  className="relative group aspect-square overflow-hidden bg-surface-container-low block"
+                >
+                  {imgUrl ? (
+                    <img
+                      src={imgUrl}
+                      alt={item.title || 'Imagen de galería'}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <MaterialIcon name="image" className="text-surface-container-high" size={64} />
                     </div>
                   )}
-                  <div className="font-headline-lg-mobile text-headline-lg-mobile text-on-background">
-                    {item.title || 'Sin título'}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-stack-md">
+                    {item.published_at && (
+                      <div className="font-label-caps text-label-caps text-primary mb-2">
+                        {new Date(item.published_at).toLocaleDateString('es-MX', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        }).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="font-headline-lg-mobile text-headline-lg-mobile text-on-background">
+                      {item.title || 'Sin título'}
+                    </div>
+                    {item.caption && (
+                      <p className="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">
+                        {item.caption}
+                      </p>
+                    )}
                   </div>
-                  {item.description && (
-                    <p className="font-body-md text-body-md text-on-surface-variant mt-2 line-clamp-2">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </StaggerItem>
-          ))}
+                </Link>
+              </StaggerItem>
+            );
+          })}
         </StaggerContainer>
       )}
     </div>

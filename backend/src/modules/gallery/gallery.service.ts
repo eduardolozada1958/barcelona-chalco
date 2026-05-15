@@ -1,7 +1,21 @@
+import { randomUUID } from 'node:crypto';
 import { supabaseAdmin } from '@config/database';
-import { NotFoundError } from '@middlewares/error.middleware';
+import { env } from '@config/env';
+import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
-import type { ListGalleryQuery, CreateGalleryPostBody, UpdateGalleryPostBody } from './gallery.validation';
+import type {
+  ListGalleryQuery,
+  CreateGalleryPostBody,
+  UpdateGalleryPostBody,
+  CreateGalleryUploadFields,
+} from './gallery.validation';
+
+function extFromImageMime(mime: string): string {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/webp') return 'webp';
+  throw new BadRequestError('La imagen debe ser PNG, JPEG o WebP');
+}
 
 export class GalleryService {
   static async listPublic(opts: ListGalleryQuery) {
@@ -107,6 +121,72 @@ export class GalleryService {
     }
 
     return GalleryService.getById(post.id);
+  }
+
+  /** Crea publicación y sube imágenes a Storage en un solo paso. */
+  static async createWithUpload(
+    input: CreateGalleryUploadFields,
+    files: Express.Multer.File[],
+    createdBy: string,
+  ) {
+    if (files.length === 0) {
+      throw new BadRequestError('Adjunta al menos una imagen');
+    }
+
+    const post = await GalleryService.create(
+      {
+        title:           input.title,
+        caption:         input.caption ?? null,
+        type:            input.type,
+        relatedMatchId:  null,
+        relatedPlayerId: null,
+        isFeatured:      input.isFeatured ?? false,
+        season:          input.season,
+        media:           [],
+      },
+      createdBy,
+    );
+
+    const bucket = env.STORAGE_BUCKET_GALLERY;
+    const mediaRows: {
+      post_id: string;
+      url: string;
+      type: 'image';
+      sort_order: number;
+      file_size_bytes: number;
+    }[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const ext = extFromImageMime(file.mimetype);
+      const objectPath = `${post.id}/${randomUUID()}.${ext}`;
+
+      const { error: upErr } = await supabaseAdmin.storage
+        .from(bucket)
+        .upload(objectPath, file.buffer as Buffer, {
+          contentType: file.mimetype,
+          upsert: false,
+        });
+      if (upErr) throw new Error(upErr.message);
+
+      const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
+      mediaRows.push({
+        post_id:         String(post.id),
+        url:             pub.publicUrl,
+        type:            'image',
+        sort_order:      i,
+        file_size_bytes: file.size,
+      });
+    }
+
+    const { error: mErr } = await supabaseAdmin.from('gallery_media').insert(mediaRows);
+    if (mErr) throw new Error(mErr.message);
+
+    if (input.publish) {
+      return GalleryService.publish(String(post.id));
+    }
+
+    return GalleryService.getById(String(post.id));
   }
 
   static async update(id: string, input: UpdateGalleryPostBody) {
