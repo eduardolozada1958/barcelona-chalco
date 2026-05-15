@@ -162,16 +162,32 @@ export function CredentialArPage() {
                   <span className="font-label-caps text-label-caps text-primary tracking-widest">VALIDACIÓN EN CAMPO</span>
                 </div>
                 <MaterialIcon name="check_circle" className="text-primary mx-auto mb-3" size={40} filled />
-                <p className="text-center text-sm text-primary font-medium mb-6">Credencial verificada</p>
+                <p className="text-center text-sm text-primary font-medium mb-4">Credencial verificada</p>
 
                 {player ? (
-                  <dl className="space-y-3 text-sm">
-                    <div className="flex justify-between gap-4 border-b border-outline-variant/20 pb-2">
-                      <dt className="text-on-surface-variant shrink-0">Nombre</dt>
-                      <dd className="font-semibold text-right text-on-surface">
+                  <>
+                  <div className="flex items-center gap-4 mb-5 pb-4 border-b border-outline-variant/20">
+                    {typeof player.avatar_url === 'string' && player.avatar_url ? (
+                      <img
+                        src={player.avatar_url}
+                        alt=""
+                        className="w-16 h-16 rounded-xl object-cover border border-primary/30"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-surface-container flex items-center justify-center border border-outline-variant/30">
+                        <MaterialIcon name="person" size={32} className="text-on-surface-variant" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="font-semibold text-on-surface truncate">
                         {String(player.first_name ?? '')} {String(player.last_name ?? '')}
-                      </dd>
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        #{String(player.jersey_number ?? '—')} · {String(player.category ?? '—')}
+                      </p>
                     </div>
+                  </div>
+                  <dl className="space-y-3 text-sm">
                     <div className="flex justify-between gap-4 border-b border-outline-variant/20 pb-2">
                       <dt className="text-on-surface-variant shrink-0">Nacimiento</dt>
                       <dd className="text-right">{formatBirthEs(player.birth_date)}</dd>
@@ -191,6 +207,7 @@ export function CredentialArPage() {
                       <dd className="text-right truncate max-w-[55%]">{String(player.position ?? '—')}</dd>
                     </div>
                   </dl>
+                  </>
                 ) : null}
 
                 <p className="mt-6 text-[10px] text-center text-on-surface-variant/70 tracking-widest uppercase">

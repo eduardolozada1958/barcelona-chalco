@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { listPlayersPublic } from '@/api/players';
@@ -45,6 +46,13 @@ export function PublicPlayersPage() {
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
             Explora el talento de élite de nuestro club. Identidades verificadas y estadísticas de rendimiento en tiempo real.
           </p>
+          <Link
+            to="/credencial"
+            className="inline-flex items-center gap-2 mt-4 text-sm font-label-caps text-primary border border-primary/40 rounded-lg px-4 py-2 hover:bg-primary/10 transition-colors"
+          >
+            <MaterialIcon name="qr_code_scanner" size={18} />
+            Ver credenciales con QR
+          </Link>
         </div>
         {/* Search bar */}
         <div className="flex flex-col sm:flex-row gap-base w-full lg:w-auto">

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getPlayerPublic } from '@/api/players';
 import type { Player } from '@/types';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
@@ -134,13 +135,9 @@ export function PublicPlayerDetailPage() {
           </div>
 
           <div className="flex-grow flex items-center justify-center py-stack-lg">
-            <div className="w-48 h-48 bg-white p-2 rounded-lg flex items-center justify-center relative shadow-[0_0_30px_rgba(212,175,55,0.15)]">
+            <div className="w-48 h-48 bg-white p-2 rounded-lg flex items-center justify-center relative shadow-[0_0_30px_rgba(212,175,55,0.15)] select-none [-webkit-touch-callout:none]">
               {player.qr_token ? (
-                <img
-                  src={`/api/v1/qr/player/${player.id}/image`}
-                  alt="QR Code"
-                  className="w-full h-full object-contain"
-                />
+                <PlayerQrImage playerId={player.id} qrToken={player.qr_token} size="lg" className="!w-full !h-full" />
               ) : (
                 <MaterialIcon name="qr_code_2" className="text-gray-400" size={120} />
               )}

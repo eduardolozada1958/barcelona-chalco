@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Player } from '@/types';
+import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { MaterialIcon } from './MaterialIcon';
 
 interface PlayerCardProps {
@@ -99,21 +100,28 @@ export function PlayerCard({ player }: PlayerCardProps) {
               )}
             </div>
           </div>
-          {/* Mini QR placeholder */}
-          {player.qr_token && (
-            <div className="w-12 h-12 rounded bg-surface p-1 flex items-center justify-center border border-outline-variant/30">
-              <MaterialIcon name="qr_code_2" className="text-on-surface-variant" size={28} />
-            </div>
-          )}
+          {player.qr_token ? (
+            <PlayerQrImage playerId={player.id} qrToken={player.qr_token} size="sm" />
+          ) : null}
         </div>
 
         {/* CTA */}
-        <Link
-          to={`/jugadores/${player.id}`}
-          className="w-full py-4 bg-surface-container border border-primary/50 text-primary font-label-caps text-label-caps rounded-lg text-center hover:bg-primary hover:text-on-primary transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.2)]"
-        >
-          Ver Credencial Deportiva
-        </Link>
+        <div className="flex flex-col gap-2">
+          <Link
+            to={`/jugadores/${player.id}`}
+            className="w-full py-3 bg-surface-container border border-primary/50 text-primary font-label-caps text-label-caps rounded-lg text-center hover:bg-primary hover:text-on-primary transition-all duration-300"
+          >
+            Ver perfil completo
+          </Link>
+          {player.qr_token && player.is_verified ? (
+            <Link
+              to="/credencial"
+              className="w-full py-3 border border-outline-variant/40 text-on-surface-variant font-label-caps text-[11px] rounded-lg text-center hover:border-primary/50 hover:text-primary transition-colors"
+            >
+              Ver credencial con QR
+            </Link>
+          ) : null}
+        </div>
       </div>
     </article>
   );

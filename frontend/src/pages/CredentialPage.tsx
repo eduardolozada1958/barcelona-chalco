@@ -11,13 +11,9 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
+import { PlayerQrImage } from '@/components/PlayerQrImage';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
-
-function publicSiteOrigin(): string {
-  const fromEnv = String(import.meta.env.VITE_PUBLIC_APP_URL ?? '').replace(/\/$/, '');
-  return fromEnv || window.location.origin;
-}
 
 /** Calculate age from birth date; invalid or missing returns null. */
 function calcAge(birthDate: string | undefined | null): number | null {
@@ -36,12 +32,6 @@ function formatBirthEs(iso: unknown): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-/** QR code image URL via free API */
-function qrImageUrl(token: string): string {
-  const url = `${publicSiteOrigin()}/credencial-ar/${encodeURIComponent(token)}`;
-  return `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}&bgcolor=1a1a2e&color=d4af37&format=png`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -67,9 +57,9 @@ function CredentialCard({ player }: { player: Player }) {
         <span className="text-xs text-on-surface-variant font-mono tracking-tight">{headerRef}</span>
       </div>
 
-      <div className="p-5 flex gap-5">
+      <div className="p-5 flex flex-col md:flex-row gap-5">
         {/* Left: Photo + Jersey */}
-        <div className="flex flex-col items-center gap-2 flex-shrink-0">
+        <div className="flex flex-col items-center gap-2 flex-shrink-0 mx-auto md:mx-0">
           <div className="relative w-24 h-28 rounded-xl bg-surface-container-highest border border-outline-variant/30 overflow-hidden flex items-center justify-center">
             {player.avatar_url ? (
               <img src={player.avatar_url} alt={player.first_name} className="w-full h-full object-cover" />
@@ -88,8 +78,8 @@ function CredentialCard({ player }: { player: Player }) {
         </div>
 
         {/* Center: Info */}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-on-surface text-base leading-tight truncate">
+        <div className="flex-1 min-w-0 w-full text-center md:text-left">
+          <h3 className="font-semibold text-on-surface text-lg leading-tight">
             {player.first_name} {player.last_name}
           </h3>
           
@@ -116,20 +106,12 @@ function CredentialCard({ player }: { player: Player }) {
         </div>
 
         {/* Right: QR — sin enlace táctil: el QR solo sirve escaneándolo con otra cámara; tocar aquí no navega */}
-        <div className="flex flex-col items-center justify-center flex-shrink-0 select-none [-webkit-touch-callout:none]">
+        <div className="flex flex-col items-center justify-center flex-shrink-0 mx-auto md:mx-0">
           {hasQr ? (
             <div className="flex flex-col items-center">
-              <img
-                src={qrImageUrl(player.qr_token!)}
-                alt=""
-                role="presentation"
-                className="pointer-events-none w-20 h-20 rounded-lg border border-primary/20"
-                loading="lazy"
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-              />
-              <p className="mt-1 text-[10px] text-center text-on-surface-variant/60 pointer-events-none">
-                Escanear con la cámara
+              <PlayerQrImage playerId={player.id} qrToken={player.qr_token!} size="md" />
+              <p className="mt-2 text-[10px] text-center text-on-surface-variant/60 max-w-[9rem]">
+                Escanea con la cámara de otro dispositivo
               </p>
             </div>
           ) : (

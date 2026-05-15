@@ -36,7 +36,7 @@ export class QrController {
       const qrBuffer = await QrService.generateImage(routeParam(req, 'id'));
 
       res.set('Content-Type', 'image/png');
-      res.set('Cache-Control', 'public, max-age=3600');
+      res.set('Cache-Control', 'public, max-age=86400, immutable');
       res.send(qrBuffer);
     } catch (err) {
       next(err);
