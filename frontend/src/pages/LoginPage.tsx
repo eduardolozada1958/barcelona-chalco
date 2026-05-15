@@ -77,7 +77,7 @@ export function LoginPage() {
                 </div>
                 <h2 className="font-headline-lg text-headline-lg text-on-surface">Entrar como Padre</h2>
                 <p className="font-body-md text-body-md text-on-surface-variant">
-                  Accede al perfil de tu jugador, revisa estadísticas, calendario y realiza pagos.
+                  Accede al perfil de tu jugador, revisa estadísticas y calendario.
                 </p>
                 <div className="mt-base bg-surface-container-lowest px-4 py-2 rounded-full border border-outline-variant/30 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors duration-300">
                   <span className="font-label-caps text-label-caps">Acceder</span>
@@ -85,7 +85,7 @@ export function LoginPage() {
               </div>
             </button>
 
-            {/* Coach/Admin Card */}
+            {/* Admin Card */}
             <button
               type="button"
               onClick={() => setSelectedRole('admin')}
@@ -96,7 +96,7 @@ export function LoginPage() {
                 <div className="w-20 h-20 rounded-full bg-surface-container-highest flex items-center justify-center mb-base border border-outline-variant/30 group-hover:scale-110 transition-transform duration-300">
                   <MaterialIcon name="admin_panel_settings" className="text-primary text-4xl" filled />
                 </div>
-                <h2 className="font-headline-lg text-headline-lg text-on-surface">Entrar como Entrenador / Admin</h2>
+                <h2 className="font-headline-lg text-headline-lg text-on-surface">Entrar como Admin</h2>
                 <p className="font-body-md text-body-md text-on-surface-variant">
                   Gestión de equipos, control de asistencia, reportes tácticos y configuración.
                 </p>
@@ -130,7 +130,7 @@ export function LoginPage() {
                 </div>
                 <div>
                   <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface">
-                    {selectedRole === 'parent' ? 'Acceso Padre / Tutor' : 'Acceso Entrenador / Admin'}
+                    {selectedRole === 'parent' ? 'Acceso Padre / Tutor' : 'Acceso Admin'}
                   </h2>
                   <p className="font-label-caps text-label-caps text-on-surface-variant">Ingresa tus credenciales</p>
                 </div>
