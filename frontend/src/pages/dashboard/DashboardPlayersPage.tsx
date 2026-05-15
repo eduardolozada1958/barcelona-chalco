@@ -9,8 +9,10 @@ import {
   listPlayersAdmin,
   updatePlayer,
   type CreatePlayerBody,
+  type CreatePlayerWithDocumentsData,
   type UpdatePlayerBody,
 } from '@/api/players';
+import type { ApiResponse } from '@/api/types';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -87,8 +89,13 @@ export function DashboardPlayersPage() {
   const createMut = useMutation({
     mutationFn: (args: { body: CreatePlayerBody; curpPdf: File; photo?: File }) =>
       createPlayerWithDocuments(args.body, { curpPdf: args.curpPdf, photo: args.photo }),
-    onSuccess: () => {
-      toast.success('Jugador creado');
+    onSuccess: (res: ApiResponse<CreatePlayerWithDocumentsData>) => {
+      const fromPdf = res.data?.curpFilledFromPdf === true;
+      toast.success(
+        fromPdf
+          ? 'Jugador creado. CURP detectada automáticamente en el PDF.'
+          : (res.message || 'Jugador creado'),
+      );
       void qc.invalidateQueries({ queryKey: ['players-admin'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setCreateOpen(false);
@@ -390,7 +397,9 @@ export function DashboardPlayersPage() {
                 placeholder="18 caracteres si la quieres guardar también"
                 {...register('curp')}
               />
-              <p className="text-[11px] text-on-surface-variant mt-1">Opcional en el alta; el registro oficial del trámite es el PDF de arriba.</p>
+              <p className="text-[11px] text-on-surface-variant mt-1">
+                Opcional: si la dejas vacía y el PDF tiene texto seleccionable (no solo imagen escaneada), intentamos rellenarla desde el archivo.
+              </p>
             </div>
           </div>
           <div>

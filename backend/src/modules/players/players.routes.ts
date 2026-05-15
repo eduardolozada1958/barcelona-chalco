@@ -4,6 +4,7 @@ import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdmin, requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { runPlayerCreateUpload } from './players.upload.middleware';
+import { mergeCurpFromPdfIntoBody } from './players.curp-pdf.middleware';
 import {
   createPlayerSchema,
   createPlayerMultipartFieldsSchema,
@@ -67,6 +68,7 @@ playersRouter.post('/with-documents',
   authMiddleware,
   requireAdminOrCoach,
   runPlayerCreateUpload,
+  mergeCurpFromPdfIntoBody,
   validateBody(createPlayerMultipartFieldsSchema),
   PlayersController.createWithDocuments
 );

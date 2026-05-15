@@ -44,11 +44,16 @@ function appendIfForm(fd: FormData, key: string, value: string | number | undefi
   fd.append(key, String(value));
 }
 
+/** Payload de `data` en la respuesta de alta con documentos (puede incluir bandera si la CURP salió del PDF). */
+export type CreatePlayerWithDocumentsData = Record<string, unknown> & {
+  curpFilledFromPdf?: boolean;
+};
+
 /** Alta desde el panel con PDF de CURP (obligatorio) y foto opcional (PNG/JPEG/WebP). */
 export async function createPlayerWithDocuments(
   body: CreatePlayerBody,
   files: { curpPdf: File; photo?: File | undefined },
-) {
+): Promise<ApiResponse<CreatePlayerWithDocumentsData>> {
   const fd = new FormData();
   fd.append('firstName', body.firstName);
   fd.append('lastName', body.lastName);
@@ -68,7 +73,7 @@ export async function createPlayerWithDocuments(
   fd.append('curpPdf', files.curpPdf);
   if (files.photo) fd.append('photo', files.photo);
 
-  const { data } = await apiClient.postForm<ApiResponse<unknown>>('/players/with-documents', fd, {
+  const { data } = await apiClient.postForm<ApiResponse<CreatePlayerWithDocumentsData>>('/players/with-documents', fd, {
     timeout: 120_000,
   });
   return data;

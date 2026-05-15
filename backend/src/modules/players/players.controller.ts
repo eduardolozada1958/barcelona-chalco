@@ -95,10 +95,17 @@ export class PlayersController {
         req.body as CreatePlayerMultipartInput,
         { curpPdf, photo },
       );
+      const curpFromPdf = Boolean(req.curpAutoFilledFromPdf);
+      const payload = {
+        ...forViewer(player),
+        ...(curpFromPdf ? { curpFilledFromPdf: true as const } : {}),
+      };
       sendSuccess(
         res,
-        forViewer(player),
-        'Jugador creado con documentos',
+        payload,
+        curpFromPdf
+          ? 'Jugador creado. CURP detectada automáticamente en el PDF.'
+          : 'Jugador creado con documentos',
         HTTP_STATUS.CREATED,
       );
     } catch (e) { next(e); }

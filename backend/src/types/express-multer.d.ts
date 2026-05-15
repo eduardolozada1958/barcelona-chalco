@@ -18,6 +18,8 @@ declare global {
 
     interface Request {
       files?: Record<string, Express.Multer.File[]>;
+      /** Rellenada por mergeCurpFromPdfIntoBody cuando la CURP sale del PDF. */
+      curpAutoFilledFromPdf?: boolean;
     }
   }
 }
