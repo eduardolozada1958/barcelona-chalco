@@ -93,10 +93,6 @@ function CredentialCard({ player }: { player: Player }) {
               <span className="text-on-surface-variant truncate">{player.position ?? '—'}</span>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <MaterialIcon name="category" size={14} className="text-primary/70 flex-shrink-0" />
-              <span className="text-on-surface-variant">{player.category ?? '—'}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
               <MaterialIcon name="front_hand" size={14} className="text-primary/70 flex-shrink-0" />
               <span className="text-on-surface-variant">
                 {player.dominant_foot === 'right' ? 'Diestro' : player.dominant_foot === 'left' ? 'Zurdo' : 'Ambidiestro'}
@@ -296,10 +292,6 @@ function CredentialResult() {
                 <div className="flex justify-between border-b border-outline-variant/20 py-2">
                   <dt className="text-on-surface-variant">CURP (fragmento)</dt>
                   <dd className="font-mono text-xs tracking-wide">{String(player.curp_masked ?? 'No registrada')}</dd>
-                </div>
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">Categoría</dt>
-                  <dd>{String(player.category ?? '—')}</dd>
                 </div>
                 <div className="flex justify-between border-b border-outline-variant/20 py-2">
                   <dt className="text-on-surface-variant">Posición</dt>

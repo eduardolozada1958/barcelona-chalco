@@ -46,7 +46,12 @@ export function createApp(): Application {
   app.use(requestContextMiddleware);
 
   // ── Seguridad ─────────────────────────────────────────────
-  app.use(helmet());
+  app.use(
+    helmet({
+      // Permite que el front (Pages) cargue imágenes QR desde este API en otro dominio.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
   app.disable('x-powered-by');
 
   // ── CORS ──────────────────────────────────────────────────

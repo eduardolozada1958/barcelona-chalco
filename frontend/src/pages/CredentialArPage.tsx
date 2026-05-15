@@ -183,7 +183,7 @@ export function CredentialArPage() {
                         {String(player.first_name ?? '')} {String(player.last_name ?? '')}
                       </p>
                       <p className="text-xs text-on-surface-variant mt-0.5">
-                        #{String(player.jersey_number ?? '—')} · {String(player.category ?? '—')}
+                        #{String(player.jersey_number ?? '—')}
                       </p>
                     </div>
                   </div>
@@ -197,10 +197,6 @@ export function CredentialArPage() {
                       <dd className="font-mono text-xs text-right tracking-wide text-primary">
                         {String(player.curp_masked ?? '—')}
                       </dd>
-                    </div>
-                    <div className="flex justify-between gap-4 border-b border-outline-variant/20 pb-2">
-                      <dt className="text-on-surface-variant shrink-0">Categoría</dt>
-                      <dd className="text-right">{String(player.category ?? '—')}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-on-surface-variant shrink-0">Posición</dt>
