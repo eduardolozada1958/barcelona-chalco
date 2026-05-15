@@ -11,6 +11,23 @@ export async function getPlayerPublic(id: string) {
   return data;
 }
 
+/** Carga jugadores del once titular por ID (endpoint público por jugador). */
+export async function fetchPlayersPublicByIds(ids: string[]): Promise<Record<string, unknown>[]> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return [];
+  const rows = await Promise.all(
+    unique.map(async (playerId) => {
+      try {
+        const res = await getPlayerPublic(playerId);
+        return res.data as Record<string, unknown>;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return rows.filter((r): r is Record<string, unknown> => r != null);
+}
+
 export interface CreatePlayerBody {
   firstName:         string;
   lastName:          string;

@@ -3,55 +3,79 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { getMatchPublic } from '@/api/matches';
-import { listPlayersPublic } from '@/api/players';
+import { fetchPlayersPublicByIds } from '@/api/players';
 import { MatchFormationPitch } from '@/components/MatchFormationPitch';
 import { MatchMapEmbed } from '@/components/MatchMapEmbed';
 import { Spinner } from '@/components/Spinner';
 import { lineupIdsToSlots } from '@/config/formations';
-import { rosterRowToPitchPlayer, slotsToPitchPlayers } from '@/utils/lineup-players';
+import {
+  displayPlayerName,
+  rosterRowToPitchPlayer,
+  slotsToPitchPlayers,
+  type PitchPlayer,
+} from '@/utils/lineup-players';
+
+function parseFormation(raw: unknown): 'football_7' | 'football_11' | null {
+  return raw === 'football_7' || raw === 'football_11' ? raw : null;
+}
+
+function parseLineupIds(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.filter((x): x is string => typeof x === 'string');
+}
+
+function formatMatchDate(raw: unknown): string {
+  try {
+    return new Date(String(raw)).toLocaleString('es-MX', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return String(raw ?? '');
+  }
+}
 
 export function PublicMatchDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const q = useQuery({
+
+  const matchQ = useQuery({
     queryKey: ['match-public', id],
-    queryFn:  () => getMatchPublic(id!),
-    enabled:  Boolean(id),
+    queryFn: () => getMatchPublic(id!),
+    enabled: Boolean(id),
   });
 
-  if (!id) return null;
-  if (q.isLoading) return <Spinner />;
-  const m = q.data?.data as Record<string, unknown> | undefined;
-  if (!m) return <p className="p-8 text-white">Partido no encontrado.</p>;
-
-  const mapUrl = typeof m.location_maps_url === 'string' ? m.location_maps_url : '';
-  const formation = m.formation_type === 'football_7' || m.formation_type === 'football_11'
-    ? m.formation_type as 'football_7' | 'football_11'
-    : null;
-  const rawLineup = Array.isArray(m.starting_lineup)
-    ? (m.starting_lineup as unknown[]).filter((x): x is string => typeof x === 'string')
-    : [];
+  const m = matchQ.data?.data as Record<string, unknown> | undefined;
+  const formation = m ? parseFormation(m.formation_type) : null;
+  const rawLineup = m ? parseLineupIds(m.starting_lineup) : [];
+  const hasLineup = Boolean(formation) && rawLineup.length > 0;
 
   const lineupQ = useQuery({
-    queryKey: ['players-public-for-lineup', rawLineup],
-    queryFn: () => listPlayersPublic({ limit: 50 }),
-    enabled: rawLineup.length > 0 && Boolean(formation),
+    queryKey: ['match-lineup-players', id, rawLineup.join(',')],
+    queryFn: async () => {
+      const rows = await fetchPlayersPublicByIds(rawLineup);
+      return rows.map(rosterRowToPitchPlayer);
+    },
+    enabled: Boolean(id) && hasLineup,
   });
 
-  const pitchSlots = useMemo(() => {
+  const pitchSlots = useMemo((): (PitchPlayer | null)[] | null => {
     if (!formation || rawLineup.length === 0) return null;
-    const roster = ((lineupQ.data?.data ?? []) as Record<string, unknown>[]).map(rosterRowToPitchPlayer);
+    const roster = lineupQ.data ?? [];
     const slots = lineupIdsToSlots(rawLineup, formation);
     return slotsToPitchPlayers(slots, roster);
   }, [formation, rawLineup, lineupQ.data]);
 
-  const matchDateStr = (() => {
-    try {
-      return new Date(String(m.match_date)).toLocaleString('es-MX', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
-      });
-    } catch { return String(m.match_date); }
-  })();
+  if (!id) return null;
+  if (matchQ.isLoading) return <Spinner />;
+  if (!m) return <p className="p-8 text-white">Partido no encontrado.</p>;
+
+  const mapUrl = typeof m.location_maps_url === 'string' ? m.location_maps_url : '';
+  const matchDateStr = formatMatchDate(m.match_date);
+  const filledCount = pitchSlots?.filter(Boolean).length ?? 0;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 text-white">
@@ -65,19 +89,48 @@ export function PublicMatchDetailPage() {
         <Row label="Lugar" value={String(m.location)} />
         <Row label="Estado" value={String(m.status)} />
       </dl>
-      {mapUrl ? <MatchMapEmbed url={mapUrl} className="mt-8" /> : null}
-      {formation && pitchSlots ? (
-        <div className="mt-10">
-          <h2 className="font-headline-lg-mobile text-lg font-semibold text-on-surface mb-3 flex items-center gap-2">
-            <span className="text-primary">⚽</span>
-            Once titular — {formation === 'football_7' ? 'Fútbol 7' : 'Fútbol 11'}
+
+      {hasLineup ? (
+        <section className="mt-10" aria-labelledby="lineup-heading">
+          <h2
+            id="lineup-heading"
+            className="font-headline-lg-mobile text-lg font-semibold text-on-surface mb-3 flex items-center gap-2"
+          >
+            <span className="text-primary" aria-hidden>⚽</span>
+            Cuadro titular — {formation === 'football_7' ? 'Fútbol 7' : 'Fútbol 11'}
           </h2>
-          <MatchFormationPitch
-            formation={formation}
-            slots={pitchSlots}
-          />
-        </div>
+          {lineupQ.isLoading ? (
+            <div className="py-8 flex justify-center">
+              <Spinner />
+            </div>
+          ) : pitchSlots ? (
+            <>
+              <MatchFormationPitch formation={formation!} slots={pitchSlots} />
+              <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {pitchSlots.map((player, idx) => (
+                  <li
+                    key={`${idx}-${player?.id ?? 'empty'}`}
+                    className="px-2 py-1.5 rounded bg-surface-container/40 border border-outline-variant/20 text-on-surface"
+                  >
+                    <span className="text-primary font-semibold">{idx + 1}.</span>{' '}
+                    {player ? displayPlayerName(player) : '—'}
+                    {player?.jerseyNumber != null ? (
+                      <span className="text-on-surface-variant"> · #{player.jerseyNumber}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              {filledCount < rawLineup.length ? (
+                <p className="mt-2 text-[11px] text-on-surface-variant">
+                  Algunos jugadores no están disponibles en el listado público.
+                </p>
+              ) : null}
+            </>
+          ) : null}
+        </section>
       ) : null}
+
+      {mapUrl ? <MatchMapEmbed url={mapUrl} className="mt-8" /> : null}
     </div>
   );
 }
