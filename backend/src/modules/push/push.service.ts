@@ -75,6 +75,7 @@ export class PushService {
       title: notice.title,
       body:  truncateBody(notice.content),
       url,
+      type:  notice.type,
     });
 
     const { data: rows, error } = await supabaseAdmin.from('push_subscriptions').select('endpoint, p256dh, auth');

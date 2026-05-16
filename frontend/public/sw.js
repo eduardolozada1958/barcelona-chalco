@@ -7,12 +7,16 @@ self.addEventListener('push', (event) => {
     /* ignore */
   }
 
+  const isUrgent = payload.type === 'urgent';
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Nuevo aviso', {
       body: payload.body || '',
       icon: '/images/logo.png',
       badge: '/images/logo.png',
-      tag: 'barcelona-notice',
+      tag: `barcelona-notice-${payload.url || 'default'}`,
+      renotify: true,
+      silent: false,
+      vibrate: isUrgent ? [400, 120, 400, 120, 400] : [200, 100, 200],
       data: { url: payload.url || '/avisos' },
     }),
   );
