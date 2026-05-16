@@ -12,6 +12,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
+import { CredentialCard3D } from '@/components/CredentialCard3D';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
 
@@ -25,13 +26,6 @@ function calcAge(birthDate: string | undefined | null): number | null {
   const m = now.getMonth() - birth.getMonth();
   if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
   return age;
-}
-
-function formatBirthEs(iso: unknown): string {
-  if (!iso || typeof iso !== 'string') return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 /* ------------------------------------------------------------------ */
@@ -260,8 +254,8 @@ function CredentialResult() {
       <div className="mx-auto max-w-lg">
         <div className="mb-6 text-center">
           <MaterialIcon name="qr_code_scanner" className="text-primary" size={48} />
-          <h1 className="mt-2 font-headline-lg text-headline-lg">Validación de credencial</h1>
-          <p className="text-sm text-on-surface-variant mt-1">Vista para cuerpo técnico tras escanear el QR del jugador.</p>
+          <h1 className="mt-2 font-headline-lg text-headline-lg">Credencial digital</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Tarjeta 3D tras escanear el QR; la CURP solo se muestra enmascarada.</p>
         </div>
 
         {!ok ? (
@@ -274,40 +268,17 @@ function CredentialResult() {
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl border border-primary/30 bg-surface-container/80 p-6 shadow-lg">
-            <div className="text-center">
-              <MaterialIcon name="check_circle" className="text-primary" size={56} filled />
-              <p className="mt-4 font-medium text-primary text-lg">Credencial Válida ✓</p>
+          <div className="space-y-6">
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <MaterialIcon name="check_circle" size={22} filled />
+              <span className="font-medium text-sm tracking-wide">Credencial válida</span>
             </div>
-            {player ? (
-              <dl className="mt-6 space-y-2 text-sm">
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">Nombre</dt>
-                  <dd className="font-medium">{String(player.first_name ?? '')} {String(player.last_name ?? '')}</dd>
-                </div>
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">Fecha de nacimiento</dt>
-                  <dd>{formatBirthEs(player.birth_date)}</dd>
-                </div>
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">CURP (fragmento)</dt>
-                  <dd className="font-mono text-xs tracking-wide">{String(player.curp_masked ?? 'No registrada')}</dd>
-                </div>
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">Posición</dt>
-                  <dd>{String(player.position ?? '—')}</dd>
-                </div>
-                <div className="flex justify-between border-b border-outline-variant/20 py-2">
-                  <dt className="text-on-surface-variant">Número</dt>
-                  <dd>{String(player.jersey_number ?? '—')}</dd>
-                </div>
-                <div className="flex justify-between py-2">
-                  <dt className="text-on-surface-variant">Club</dt>
-                  <dd>Academia Barcelona Cupido</dd>
-                </div>
-              </dl>
-            ) : null}
-            <button onClick={() => navigate('/credencial')} className="mt-6 block w-full text-center text-sm text-primary hover:underline">
+            {player ? <CredentialCard3D player={player} className="max-w-md" /> : null}
+            <button
+              type="button"
+              onClick={() => navigate('/credencial')}
+              className="block w-full text-center text-sm text-primary hover:underline"
+            >
               Ver todas las credenciales
             </button>
           </div>

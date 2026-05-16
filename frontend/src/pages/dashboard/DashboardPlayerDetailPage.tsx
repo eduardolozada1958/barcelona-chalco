@@ -211,7 +211,7 @@ export function DashboardPlayerDetailPage() {
             <MaterialIcon name="qr_code_2" size={18} className="text-primary" /> Credencial Digital
           </h3>
           <p className="text-xs text-on-surface-variant mb-4">
-            Este código abre la vista con cámara en <strong className="text-on-surface">/credencial-ar/…</strong> (tarjeta flotante). La ficha sin cámara sigue en <code className="text-primary">/credencial/…</code>. Si el escaneo abre otro sitio, define <code className="text-primary">APP_PUBLIC_URL</code> en Render con la URL de Cloudflare Pages.
+            El QR abre la vista inmersiva <strong className="text-on-surface">/credencial-ar/…</strong> (tarjeta 3D con efecto holográfico, sin cámara). La misma validación en formato de página está en <code className="text-primary">/credencial/…</code>. Si el escaneo abre otro sitio, define <code className="text-primary">APP_PUBLIC_URL</code> en Render con la URL de Cloudflare Pages.
           </p>
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <img
@@ -224,10 +224,10 @@ export function DashboardPlayerDetailPage() {
               <p><span className="font-label-caps text-[10px]">TOKEN:</span> <code className="text-primary break-all">{String(p.qr_token)}</code></p>
               <div className="flex flex-col gap-2">
                 <Link to={`/credencial-ar/${encodeURIComponent(String(p.qr_token))}`} className="inline-flex items-center gap-1 text-primary hover:underline font-label-caps text-label-caps">
-                  <MaterialIcon name="open_in_new" size={14} /> Vista con cámara (AR ligera)
+                  <MaterialIcon name="open_in_new" size={14} /> Vista inmersiva 3D
                 </Link>
                 <Link to={`/credencial/${encodeURIComponent(String(p.qr_token))}`} className="inline-flex items-center gap-1 text-on-surface-variant hover:underline font-label-caps text-[10px]">
-                  <MaterialIcon name="description" size={14} /> Ficha sin cámara
+                  <MaterialIcon name="description" size={14} /> Misma credencial (vista estándar)
                 </Link>
               </div>
             </div>
