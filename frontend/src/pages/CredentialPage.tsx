@@ -99,14 +99,14 @@ function CredentialCard({ player }: { player: Player }) {
         <div className="flex flex-col items-center justify-center flex-shrink-0 mx-auto md:mx-0">
           {hasQr ? (
             <div className="flex flex-col items-center">
-              <PlayerQrImage playerId={player.id} qrToken={player.qr_token!} size="md" />
-              <p className="mt-2 text-[10px] text-center text-on-surface-variant/60 max-w-[9rem]">
-                Escanea con la cámara de otro dispositivo
+              <PlayerQrImage playerId={player.id} qrToken={player.qr_token!} size="xl" />
+              <p className="mt-3 text-[11px] text-center text-on-surface-variant/75 max-w-[14rem] leading-snug">
+                Acerca el teléfono; buena luz. El código es grande a propósito para que sea más fácil de leer.
               </p>
             </div>
           ) : (
-            <div className="w-20 h-20 rounded-lg bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
-              <MaterialIcon name="qr_code_2" size={32} className="text-on-surface-variant/30" />
+            <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-xl bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center">
+              <MaterialIcon name="qr_code_2" size={40} className="text-on-surface-variant/30" />
             </div>
           )}
         </div>

@@ -1,9 +1,12 @@
 import { playerQrImageUrl } from '@/api/qr';
 
+/** Tamaños en pantalla: el PNG del servidor es alto; aquí marco blanco amplio ayuda al “quiet zone” al escanear. */
 const SIZE_CLASS = {
-  sm: 'w-12 h-12',
-  md: 'w-20 h-20',
-  lg: 'w-44 h-44',
+  sm: 'w-16 h-16 min-w-16 min-h-16',
+  md: 'w-32 h-32 min-w-32 min-h-32',
+  lg: 'w-44 h-44 min-w-44 min-h-44 sm:w-48 sm:h-48 sm:min-w-48 sm:min-h-48',
+  /** Galería de credenciales: prioriza lectura móvil. */
+  xl: 'w-48 h-48 min-w-48 min-h-48 sm:w-56 sm:h-56 sm:min-w-56 sm:min-h-56',
 } as const;
 
 interface PlayerQrImageProps {
@@ -33,7 +36,7 @@ export function PlayerQrImage({ playerId, qrToken, size = 'md', className = '' }
         aria-hidden
         draggable={false}
         decoding="async"
-        className={`${dim} rounded-lg border border-primary/20 object-contain pointer-events-none bg-white p-0.5`}
+        className={`${dim} rounded-xl border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.06)] object-contain pointer-events-none bg-white p-2 sm:p-2.5 [image-rendering:crisp-edges]`}
         onContextMenu={(e) => e.preventDefault()}
       />
     </div>
