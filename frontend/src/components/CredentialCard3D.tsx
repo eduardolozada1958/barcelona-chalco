@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { CLUB_LOGO_URL } from '@/config/club';
 
 /** Datos mínimos devueltos por `/qr/validate/:token` (snake_case). */
 export type CredentialViewerPlayer = Record<string, unknown>;
@@ -134,7 +135,7 @@ export function CredentialCard3D({ player, immersive = false, className = '' }: 
             <div className="flex items-start justify-between gap-3 mb-6">
               <div className="flex items-center gap-3 min-w-0">
                 <img
-                  src="/images/logo.png"
+                  src={CLUB_LOGO_URL}
                   alt=""
                   className="h-11 w-11 shrink-0 object-contain drop-shadow-[0_0_12px_rgba(212,175,55,0.35)]"
                 />

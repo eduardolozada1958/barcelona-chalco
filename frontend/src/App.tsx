@@ -19,6 +19,10 @@ import { PublicGalleryPage } from '@/pages/PublicGalleryPage';
 import { PublicGalleryDetailPage } from '@/pages/PublicGalleryDetailPage';
 import { PublicPlayersPage } from '@/pages/PublicPlayersPage';
 import { PublicPlayerDetailPage } from '@/pages/PublicPlayerDetailPage';
+import { PrivacyPolicyPage } from '@/pages/legal/PrivacyPolicyPage';
+import { TermsOfServicePage } from '@/pages/legal/TermsOfServicePage';
+import { CookiePolicyPage } from '@/pages/legal/CookiePolicyPage';
+import { SupportPage } from '@/pages/legal/SupportPage';
 
 import { DashboardHomePage } from '@/pages/dashboard/DashboardHomePage';
 import { DashboardPlayersPage } from '@/pages/dashboard/DashboardPlayersPage';
@@ -54,6 +58,10 @@ export default function App() {
         <Route path="/galeria/:id" element={<PublicGalleryDetailPage />} />
         <Route path="/jugadores" element={<PublicPlayersPage />} />
         <Route path="/jugadores/:id" element={<PublicPlayerDetailPage />} />
+        <Route path="/privacidad" element={<PrivacyPolicyPage />} />
+        <Route path="/terminos" element={<TermsOfServicePage />} />
+        <Route path="/cookies" element={<CookiePolicyPage />} />
+        <Route path="/soporte" element={<SupportPage />} />
       </Route>
 
       <Route

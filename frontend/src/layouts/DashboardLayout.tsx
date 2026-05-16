@@ -3,6 +3,7 @@ import { useState } from 'react';
 import clsx from 'clsx';
 import { useAuth, type SessionRole } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { CLUB_LOGO_URL } from '@/config/club';
 
 interface NavItem {
   to: string;
@@ -36,7 +37,7 @@ export function DashboardLayout() {
   const sidebar = (
     <>
       <div className="px-gutter mb-stack-lg mt-stack-md flex items-center gap-stack-sm">
-        <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-12 h-12 object-contain shrink-0 drop-shadow-lg" />
+        <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-12 h-12 object-contain shrink-0 drop-shadow-lg" />
         <div className="min-w-0">
           <h1 className="font-display-hero text-body-lg text-primary tracking-tight truncate">Barcelona Cupido</h1>
           <p className="font-label-caps text-label-caps text-on-surface-variant opacity-80">Gestión Élite</p>
@@ -87,7 +88,7 @@ export function DashboardLayout() {
         <div className="md:hidden flex items-center justify-between mb-stack-md pb-stack-sm border-b border-outline-variant/20">
           <button type="button" onClick={() => setMobileOpen(true)} className="p-2"><MaterialIcon name="menu" className="text-primary" size={28} /></button>
           <div className="flex items-center gap-2">
-            <img src="/images/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+            <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain" />
             <span className="font-display-hero text-body-lg text-primary">Barcelona Cupido</span>
           </div>
           <div className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30">

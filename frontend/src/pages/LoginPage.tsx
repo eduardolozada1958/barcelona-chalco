@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { CLUB_LOGO_URL } from '@/config/club';
 
 const schema = z.object({
   email:    z.string().email('Correo inválido'),
@@ -53,7 +54,7 @@ export function LoginPage() {
       <main className="z-10 w-full max-w-4xl flex flex-col items-center gap-stack-lg">
         {/* Header */}
         <header className="text-center flex flex-col items-center gap-stack-sm">
-          <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-24 h-24 object-contain drop-shadow-2xl" />
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-24 h-24 object-contain drop-shadow-2xl" />
           <h1 className="font-display-hero text-headline-lg-mobile md:text-display-hero text-primary tracking-tighter">
             F.C. BARCELONA CUPIDO
           </h1>

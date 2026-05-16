@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { CLUB_LOGO_URL } from '@/config/club';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
 import { latestResultPublic } from '@/api/results';
 import { listMatchesPublic } from '@/api/matches';
@@ -42,7 +43,7 @@ export function HomePage() {
 
         {/* Content */}
         <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-stack-md">
-          <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-2" />
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-2" />
           <h1 className="font-display-hero text-display-hero text-primary tracking-tighter drop-shadow-2xl">
             F.C. BARCELONA CUPIDO
           </h1>
@@ -89,7 +90,7 @@ export function HomePage() {
             <div className="relative z-10 flex flex-col gap-4">
               {[
                 { icon: 'qr_code_scanner', text: 'Verificación Instantánea' },
-                { icon: 'monitoring',       text: 'Analíticas de Rendimiento' },
+                { icon: 'leaderboard',      text: 'Goleo y estadísticas de partido' },
                 { icon: 'security',         text: 'Identidad Segura' },
               ].map((item, i, arr) => (
                 <div
@@ -168,7 +169,7 @@ export function HomePage() {
             </div>
             <div className="relative z-20 flex items-center justify-start gap-6 mt-auto">
               <div className="flex flex-col items-center">
-                <img src="/images/logo.png" alt="B. Cupido" className="w-12 h-12 object-contain drop-shadow-lg" />
+                <img src={CLUB_LOGO_URL} alt="B. Cupido" className="w-12 h-12 object-contain drop-shadow-lg" />
                 <span className="font-label-caps text-label-caps mt-2">B. Cupido</span>
               </div>
               <span className="font-display-hero text-headline-lg-mobile text-on-surface-variant opacity-50">VS</span>

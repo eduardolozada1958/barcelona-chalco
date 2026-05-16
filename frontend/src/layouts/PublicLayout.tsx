@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PushNotificationsPrompt } from '@/components/PushNotificationsPrompt';
+import { CLUB_LOGO_URL } from '@/config/club';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -18,10 +19,10 @@ const publicLinks = [
 ];
 
 const footerLinks = [
-  { href: '#', label: 'Política de Privacidad' },
-  { href: '#', label: 'Términos de Servicio' },
-  { href: '#', label: 'Política de Cookies' },
-  { href: '#', label: 'Soporte' },
+  { to: '/privacidad', label: 'Política de Privacidad' },
+  { to: '/terminos', label: 'Términos de Servicio' },
+  { to: '/cookies', label: 'Política de Cookies' },
+  { to: '/soporte', label: 'Soporte' },
 ];
 
 /* ─── Layout ─── */
@@ -39,7 +40,7 @@ export function PublicLayout() {
           to="/"
           className="flex items-center gap-3 shrink-0"
         >
-          <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="h-12 w-12 object-contain drop-shadow-lg" />
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-12 w-12 object-contain drop-shadow-lg" />
           <span className="font-display-hero text-headline-lg-mobile text-primary tracking-tighter hidden sm:inline">F.C. BARCELONA CUPIDO</span>
         </NavLink>
 
@@ -154,18 +155,18 @@ export function PublicLayout() {
       {/* ═══════════════════ Footer ═══════════════════ */}
       <footer className="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
         <div className="flex items-center gap-4 justify-center">
-          <img src="/images/logo.png" alt="F.C. Barcelona Cupido" className="h-14 w-14 object-contain drop-shadow-lg" />
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-14 w-14 object-contain drop-shadow-lg" />
           <span className="font-display-hero text-primary text-2xl">F.C. BARCELONA CUPIDO</span>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           {footerLinks.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
+            <NavLink
+              key={l.to}
+              to={l.to}
               className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100"
             >
               {l.label}
-            </a>
+            </NavLink>
           ))}
         </div>
         <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">

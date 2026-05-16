@@ -11,8 +11,8 @@ self.addEventListener('push', (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title || 'Nuevo aviso', {
       body: payload.body || '',
-      icon: '/images/logo.png',
-      badge: '/images/logo.png',
+      icon: '/images/logo.webp',
+      badge: '/images/logo.webp',
       tag: `barcelona-notice-${payload.url || 'default'}`,
       renotify: true,
       silent: false,
