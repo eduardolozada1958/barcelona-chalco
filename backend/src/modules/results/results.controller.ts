@@ -35,6 +35,15 @@ export class ResultsController {
     }
   }
 
+  static async getByIdAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const row = await ResultsService.getById(routeParam(req, 'id'));
+      sendSuccess(res, row, 'Resultado');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const row = await ResultsService.create(req.body as CreateResultBody, req.user!.id);

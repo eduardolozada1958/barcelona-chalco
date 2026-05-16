@@ -28,6 +28,14 @@ resultsRouter.get(
   ResultsController.listAdmin
 );
 
+resultsRouter.get(
+  '/:id',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(resultIdParamSchema),
+  ResultsController.getByIdAdmin
+);
+
 resultsRouter.post(
   '/',
   authMiddleware,

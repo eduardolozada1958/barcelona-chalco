@@ -7,12 +7,14 @@ import toast from 'react-hot-toast';
 import {
   createResult,
   deleteResult,
+  getResultAdmin,
   listResultsAdmin,
   publishResult,
   updateResult,
   type CreateResultBody,
 } from '@/api/results';
 import { listMatchesAdmin } from '@/api/matches';
+import { listPlayersAdmin } from '@/api/players';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -30,6 +32,19 @@ type ResultEditForm = {
   goalsConceded: string;
   matchReport: string;
 };
+
+type PlayerStatDraft = {
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+};
+
+function parseStatInt(raw: string, max: number): number {
+  const n = parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 0) return 0;
+  return Math.min(max, n);
+}
 
 function toDatetimeLocalValue(iso: string | unknown): string {
   if (typeof iso !== 'string' || !iso) return '';
@@ -57,6 +72,20 @@ export function DashboardResultsPage() {
   const q = useQuery({
     queryKey: ['results-admin'],
     queryFn: () => listResultsAdmin({ page: 1, limit: 200 }),
+  });
+
+  const [statsByPlayer, setStatsByPlayer] = useState<Record<string, PlayerStatDraft>>({});
+
+  const playersForEditQ = useQuery({
+    queryKey: ['players-admin', 'results-edit'],
+    queryFn: () => listPlayersAdmin({ page: 1, limit: 200 }),
+    enabled: Boolean(editRow?.id),
+  });
+
+  const resultDetailQ = useQuery({
+    queryKey: ['result-admin', editRow?.id],
+    queryFn: () => getResultAdmin(String(editRow!.id)),
+    enabled: Boolean(editRow?.id),
   });
 
   const mq = useQuery({
@@ -99,6 +128,11 @@ export function DashboardResultsPage() {
     onSuccess: () => {
       toast.success('Resultado actualizado');
       void qc.invalidateQueries({ queryKey: ['results-admin'] });
+      void qc.invalidateQueries({ queryKey: ['result-admin'] });
+      void qc.invalidateQueries({ queryKey: ['season-leaders-public'] });
+      void qc.invalidateQueries({ queryKey: ['latest-result'] });
+      void qc.invalidateQueries({ queryKey: ['results-public'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       setEditRow(null);
       resetEdit();
     },
@@ -110,6 +144,10 @@ export function DashboardResultsPage() {
     onSuccess: () => {
       toast.success('Resultado publicado');
       void qc.invalidateQueries({ queryKey: ['results-admin'] });
+      void qc.invalidateQueries({ queryKey: ['season-leaders-public'] });
+      void qc.invalidateQueries({ queryKey: ['latest-result'] });
+      void qc.invalidateQueries({ queryKey: ['results-public'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -136,6 +174,48 @@ export function DashboardResultsPage() {
   } = useForm<ResultEditForm>({
     defaultValues: { goalsScored: '0', goalsConceded: '0', matchReport: '' },
   });
+
+  useEffect(() => {
+    if (!editRow?.id) {
+      setStatsByPlayer({});
+      return;
+    }
+    const payload = resultDetailQ.data?.data as Record<string, unknown> | undefined;
+    if (!payload) {
+      setStatsByPlayer({});
+      return;
+    }
+    const ps = (payload.player_stats as Record<string, unknown>[] | undefined) ?? [];
+    const next: Record<string, PlayerStatDraft> = {};
+    for (const row of ps) {
+      const pid = String(row.player_id ?? '');
+      if (!pid) continue;
+      next[pid] = {
+        goals:       Number(row.goals) || 0,
+        assists:     Number(row.assists) || 0,
+        yellowCards: Number(row.yellow_cards) || 0,
+        redCards:    Number(row.red_cards) || 0,
+      };
+    }
+    setStatsByPlayer(next);
+  }, [editRow?.id, resultDetailQ.data]);
+
+  const sortedPlayersForEdit = useMemo(() => {
+    const rows = (playersForEditQ.data?.data ?? []) as Record<string, unknown>[];
+    return [...rows].sort((a, b) => {
+      const la = String(a.last_name ?? '');
+      const lb = String(b.last_name ?? '');
+      if (la !== lb) return la.localeCompare(lb, 'es');
+      return String(a.first_name ?? '').localeCompare(String(b.first_name ?? ''), 'es');
+    });
+  }, [playersForEditQ.data]);
+
+  function patchPlayerStat(playerId: string, patch: Partial<PlayerStatDraft>) {
+    setStatsByPlayer((prev) => {
+      const cur = prev[playerId] ?? { goals: 0, assists: 0, yellowCards: 0, redCards: 0 };
+      return { ...prev, [playerId]: { ...cur, ...patch } };
+    });
+  }
 
   function openEdit(r: Record<string, unknown>) {
     setEditRow(r);
@@ -283,7 +363,12 @@ export function DashboardResultsPage() {
       </DashboardModal>
 
       <DashboardModal open={Boolean(editRow)} onClose={closeEditModal} title="Editar resultado" wide>
-        <form onSubmit={onEdit} className="space-y-3">
+        <form onSubmit={onEdit} className="space-y-4">
+          {resultDetailQ.isError && (
+            <p className="text-sm text-error">
+              No se pudo cargar el detalle del resultado. Cierra y vuelve a abrir.
+            </p>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={formLabelClass}>Goles a favor</label>
@@ -300,11 +385,109 @@ export function DashboardResultsPage() {
             <label className={formLabelClass}>Crónica (opcional)</label>
             <textarea rows={4} className={formInputClass} {...registerEdit('matchReport')} />
           </div>
+
+          <div>
+            <h4 className="font-label-caps text-label-caps text-on-surface mb-2">Estadísticas por jugador</h4>
+            <p className="text-xs text-on-surface-variant mb-2">
+              Gol, asistencias, amarillas (máx. 2) y rojas (máx. 1). Solo se guardan filas con algún valor; si quitas todos los números de un jugador, se borra su línea para este partido.
+            </p>
+            {playersForEditQ.isLoading || resultDetailQ.isLoading ? (
+              <Spinner />
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-outline-variant/20 max-h-[280px] overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-surface-container-high z-[1]">
+                    <tr className="text-left text-on-surface-variant text-[10px] font-label-caps uppercase tracking-wide">
+                      <th className="px-3 py-2">Jugador</th>
+                      <th className="px-1 py-2 w-[4.5rem] text-center">Gol</th>
+                      <th className="px-1 py-2 w-[4.5rem] text-center">Ast</th>
+                      <th className="px-1 py-2 w-[4.5rem] text-center">🟨</th>
+                      <th className="px-1 py-2 w-[4.5rem] text-center pr-3">🟥</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedPlayersForEdit.map((p) => {
+                      const pid = String(p.id);
+                      const jersey = p.jersey_number != null ? ` · #${p.jersey_number}` : '';
+                      const name = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || pid;
+                      const d = statsByPlayer[pid] ?? { goals: 0, assists: 0, yellowCards: 0, redCards: 0 };
+                      return (
+                        <tr key={pid} className="border-t border-outline-variant/10">
+                          <td className="px-3 py-1.5 text-on-surface">
+                            <span className="truncate block max-w-[200px]" title={name}>
+                              {name}
+                              {jersey}
+                            </span>
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={20}
+                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
+                              value={d.goals}
+                              onChange={(e) =>
+                                patchPlayerStat(pid, { goals: parseStatInt(e.target.value, 20) })
+                              }
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={20}
+                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
+                              value={d.assists}
+                              onChange={(e) =>
+                                patchPlayerStat(pid, { assists: parseStatInt(e.target.value, 20) })
+                              }
+                            />
+                          </td>
+                          <td className="px-1 py-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={2}
+                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
+                              value={d.yellowCards}
+                              onChange={(e) =>
+                                patchPlayerStat(pid, { yellowCards: parseStatInt(e.target.value, 2) })
+                              }
+                            />
+                          </td>
+                          <td className="px-1 py-1 pr-3">
+                            <input
+                              type="number"
+                              min={0}
+                              max={1}
+                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
+                              value={d.redCards}
+                              onChange={(e) =>
+                                patchPlayerStat(pid, { redCards: parseStatInt(e.target.value, 1) })
+                              }
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {sortedPlayersForEdit.length === 0 && (
+                  <p className="p-4 text-on-surface-variant text-sm">No hay jugadores en el sistema.</p>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className={formActionsClass}>
             <button type="button" onClick={closeEditModal} className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">
               Cancelar
             </button>
-            <button type="submit" disabled={updateMut.isPending} className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={updateMut.isPending || resultDetailQ.isLoading || playersForEditQ.isLoading}
+              className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps disabled:opacity-50"
+            >
               {updateMut.isPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
           </div>

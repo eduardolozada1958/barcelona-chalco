@@ -100,7 +100,7 @@ export class ResultsService {
       if (upErr) throw new Error(upErr.message);
     }
 
-    if (input.playerStats && input.playerStats.length > 0) {
+    if (input.playerStats !== undefined) {
       await ResultsService.replacePlayerStats(id, input.playerStats);
     }
 
@@ -110,6 +110,8 @@ export class ResultsService {
   static async replacePlayerStats(resultId: string, stats: PlayerStatInput[]) {
     const { error: delErr } = await supabaseAdmin.from('player_stats').delete().eq('result_id', resultId);
     if (delErr) throw new Error(delErr.message);
+
+    if (stats.length === 0) return;
 
     const rows = stats.map((s) => ({
       result_id:       resultId,

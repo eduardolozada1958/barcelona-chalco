@@ -25,10 +25,29 @@ export async function listResultsAdmin(params?: Record<string, string | number |
   return data;
 }
 
+export interface ResultPlayerStatInput {
+  playerId:      string;
+  goals?:        number;
+  assists?:      number;
+  yellowCards?:  number;
+  redCards?:     number;
+  minutesPlayed?: number;
+  rating?:       number | null;
+  notes?:        string | null;
+}
+
+export async function getResultAdmin(id: string) {
+  const { data } = await apiClient.get<ApiResponse<unknown>>(`/results/${id}`);
+  return data;
+}
+
 export interface UpdateResultBody {
-  goalsScored?: number;
-  goalsConceded?: number;
-  matchReport?: string | null;
+  goalsScored?:       number;
+  goalsConceded?:     number;
+  matchReport?:       string | null;
+  highlightUrl?:      string | null;
+  featuredPlayerId?: string | null;
+  playerStats?:       ResultPlayerStatInput[];
 }
 
 export async function createResult(body: CreateResultBody) {
