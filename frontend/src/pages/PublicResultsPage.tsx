@@ -21,7 +21,7 @@ export function PublicResultsPage() {
         <div>
           <h1 className="font-display-hero text-display-hero text-primary mb-2">RESULTADOS</h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant">
-            Los últimos resultados del campo de batalla. Rendimiento élite verificado.
+            Los últimos marcadores y crónicas publicadas por el club. Datos oficiales del cuerpo técnico.
           </p>
         </div>
         <div className="mt-4 md:mt-0 flex gap-4">
@@ -47,11 +47,15 @@ export function PublicResultsPage() {
         </div>
       ) : (
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
-          {results.map((result) => (
-            <StaggerItem key={result.id}>
+          {results.map((result, index) => {
+            const row = result as unknown as Record<string, unknown>;
+            const key = String(row.match_id ?? row.id ?? row.result_id ?? index);
+            return (
+            <StaggerItem key={key}>
               <ResultCard result={result} />
             </StaggerItem>
-          ))}
+            );
+          })}
         </StaggerContainer>
       )}
     </div>

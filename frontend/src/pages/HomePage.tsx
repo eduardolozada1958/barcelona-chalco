@@ -123,7 +123,7 @@ export function HomePage() {
             { icon: 'qr_code',         title: 'Validar Jugadores con QR', desc: 'Escanea credenciales digitales al instante.',    to: '/credencial' },
             { icon: 'sports_soccer',    title: 'Consultar Partidos',       desc: 'Próximos partidos, horarios y sedes.',           to: '/partidos' },
             { icon: 'campaign',         title: 'Ver Avisos Oficiales',     desc: 'Comunicados y actualizaciones del club.',        to: '/avisos' },
-            { icon: 'contact_support',  title: 'Contactar al Entrenador',  desc: 'Canal de comunicación directa.',                 to: '/inscripcion' },
+            { icon: 'contact_support',  title: 'Contactar al Entrenador',  desc: 'Canal de comunicación directa.',                 to: '/contacto' },
           ].map((card) => (
             <Link
               key={card.icon}

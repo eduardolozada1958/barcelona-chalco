@@ -3,7 +3,7 @@ import type { Match } from '@/types';
 import { CLUB_DISPLAY_NAME } from '@/config/club';
 import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { MaterialIcon } from './MaterialIcon';
-import { isAllowedMapIframeSrc } from '@/components/MatchMapEmbed';
+import { MapLinkButton } from '@/components/MatchMapEmbed';
 
 interface MatchCardProps {
   match: Match;
@@ -62,15 +62,8 @@ export function MatchCard({ match }: MatchCardProps) {
         <div className="bg-surface-container/50 p-stack-sm rounded-lg border border-outline-variant/20 mt-stack-sm">
           <span className="font-label-caps text-label-caps text-on-surface-variant mb-1 block">SEDE</span>
           <span className="font-body-md text-body-md text-on-surface">{match.location || '—'}</span>
-          {match.location_maps_url && isAllowedMapIframeSrc(match.location_maps_url) ? (
-            <a
-              href={match.location_maps_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-1 text-xs font-label-caps text-primary hover:underline"
-            >
-              <MaterialIcon name="map" size={14} /> Ver mapa
-            </a>
+          {match.location_maps_url ? (
+            <MapLinkButton url={match.location_maps_url} />
           ) : null}
         </div>
 

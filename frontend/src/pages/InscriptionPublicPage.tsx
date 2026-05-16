@@ -77,10 +77,10 @@ export function InscriptionPublicPage() {
       <main className="z-10 w-full max-w-3xl">
         <header className="mb-stack-lg">
           <h1 className="font-display-hero text-headline-lg-mobile md:text-display-hero text-primary tracking-tighter">
-            Inscripción
+            Contacto
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">
-            Completa el formulario para solicitar la inscripción de un jugador a la academia.
+            Envía tu solicitud de inscripción o escríbenos desde aquí. El club revisa cada mensaje y te responderá por los datos que indiques.
           </p>
         </header>
 

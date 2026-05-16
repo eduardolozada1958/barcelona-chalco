@@ -13,7 +13,7 @@ const publicLinks = [
   { to: '/resultados',  label: 'Resultados' },
   { to: '/avisos',      label: 'Avisos' },
   { to: '/galeria',     label: 'Galería' },
-  { to: '/inscripcion', label: 'Inscripción' },
+  { to: '/contacto', label: 'Contacto' },
 ];
 
 const footerLinks = [

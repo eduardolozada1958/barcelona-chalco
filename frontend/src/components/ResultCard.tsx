@@ -79,15 +79,15 @@ export function ResultCard({ result, match }: ResultCardProps) {
         </p>
       )}
 
-      {/* Link */}
-      {result.match_id && (
+      {/* Link → ficha del partido (la vista pública usa match_id; el id del resultado puede venir como result_id en la API) */}
+      {result.match_id ? (
         <Link
-          to={`/resultados/${result.id}`}
+          to={`/partidos/${String(result.match_id)}`}
           className="mt-auto pt-4 text-primary font-label-caps text-label-caps flex items-center gap-1 hover:text-white transition-colors"
         >
           Ver detalle del partido <MaterialIcon name="arrow_forward" size={16} />
         </Link>
-      )}
+      ) : null}
     </article>
   );
 }

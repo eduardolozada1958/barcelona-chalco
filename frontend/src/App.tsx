@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -43,7 +43,8 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/inscripcion" element={<InscriptionPublicPage />} />
+        <Route path="/contacto" element={<InscriptionPublicPage />} />
+        <Route path="/inscripcion" element={<Navigate to="/contacto" replace />} />
         <Route path="/partidos" element={<PublicMatchesPage />} />
         <Route path="/partidos/:id" element={<PublicMatchDetailPage />} />
         <Route path="/resultados" element={<PublicResultsPage />} />
