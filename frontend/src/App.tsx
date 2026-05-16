@@ -7,6 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { VerifyEmailPage } from '@/pages/VerifyEmailPage';
 import { CredentialPage } from '@/pages/CredentialPage';
 import { CredentialArPage } from '@/pages/CredentialArPage';
 import { InscriptionPublicPage } from '@/pages/InscriptionPublicPage';
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verificar-email" element={<VerifyEmailPage />} />
         <Route path="/contacto" element={<InscriptionPublicPage />} />
         <Route path="/inscripcion" element={<Navigate to="/contacto" replace />} />
         <Route path="/partidos" element={<PublicMatchesPage />} />

@@ -7,7 +7,10 @@ import {
   UnauthorizedError,
   ConflictError,
   NotFoundError,
+  BadRequestError,
 } from '@middlewares/error.middleware';
+import { isEmailConfigured } from '@shared/services/email.service';
+import { EmailVerificationService } from './email-verification.service';
 import type { LoginInput, RegisterParentInput } from './auth.validation';
 import type { JwtPayload } from '@shared/types';
 
@@ -16,7 +19,7 @@ export class AuthService {
   static async login(input: LoginInput) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, password_hash, role, status, full_name, avatar_url')
+      .select('id, email, password_hash, role, status, full_name, avatar_url, email_verified')
       .eq('email', input.email.toLowerCase())
       .is('deleted_at', null)
       .single();
@@ -25,13 +28,19 @@ export class AuthService {
       throw new UnauthorizedError('Credenciales inválidas');
     }
 
-    if (user.status !== 'active') {
-      throw new UnauthorizedError('Cuenta inactiva o suspendida');
-    }
-
     const passwordMatch = await bcrypt.compare(input.password, user.password_hash);
     if (!passwordMatch) {
       throw new UnauthorizedError('Credenciales inválidas');
+    }
+
+    if (user.role === 'parent' && !user.email_verified) {
+      throw new UnauthorizedError(
+        'Confirma tu correo antes de iniciar sesión. Revisa tu bandeja o solicita un nuevo enlace.',
+      );
+    }
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedError('Cuenta inactiva o suspendida');
     }
 
     // Actualizar último login
@@ -55,8 +64,16 @@ export class AuthService {
     };
   }
 
-  // Registro de padre/tutor con usuario asociado
-  static async registerParent(input: RegisterParentInput) {
+  // Registro de padre/tutor con usuario asociado (requiere verificar correo por SMTP)
+  static async registerParent(
+    input: RegisterParentInput,
+  ): Promise<{ email: string; verificationSent: boolean }> {
+    if (!isEmailConfigured()) {
+      throw new BadRequestError(
+        'El registro requiere verificación por correo; el servidor SMTP no está configurado.',
+      );
+    }
+
     // Verificar email único
     const { data: existing } = await supabaseAdmin
       .from('users')
@@ -77,10 +94,11 @@ export class AuthService {
       .insert({
         email:         input.email.toLowerCase(),
         password_hash: passwordHash,
-        role:          'parent',
-        status:        'active',
-        full_name:     input.fullName,
-        phone:         input.phone ?? null,
+        role:           'parent',
+        status:         'pending',
+        full_name:      input.fullName,
+        phone:          input.phone ?? null,
+        email_verified: false,
       })
       .select('id, email, role, status, full_name')
       .single();
@@ -98,18 +116,24 @@ export class AuthService {
       relationship:  input.relationship,
     });
 
-    const { accessToken, refreshToken } = await AuthService.generateTokens(newUser);
+    await EmailVerificationService.createAndSend(
+      newUser.id,
+      newUser.email,
+      newUser.full_name,
+    );
 
     return {
-      accessToken,
-      refreshToken,
-      user: {
-        id:       newUser.id,
-        email:    newUser.email,
-        role:     newUser.role,
-        fullName: newUser.full_name,
-      },
+      email:            newUser.email,
+      verificationSent: true,
     };
+  }
+
+  static async verifyEmail(token: string): Promise<void> {
+    await EmailVerificationService.verify(token);
+  }
+
+  static async resendVerificationEmail(email: string): Promise<void> {
+    await EmailVerificationService.resend(email);
   }
 
   // Renovar access token con refresh token
@@ -173,7 +197,7 @@ export class AuthService {
   static async getMe(userId: string) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, role, status, full_name, avatar_url, phone, last_login_at, created_at')
+      .select('id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, created_at')
       .eq('id', userId)
       .is('deleted_at', null)
       .single();

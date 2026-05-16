@@ -50,7 +50,7 @@ export function RegisterPage() {
 
   const onSubmit = async (data: Form) => {
     try {
-      await registerUser({
+      const result = await registerUser({
         email:         data.email.toLowerCase(),
         password:      data.password,
         fullName:      data.fullName,
@@ -60,8 +60,8 @@ export function RegisterPage() {
         phonePrimary:  data.phonePrimary,
         relationship:  data.relationship,
       });
-      toast.success('Cuenta creada');
-      navigate('/dashboard', { replace: true });
+      toast.success('Revisa tu correo para activar la cuenta');
+      navigate(`/verificar-email?email=${encodeURIComponent(result.email)}`, { replace: true });
     } catch (e) {
       toast.error((e as Error).message);
     }

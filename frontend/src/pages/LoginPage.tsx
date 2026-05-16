@@ -194,11 +194,21 @@ export function LoginPage() {
               </form>
             </div>
 
-            <p className="mt-6 text-center text-sm text-on-surface-variant">
-              ¿No tienes cuenta?{' '}
-              <Link to="/register" className="font-medium text-primary hover:underline">
-                Regístrate como padre
-              </Link>
+            <p className="mt-6 text-center text-sm text-on-surface-variant space-y-2">
+              <span className="block">
+                ¿No tienes cuenta?{' '}
+                <Link to="/register" className="font-medium text-primary hover:underline">
+                  Regístrate como padre
+                </Link>
+              </span>
+              {selectedRole === 'parent' ? (
+                <span className="block">
+                  ¿No llegó el correo de confirmación?{' '}
+                  <Link to="/verificar-email" className="font-medium text-primary hover:underline">
+                    Reenviar enlace
+                  </Link>
+                </span>
+              ) : null}
             </p>
           </div>
         )}

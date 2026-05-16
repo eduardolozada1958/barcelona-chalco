@@ -66,6 +66,30 @@ const envSchema = z.object({
     z.string().min(1).optional(),
   ),
   VAPID_SUBJECT: z.string().default('mailto:contacto@fcbarcelonacupido.com'),
+
+  /** SMTP (verificación de correo de padres). */
+  SMTP_HOST: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  SMTP_PORT: z.string().default('587').transform(Number),
+  SMTP_SECURE: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true' || v === '1'),
+  SMTP_USER: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().optional(),
+  ),
+  SMTP_PASS: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().optional(),
+  ),
+  SMTP_FROM: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().email().optional(),
+  ),
+  EMAIL_VERIFICATION_HOURS: z.string().default('24').transform(Number),
 });
 
 const parsed = envSchema.safeParse(process.env);

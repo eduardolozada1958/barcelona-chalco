@@ -24,7 +24,7 @@ interface AuthState {
   user:        SessionUser | null;
   loading:     boolean;
   login:       (email: string, password: string) => Promise<void>;
-  register:    (body: authApi.RegisterParentBody) => Promise<void>;
+  register:    (body: authApi.RegisterParentBody) => Promise<authApi.RegisterParentResult>;
   logout:      () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -96,16 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(async (body: authApi.RegisterParentBody) => {
     const res = await authApi.registerParent(body);
     if (!res.success || !res.data) throw new Error(res.message ?? 'Error al registrarse');
-    const { accessToken, refreshToken, user: u } = res.data;
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-    setUser({
-      id:       u.id,
-      email:    u.email,
-      role:     u.role as SessionRole,
-      fullName: u.fullName ?? '',
-    });
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));
+    return res.data;
   }, []);
 
   const logout = useCallback(async () => {

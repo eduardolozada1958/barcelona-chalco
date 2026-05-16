@@ -2,7 +2,13 @@ import { Router } from 'express';
 import { AuthController } from './auth.controller';
 import { validateBody } from '@middlewares/validate.middleware';
 import { authMiddleware } from '@middlewares/auth.middleware';
-import { loginSchema, registerParentSchema, refreshTokenSchema } from './auth.validation';
+import {
+  loginSchema,
+  registerParentSchema,
+  refreshTokenSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+} from './auth.validation';
 
 export const authRouter = Router();
 
@@ -16,6 +22,18 @@ authRouter.post('/login',
 authRouter.post('/register',
   validateBody(registerParentSchema),
   AuthController.registerParent
+);
+
+// POST /api/v1/auth/verify-email
+authRouter.post('/verify-email',
+  validateBody(verifyEmailSchema),
+  AuthController.verifyEmail
+);
+
+// POST /api/v1/auth/resend-verification
+authRouter.post('/resend-verification',
+  validateBody(resendVerificationSchema),
+  AuthController.resendVerification
 );
 
 // POST /api/v1/auth/refresh

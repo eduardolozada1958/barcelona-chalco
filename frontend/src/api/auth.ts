@@ -34,8 +34,23 @@ export async function login(body: LoginBody): Promise<ApiResponse<AuthTokens & {
   return data;
 }
 
-export async function registerParent(body: RegisterParentBody): Promise<ApiResponse<AuthTokens & { user: AuthUser }>> {
-  const { data } = await apiClient.post<ApiResponse<AuthTokens & { user: AuthUser }>>('/auth/register', body);
+export interface RegisterParentResult {
+  email:            string;
+  verificationSent: boolean;
+}
+
+export async function verifyEmail(token: string): Promise<ApiResponse<null>> {
+  const { data } = await apiClient.post<ApiResponse<null>>('/auth/verify-email', { token });
+  return data;
+}
+
+export async function resendVerificationEmail(email: string): Promise<ApiResponse<null>> {
+  const { data } = await apiClient.post<ApiResponse<null>>('/auth/resend-verification', { email });
+  return data;
+}
+
+export async function registerParent(body: RegisterParentBody): Promise<ApiResponse<RegisterParentResult>> {
+  const { data } = await apiClient.post<ApiResponse<RegisterParentResult>>('/auth/register', body);
   return data;
 }
 
