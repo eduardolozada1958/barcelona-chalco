@@ -2,6 +2,8 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 
 interface DashboardRowActionsProps {
   onEdit?: () => void;
+  /** Texto del botón de edición (p. ej. «Goles y tarjetas» en resultados). */
+  editLabel?: string;
   onDelete?: () => void;
   onPublish?: () => void;
   showPublish?: boolean;
@@ -12,6 +14,7 @@ interface DashboardRowActionsProps {
 
 export function DashboardRowActions({
   onEdit,
+  editLabel = 'Editar',
   onDelete,
   onPublish,
   showPublish,
@@ -28,7 +31,7 @@ export function DashboardRowActions({
           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 border border-primary/30"
           title="Editar"
         >
-          <MaterialIcon name="edit" size={14} /> Editar
+          <MaterialIcon name="edit" size={14} /> {editLabel}
         </button>
       )}
       {showPublish && !isPublished && onPublish && (

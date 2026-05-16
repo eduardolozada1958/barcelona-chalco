@@ -19,6 +19,8 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerStatusLabel } from '@/config/labels';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
+import { MatchStatsQuickEdit } from '@/components/MatchStatsQuickEdit';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 /** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
 function parseHeightCmForBody(raw: string): number | undefined {
@@ -290,13 +292,11 @@ export function DashboardPlayersPage() {
               <tr key={String(p.id)} className="border-t border-outline-variant/10 hover:bg-surface-container/30 transition-colors">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/20 overflow-hidden">
-                      {typeof p.avatar_url === 'string' && p.avatar_url ? (
-                        <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
-                      )}
-                    </div>
+                    <PlayerAvatar
+                      name={`${String(p.first_name)} ${String(p.last_name)}`}
+                      avatarUrl={typeof p.avatar_url === 'string' ? p.avatar_url : null}
+                      size="sm"
+                    />
                     <span className="font-medium text-on-surface">{String(p.first_name)} {String(p.last_name)}</span>
                   </div>
                 </td>
@@ -337,12 +337,14 @@ export function DashboardPlayersPage() {
         </table>
       </div>
 
+      <MatchStatsQuickEdit />
+
       <SeasonLeadersTables
         variant="dashboard"
         limit={15}
         getPlayerHref={(id) => `/dashboard/players/${id}`}
         title="⚽ Tabla de goleo y tarjetas"
-        description="Acumulado de goles, asistencias y tarjetas según los resultados ya publicados (misma fuente que el sitio público). Para cargar o corregir estadísticas por partido ve a Resultados."
+        description="Totales de la temporada (solo resultados publicados). Esta tabla es de consulta; para cambiar goles o tarjetas usa la sección de arriba o Resultados."
         asideLink={{ to: '/dashboard/results', label: 'Ir a resultados →' }}
       />
 

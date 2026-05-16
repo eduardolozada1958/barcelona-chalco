@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { getSeasonLeadersPublic, type SeasonLeaderRow } from '@/api/players';
+import { getSeasonLeadersPublic, listPlayersAdmin, type SeasonLeaderRow } from '@/api/players';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 export type SeasonLeadersTablesProps = {
   /** Filas máximas por tabla (goleo y disciplina vienen por separado del API). */
@@ -37,8 +39,28 @@ export function SeasonLeadersTables({
     queryFn: () => getSeasonLeadersPublic(limit),
   });
 
+  const playersAdminQ = useQuery({
+    queryKey: ['players-admin', 'season-leaders-avatars'],
+    queryFn: () => listPlayersAdmin({ page: 1, limit: 200 }),
+    enabled: variant === 'dashboard',
+  });
+
+  const avatarByPlayerId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of (playersAdminQ.data?.data ?? []) as Record<string, unknown>[]) {
+      const id = String(p.id ?? '');
+      const url = typeof p.avatar_url === 'string' ? p.avatar_url : '';
+      if (id && url) map.set(id, url);
+    }
+    return map;
+  }, [playersAdminQ.data]);
+
   const scoring = (leadersQ.data?.data?.scoring ?? []) as SeasonLeaderRow[];
   const discipline = (leadersQ.data?.data?.discipline ?? []) as SeasonLeaderRow[];
+
+  function avatarFor(row: SeasonLeaderRow) {
+    return row.avatar_url || avatarByPlayerId.get(row.player_id) || null;
+  }
 
   const panelClass =
     variant === 'dashboard'
@@ -108,13 +130,7 @@ export function SeasonLeadersTables({
                           to={getPlayerHref(row.player_id)}
                           className="flex items-center gap-2 text-on-surface hover:text-primary"
                         >
-                          {row.avatar_url ? (
-                            <img src={row.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border border-outline-variant/30" />
-                          ) : (
-                            <span className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
-                              <MaterialIcon name="person" size={16} className="text-on-surface-variant" />
-                            </span>
-                          )}
+                          <PlayerAvatar name={leaderName(row)} avatarUrl={avatarFor(row)} size="md" />
                           <span className="font-medium">{leaderName(row)}</span>
                         </Link>
                       </td>
@@ -154,13 +170,7 @@ export function SeasonLeadersTables({
                           to={getPlayerHref(row.player_id)}
                           className="flex items-center gap-2 text-on-surface hover:text-primary"
                         >
-                          {row.avatar_url ? (
-                            <img src={row.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover border border-outline-variant/30" />
-                          ) : (
-                            <span className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center">
-                              <MaterialIcon name="person" size={16} className="text-on-surface-variant" />
-                            </span>
-                          )}
+                          <PlayerAvatar name={leaderName(row)} avatarUrl={avatarFor(row)} size="md" />
                           <span className="font-medium">{leaderName(row)}</span>
                         </Link>
                       </td>

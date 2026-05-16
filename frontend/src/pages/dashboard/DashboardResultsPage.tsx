@@ -19,6 +19,7 @@ import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 type ResultForm = {
   matchId: string;
@@ -226,6 +227,27 @@ export function DashboardResultsPage() {
     });
   }
 
+  const editIdFromUrl = searchParams.get('edit');
+  useEffect(() => {
+    if (!editIdFromUrl || !q.data?.data) return;
+    const rows = (q.data.data ?? []) as Record<string, unknown>[];
+    const row = rows.find((r) => String(r.id) === editIdFromUrl);
+    if (!row) return;
+    openEdit(row);
+    const next = new URLSearchParams(searchParams);
+    next.delete('edit');
+    setSearchParams(next, { replace: true });
+  }, [editIdFromUrl, q.data, searchParams, setSearchParams]);
+
+  const avatarByPlayerId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const p of (playersForEditQ.data?.data ?? []) as Record<string, unknown>[]) {
+      const id = String(p.id ?? '');
+      if (id && typeof p.avatar_url === 'string' && p.avatar_url) map.set(id, p.avatar_url);
+    }
+    return map;
+  }, [playersForEditQ.data]);
+
   function closeEditModal() {
     setEditRow(null);
     resetEdit();
@@ -303,6 +325,7 @@ export function DashboardResultsPage() {
                 </span>
                 <DashboardRowActions
                   onEdit={() => openEdit(r)}
+                  editLabel="Goles y tarjetas"
                   onDelete={() => confirmDelete(String(r.id), matchTitle)}
                   onPublish={() => publishMut.mutate(String(r.id))}
                   showPublish={!r.published}
@@ -362,7 +385,7 @@ export function DashboardResultsPage() {
         )}
       </DashboardModal>
 
-      <DashboardModal open={Boolean(editRow)} onClose={closeEditModal} title="Editar resultado" wide>
+      <DashboardModal open={Boolean(editRow)} onClose={closeEditModal} title="Editar resultado — goles y tarjetas" wide>
         <form onSubmit={onEdit} className="space-y-4">
           {resultDetailQ.isError && (
             <p className="text-sm text-error">
@@ -414,9 +437,16 @@ export function DashboardResultsPage() {
                       return (
                         <tr key={pid} className="border-t border-outline-variant/10">
                           <td className="px-3 py-1.5 text-on-surface">
-                            <span className="truncate block max-w-[200px]" title={name}>
-                              {name}
-                              {jersey}
+                            <span className="flex items-center gap-2 min-w-0" title={name}>
+                              <PlayerAvatar
+                                name={name}
+                                avatarUrl={avatarByPlayerId.get(pid) ?? null}
+                                size="sm"
+                              />
+                              <span className="truncate max-w-[160px]">
+                                {name}
+                                {jersey}
+                              </span>
                             </span>
                           </td>
                           <td className="px-1 py-1">
