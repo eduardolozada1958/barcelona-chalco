@@ -37,6 +37,8 @@ export function SeasonLeadersTables({
   const leadersQ = useQuery({
     queryKey: ['season-leaders-public', limit],
     queryFn: () => getSeasonLeadersPublic(limit),
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   const playersAdminQ = useQuery({

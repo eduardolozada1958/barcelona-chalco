@@ -127,7 +127,7 @@ export function DashboardResultsPage() {
     mutationFn: ({ id, body }: { id: string; body: Parameters<typeof updateResult>[1] }) =>
       updateResult(id, body),
     onSuccess: () => {
-      toast.success('Resultado actualizado');
+      toast.success('Resultado y estadísticas de jugadores guardados');
       void qc.invalidateQueries({ queryKey: ['results-admin'] });
       void qc.invalidateQueries({ queryKey: ['result-admin'] });
       void qc.invalidateQueries({ queryKey: ['season-leaders-public'] });
@@ -273,12 +273,30 @@ export function DashboardResultsPage() {
 
   const onEdit = handleSubmitEdit((data) => {
     if (!editRow) return;
+    const playerStats = Object.entries(statsByPlayer)
+      .map(([playerId, s]) => ({
+        playerId,
+        goals:           s.goals,
+        assists:         s.assists,
+        yellowCards:     s.yellowCards,
+        redCards:        s.redCards,
+        minutesPlayed:   0,
+      }))
+      .filter(
+        (row) =>
+          row.goals > 0 ||
+          row.assists > 0 ||
+          row.yellowCards > 0 ||
+          row.redCards > 0,
+      );
+
     updateMut.mutate({
       id: String(editRow.id),
       body: {
         goalsScored:   parseInt(data.goalsScored, 10) || 0,
         goalsConceded: parseInt(data.goalsConceded, 10) || 0,
         matchReport:   data.matchReport.trim() || null,
+        playerStats,
       },
     });
   });

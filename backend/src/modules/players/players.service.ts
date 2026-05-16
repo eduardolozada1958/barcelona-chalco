@@ -153,7 +153,6 @@ export class PlayersService {
       .select('id, first_name, last_name, avatar_url, category, jersey_number')
       .in('id', playerIds)
       .eq('status', 'active')
-      .eq('is_verified', true)
       .is('deleted_at', null);
     if (pErr) throw new Error(pErr.message);
 
