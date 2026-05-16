@@ -1,24 +1,26 @@
 import { Link } from 'react-router-dom';
 
 import { LegalPageShell } from '@/components/LegalPageShell';
-import { CLUB_LEGAL_NAME, CLUB_SITE_URL } from '@/config/club';
+import { CLUB_DISPLAY_NAME, CLUB_SITE_URL, SITE_LEGAL_DISCLAIMER } from '@/config/club';
 
 export function PrivacyPolicyPage() {
   return (
     <LegalPageShell title="Política de privacidad">
       <section>
         <h2>1. Responsable del tratamiento</h2>
+        <p>{SITE_LEGAL_DISCLAIMER}</p>
         <p>
-          Los datos personales tratados a través de {CLUB_SITE_URL} se gestionan en el marco de las
-          actividades de <strong>{CLUB_LEGAL_NAME}</strong> (la «academia» o el «club»), con fines
-          administrativos, deportivos y de comunicación con padres, tutores y jugadores.
+          Los datos personales tratados a través de {CLUB_SITE_URL} («el sitio») se gestionan en el marco de
+          la plataforma <strong>{CLUB_DISPLAY_NAME}</strong>, con fines de información deportiva,
+          comunicación con padres, tutores y jugadores, y administración del contenido publicado en el sitio.
         </p>
         <p>
-          Para dudas sobre privacidad puedes usar la página de{' '}
+          El responsable del tratamiento es quien opera y administra el sitio (personal autorizado y
+          contacto indicado en{' '}
           <Link to="/contacto" className="text-primary hover:underline">
             contacto
-          </Link>{' '}
-          del sitio.
+          </Link>
+          ), no los proveedores técnicos de alojamiento por sí solos.
         </p>
       </section>
 
@@ -26,21 +28,21 @@ export function PrivacyPolicyPage() {
         <h2>2. Qué datos se recogen</h2>
         <p>Según el uso del sitio, pueden tratarse, entre otros:</p>
         <ul>
-          <li>Datos de jugadores: nombre, fecha de nacimiento, foto, posición, categoría y documentación que el club solicite para registro interno.</li>
-          <li>Datos de padres o tutores: nombre, correo y teléfono cuando se registran o solicitan información.</li>
-          <li>Datos de cuenta: correo y credenciales de acceso para personal autorizado del club (administración, entrenadores).</li>
-          <li>Datos técnicos: dirección IP, tipo de navegador y registros básicos del servidor para seguridad y funcionamiento.</li>
-          <li>Notificaciones push (opcional): identificador de suscripción del navegador, solo si el usuario activa avisos.</li>
+          <li>Datos de jugadores: nombre, fecha de nacimiento, foto, posición, categoría y documentación solicitada para registro interno.</li>
+          <li>Datos de padres o tutores: nombre, correo y teléfono cuando solicitan información.</li>
+          <li>Datos de cuenta: correo y credenciales para personal autorizado (administración, entrenadores).</li>
+          <li>Datos técnicos: dirección IP, tipo de navegador y registros básicos del servidor.</li>
+          <li>Notificaciones push (opcional): identificador de suscripción del navegador, solo si activas avisos.</li>
         </ul>
       </section>
 
       <section>
         <h2>3. Finalidades</h2>
         <ul>
-          <li>Gestionar plantilla, partidos, resultados, avisos y galería del club.</li>
-          <li>Mostrar información pública autorizada (jugadores verificados, resultados publicados, comunicados).</li>
+          <li>Mostrar plantilla, partidos, resultados, avisos y galería publicados en el sitio.</li>
+          <li>Mostrar estadísticas básicas (goles, asistencias, tarjetas) de partidos con resultado publicado.</li>
           <li>Validar credenciales digitales mediante código QR.</li>
-          <li>Enviar avisos del club a quien active notificaciones en su dispositivo.</li>
+          <li>Enviar avisos a quien active notificaciones en su dispositivo.</li>
           <li>Proteger el sitio frente a usos indebidos.</li>
         </ul>
         <p>
@@ -51,31 +53,30 @@ export function PrivacyPolicyPage() {
       <section>
         <h2>4. Base y conservación</h2>
         <p>
-          El tratamiento se basa en el interés legítimo del club, en la ejecución de la relación con padres y
-          jugadores, y en el consentimiento cuando corresponda (por ejemplo, notificaciones push o cookies no
-          esenciales).
+          El tratamiento se basa en el interés legítimo de operar el sitio, en la relación con padres y
+          jugadores vinculados a la academia, y en el consentimiento cuando corresponda (notificaciones push,
+          etc.).
         </p>
         <p>
-          Los datos se conservan mientras sean necesarios para las finalidades indicadas y las obligaciones
-          del club, y después se eliminan o anonimizan cuando ya no proceda.
+          Los datos se conservan mientras sean necesarios para las finalidades indicadas y después se
+          eliminan o anonimizan cuando ya no proceda.
         </p>
       </section>
 
       <section>
         <h2>5. Encargados y transferencias</h2>
         <p>
-          El sitio puede apoyarse en proveedores de infraestructura (alojamiento web, base de datos en la
-          nube, almacenamiento de archivos). Esos proveedores actúan como encargados con medidas de seguridad
-          razonables y solo procesan datos según instrucciones del club.
+          El sitio puede usar proveedores de infraestructura (alojamiento, base de datos, almacenamiento de
+          archivos). Actúan como encargados con medidas razonables y solo procesan datos según instrucciones
+          del responsable del sitio.
         </p>
       </section>
 
       <section>
         <h2>6. Derechos de las personas</h2>
         <p>
-          Conforme a la legislación mexicana aplicable (incluida la LFPDPPP), puedes solicitar acceso,
-          rectificación, cancelación u oposición respecto de tus datos, o revocar consentimientos otorgados,
-          escribiendo al club por los medios de{' '}
+          Conforme a la legislación mexicana aplicable (LFPDPPP), puedes solicitar acceso, rectificación,
+          cancelación u oposición, o revocar consentimientos, mediante{' '}
           <Link to="/contacto" className="text-primary hover:underline">
             contacto
           </Link>
@@ -86,17 +87,16 @@ export function PrivacyPolicyPage() {
       <section>
         <h2>7. Menores de edad</h2>
         <p>
-          La información de jugadores menores debe ser proporcionada y supervisada por padres o tutores
-          legales. El club limita la exposición pública a lo necesario para fines deportivos y de identidad
-          dentro del sitio.
+          La información de jugadores menores debe ser supervisada por padres o tutores. La exposición
+          pública se limita a lo necesario para fines deportivos e identidad dentro del sitio.
         </p>
       </section>
 
       <section>
         <h2>8. Cambios</h2>
         <p>
-          Podemos actualizar esta política. La fecha de revisión aparece al inicio de la página. El uso
-          continuado del sitio implica conocer la versión vigente.
+          Podemos actualizar esta política. La fecha de revisión aparece al inicio. El uso continuado implica
+          conocer la versión vigente.
         </p>
       </section>
     </LegalPageShell>
