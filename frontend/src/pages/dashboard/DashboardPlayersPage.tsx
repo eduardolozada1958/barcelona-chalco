@@ -18,6 +18,7 @@ import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formL
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerStatusLabel } from '@/config/labels';
+import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
 
 /** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
 function parseHeightCmForBody(raw: string): number | undefined {
@@ -335,6 +336,15 @@ export function DashboardPlayersPage() {
           </tbody>
         </table>
       </div>
+
+      <SeasonLeadersTables
+        variant="dashboard"
+        limit={15}
+        getPlayerHref={(id) => `/dashboard/players/${id}`}
+        title="⚽ Tabla de goleo y tarjetas"
+        description="Acumulado de goles, asistencias y tarjetas según los resultados ya publicados (misma fuente que el sitio público). Para cargar o corregir estadísticas por partido ve a Resultados."
+        asideLink={{ to: '/dashboard/results', label: 'Ir a resultados →' }}
+      />
 
       <DashboardModal open={createOpen} onClose={() => setCreateOpen(false)} title="Nuevo jugador" wide>
         <form onSubmit={onCreate} className="space-y-3">
