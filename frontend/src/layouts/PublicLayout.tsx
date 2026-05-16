@@ -4,6 +4,7 @@ import clsx from 'clsx';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PushNotificationsPrompt } from '@/components/PushNotificationsPrompt';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -144,6 +145,9 @@ export function PublicLayout() {
 
       {/* ═══════════════════ Main Content ═══════════════════ */}
       <main className="flex-grow pt-20">
+        <div className="pt-4 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full">
+          <PushNotificationsPrompt />
+        </div>
         <Outlet />
       </main>
 

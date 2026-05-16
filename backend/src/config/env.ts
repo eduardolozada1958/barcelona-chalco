@@ -55,6 +55,17 @@ const envSchema = z.object({
   STORAGE_BUCKET_PLAYER_CURP: z.string().default('player-curp-documents'),
   STORAGE_MAX_FILE_SIZE: z.string().default('5242880').transform(Number),
   STORAGE_MAX_CURP_PDF_BYTES: z.string().default('10485760').transform(Number),
+
+  /** Web Push (VAPID). Generar con: npx web-push generate-vapid-keys */
+  VAPID_PUBLIC_KEY: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  VAPID_PRIVATE_KEY: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  VAPID_SUBJECT: z.string().default('mailto:contacto@fcbarcelonacupido.com'),
 });
 
 const parsed = envSchema.safeParse(process.env);

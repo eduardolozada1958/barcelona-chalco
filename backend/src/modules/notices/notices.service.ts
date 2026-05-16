@@ -1,6 +1,8 @@
 import { supabaseAdmin } from '@config/database';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { logger } from '@shared/utils/logger';
+import { PushService } from '@modules/push/push.service';
 import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './notices.validation';
 
 export class NoticesService {
@@ -142,6 +144,14 @@ export class NoticesService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    void PushService.notifyNoticePublished({
+      id:      data.id,
+      title:   data.title,
+      content: data.content,
+      type:    data.type,
+    }).catch((e) => logger.warn('No se pudieron enviar notificaciones push del aviso', { err: e }));
+
     return data;
   }
 

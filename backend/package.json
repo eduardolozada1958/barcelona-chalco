@@ -42,12 +42,14 @@
     "tsc-alias": "^1.8.17",
     "typescript": "^5.6.3",
     "uuid": "^10.0.0",
+    "web-push": "^3.6.7",
     "winston": "^3.15.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/supertest": "^6.0.2",
+    "@types/web-push": "^3.6.4",
     "@typescript-eslint/eslint-plugin": "^8.14.0",
     "@typescript-eslint/parser": "^8.14.0",
     "cross-env": "^7.0.3",

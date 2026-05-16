@@ -23,6 +23,7 @@ import { galleryRouter }      from '@modules/gallery/gallery.routes';
 import { inscriptionsRouter } from '@modules/inscriptions/inscriptions.routes';
 import { settingsRouter }     from '@modules/settings/settings.routes';
 import { dashboardRouter }    from '@modules/dashboard/dashboard.routes';
+import { pushRouter }         from '@modules/push/push.routes';
 
 /** Rutas de solo lectura pública: no deben agotar la cuota global tan rápido. */
 function isPublicReadRoute(path: string, method: string): boolean {
@@ -31,7 +32,8 @@ function isPublicReadRoute(path: string, method: string): boolean {
   return (
     path.includes('/public') ||
     path.endsWith('/health') ||
-    path.includes('/qr/validate/')
+    path.includes('/qr/validate/') ||
+    path.includes('/push/public/vapid-key')
   );
 }
 
@@ -133,6 +135,7 @@ export function createApp(): Application {
   app.use(`${prefix}/inscriptions`, inscriptionsRouter);
   app.use(`${prefix}/settings`,     settingsRouter);
   app.use(`${prefix}/dashboard`,    dashboardRouter);
+  app.use(`${prefix}/push`,         pushRouter);
 
   // ── Manejador de rutas no encontradas ────────────────────
   app.use((_req, res) => {
