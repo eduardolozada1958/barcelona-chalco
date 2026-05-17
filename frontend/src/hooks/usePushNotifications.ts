@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getPushVapidPublicKey, subscribePush, unsubscribePush } from '@/api/push';
+import { iosPushRequiresHomeScreen } from '@/utils/push-platform';
 
 const STORAGE_SUBSCRIBED = 'push_subscribed_endpoint';
 
@@ -25,13 +26,18 @@ export type PushUiState =
   | 'ready'
   | 'subscribed'
   | 'denied'
-  | 'unconfigured';
+  | 'unconfigured'
+  | 'ios_needs_install';
 
 export function usePushNotifications() {
   const [state, setState] = useState<PushUiState>('loading');
   const [busy, setBusy] = useState(false);
 
   const checkExisting = useCallback(async () => {
+    if (iosPushRequiresHomeScreen()) {
+      setState('ios_needs_install');
+      return;
+    }
     if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
       setState('unsupported');
       return;
@@ -62,6 +68,10 @@ export function usePushNotifications() {
   }, []);
 
   useEffect(() => {
+    if (iosPushRequiresHomeScreen()) {
+      setState('ios_needs_install');
+      return;
+    }
     if (!('serviceWorker' in navigator)) {
       setState('unsupported');
       return;

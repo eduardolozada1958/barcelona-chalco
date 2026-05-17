@@ -17,6 +17,28 @@ export function PushNotificationsPrompt() {
     return null;
   }
 
+  if (state === 'ios_needs_install') {
+    return (
+      <div className="mb-stack-md rounded-xl border border-primary/30 bg-surface-container-low px-4 py-4 text-sm text-on-surface">
+        <div className="flex items-start gap-2">
+          <MaterialIcon name="phone_iphone" className="text-primary shrink-0 mt-0.5" size={22} />
+          <div>
+            <p className="font-medium text-primary mb-2">Avisos en iPhone / iPad (Safari)</p>
+            <p className="text-on-surface-variant mb-3">
+              Apple solo permite notificaciones si abres el sitio desde el <strong>icono en la pantalla de inicio</strong>, no desde Safari normal.
+            </p>
+            <ol className="list-decimal list-inside space-y-1.5 text-on-surface-variant mb-0">
+              <li>En Safari, pulsa <strong>Compartir</strong> (cuadrado con flecha).</li>
+              <li>Elige <strong>Añadir a pantalla de inicio</strong>.</li>
+              <li>Abre la app desde el icono nuevo.</li>
+              <li>Pulsa <strong>Activar avisos</strong> y acepta el permiso.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (state === 'subscribed') {
     return (
       <div className="mb-stack-md flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/25 bg-primary/10 px-4 py-3">
@@ -50,7 +72,7 @@ export function PushNotificationsPrompt() {
         <MaterialIcon name="notifications" className="text-primary shrink-0 mt-0.5" size={20} />
         <span>
           <strong className="text-primary">Recibe avisos en el teléfono</strong>
-          {' '}cuando publiquen algo urgente, partidos, entrenamientos o eventos (Android y navegador; en iPhone puede no llegar).
+          {' '}cuando publiquen algo urgente, partidos, entrenamientos o eventos. En Mac con Safari funciona aquí; en iPhone sigue los pasos de arriba si aplica.
         </span>
       </div>
       <div className="flex items-center gap-2 shrink-0">
