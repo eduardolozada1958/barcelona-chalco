@@ -9,6 +9,14 @@ const envFile = `.env.${nodeEnv}`;
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 dotenv.config({ path: path.resolve(process.cwd(), '.env') }); // fallback
 
+/** Acepta `correo@dominio` o `Nombre visible <correo@dominio>` (formato nodemailer). */
+function isValidSmtpFrom(value: string): boolean {
+  const trimmed = value.trim();
+  const match = /^(.+?)\s*<([^>]+)>$/.exec(trimmed);
+  const email = (match ? match[2] : trimmed).trim();
+  return z.string().email().safeParse(email).success;
+}
+
 // Schema de validación de variables de entorno
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -87,7 +95,12 @@ const envSchema = z.object({
   ),
   SMTP_FROM: z.preprocess(
     (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
-    z.string().email().optional(),
+    z
+      .string()
+      .refine(isValidSmtpFrom, {
+        message: 'SMTP_FROM debe ser un correo o "Nombre <correo@dominio>"',
+      })
+      .optional(),
   ),
   EMAIL_VERIFICATION_HOURS: z.string().default('24').transform(Number),
 });
