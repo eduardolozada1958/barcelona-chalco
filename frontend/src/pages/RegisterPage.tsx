@@ -101,12 +101,12 @@ export function RegisterPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>NOMBRE</label>
-                <input className={inputClass} placeholder="Ej. Anastacio" autoComplete="given-name" {...register('firstName')} />
+                <input className={inputClass} placeholder="Ej. María" autoComplete="given-name" {...register('firstName')} />
                 {errors.firstName ? <p className="mt-2 text-sm text-error">{errors.firstName.message}</p> : null}
               </div>
               <div>
                 <label className={labelClass}>APELLIDOS</label>
-                <input className={inputClass} placeholder="Ej. Lozada Alonso" autoComplete="family-name" {...register('lastName')} />
+                <input className={inputClass} placeholder="Ej. Hernández García" autoComplete="family-name" {...register('lastName')} />
                 {errors.lastName ? <p className="mt-2 text-sm text-error">{errors.lastName.message}</p> : null}
               </div>
               <div>
