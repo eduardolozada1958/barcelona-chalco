@@ -1,3 +1,8 @@
+import dns from 'dns';
+
+/** Render y otros PaaS sin egress IPv6: Node 17+ prefiere AAAA y falla SMTP a Gmail. */
+dns.setDefaultResultOrder('ipv4first');
+
 import { createApp } from './app';
 import { env } from '@config/env';
 import { logger } from '@shared/utils/logger';

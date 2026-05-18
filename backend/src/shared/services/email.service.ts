@@ -1,3 +1,4 @@
+import dns from 'dns/promises';
 import nodemailer, { type Transporter } from 'nodemailer';
 
 import { env, isDev } from '@config/env';
@@ -7,28 +8,40 @@ function smtpConfigured(): boolean {
   return Boolean(env.SMTP_HOST && env.SMTP_FROM);
 }
 
-let transporter: Transporter | null = null;
+let transporterPromise: Promise<Transporter> | null = null;
 
-function getTransporter(): Transporter {
+/** Render no tiene egress IPv6; conectar por A record evita ENETUNREACH a smtp.gmail.com. */
+async function getTransporter(): Promise<Transporter> {
   if (!smtpConfigured()) {
     throw new Error('SMTP no configurado (SMTP_HOST y SMTP_FROM requeridos)');
   }
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      host:   env.SMTP_HOST,
-      port:   env.SMTP_PORT,
-      secure: env.SMTP_SECURE,
-      auth:
-        env.SMTP_USER && env.SMTP_PASS
-          ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
-          : undefined,
-      /** Evita colgar el API si Gmail no responde (p. ej. desde Render). */
-      connectionTimeout: 10_000,
-      greetingTimeout:   10_000,
-      socketTimeout:     20_000,
-    });
+  if (!transporterPromise) {
+    transporterPromise = (async () => {
+      const hostname = env.SMTP_HOST!;
+      let connectHost = hostname;
+      try {
+        const v4 = await dns.resolve4(hostname);
+        if (v4[0]) connectHost = v4[0];
+      } catch (err) {
+        logger.warn(`SMTP: no se resolvió IPv4 de ${hostname}, usando hostname: ${(err as Error).message}`);
+      }
+
+      return nodemailer.createTransport({
+        host:   connectHost,
+        port:   env.SMTP_PORT,
+        secure: env.SMTP_SECURE,
+        tls:    { servername: hostname },
+        auth:
+          env.SMTP_USER && env.SMTP_PASS
+            ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
+            : undefined,
+        connectionTimeout: 10_000,
+        greetingTimeout:   10_000,
+        socketTimeout:     20_000,
+      });
+    })();
   }
-  return transporter;
+  return transporterPromise;
 }
 
 export type SendMailOptions = {
@@ -49,7 +62,8 @@ export async function sendMail(opts: SendMailOptions): Promise<void> {
     throw new Error('El servidor de correo no está configurado');
   }
 
-  const send = getTransporter().sendMail({
+  const transport = await getTransporter();
+  const send = transport.sendMail({
     from:    env.SMTP_FROM,
     to:      opts.to,
     subject: opts.subject,
