@@ -54,31 +54,33 @@ export function PublicPlayerDetailPage() {
   return (
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
       {/* ═══════ Hero Section ═══════ */}
-      <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 flex flex-col md:flex-row">
-        {/* Player Image */}
-        <div className="relative w-full md:w-[38%] max-w-sm shrink-0 min-h-[200px] md:min-h-[300px] bg-secondary-container/20 overflow-hidden flex items-center justify-center p-4 md:p-6">
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-          {player.avatar_url ? (
-            <img
-              src={player.avatar_url}
-              alt={fullName}
-              className="relative z-20 object-contain w-full max-h-[200px] md:max-h-[260px] rounded-lg"
-            />
-          ) : (
-            <div className="relative z-20 flex items-center justify-center">
-              <MaterialIcon name="person" className="text-surface-container-high" size={96} />
-            </div>
-          )}
-          {/* Number watermark */}
-          {player.jersey_number != null ? (
-            <div className="absolute right-2 bottom-2 font-display-hero text-5xl md:text-6xl text-surface-container-high opacity-25 pointer-events-none select-none">
-              {player.jersey_number}
-            </div>
-          ) : null}
+      <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 flex flex-col md:flex-row md:items-start">
+        {/* Foto retrato 3:4 — altura acotada, no crece con el panel derecho */}
+        <div className="w-full shrink-0 p-4 md:p-5 md:pr-0 flex justify-center md:justify-start">
+          <div className="relative w-full max-w-[240px] sm:max-w-[260px] aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/25 shadow-md">
+            {player.avatar_url ? (
+              <img
+                src={player.avatar_url}
+                alt={`Foto de ${fullName}`}
+                className="absolute inset-0 h-full w-full object-cover object-top"
+              />
+            ) : (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-b from-surface-container-low to-surface-container">
+                <MaterialIcon name="person" className="text-on-surface-variant/40" size={72} />
+                <span className="text-xs text-on-surface-variant font-label-caps">Sin foto</span>
+              </div>
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+            {player.jersey_number != null ? (
+              <span className="absolute top-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-on-primary font-stat-value text-lg shadow-lg">
+                {player.jersey_number}
+              </span>
+            ) : null}
+          </div>
         </div>
 
         {/* Info panel */}
-        <div className="relative w-full md:flex-1 p-stack-md md:p-stack-lg flex flex-col justify-center z-30 bg-surface-container-lowest/80 backdrop-blur-sm md:border-l border-outline-variant/10">
+        <div className="relative w-full md:flex-1 p-stack-md md:p-stack-lg flex flex-col md:border-l border-outline-variant/10 border-t md:border-t-0">
           {/* Name + Position + Badges */}
           <div className="mb-stack-md flex justify-between items-start">
             <div>
