@@ -1,4 +1,5 @@
-import { useParams, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { getPlayerPublic } from '@/api/players';
@@ -8,6 +9,7 @@ import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
+import { isPlayerUuid } from '@/utils/player-path';
 
 /**
  * Player detail page – faithful translation of `perfiljugador.html` mockup.
@@ -15,15 +17,25 @@ import { Spinner } from '@/components/Spinner';
  */
 export function PublicPlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const q = useQuery({
     queryKey: ['player-public', id],
     queryFn: () => getPlayerPublic(id!),
     enabled: Boolean(id),
   });
 
+  const player = q.data?.data as Player | undefined;
+
+  useEffect(() => {
+    if (!player || !id) return;
+    const slug = player.slug?.trim();
+    if (slug && isPlayerUuid(id) && id !== slug) {
+      navigate(`/jugadores/${slug}`, { replace: true });
+    }
+  }, [player, id, navigate]);
+
   if (q.isLoading) return <Spinner />;
 
-  const player = q.data?.data as Player | undefined;
   if (!player) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { sanitizeIlikeSearchTerm } from '@shared/utils/sanitize-search';
+
 const pagination = {
   page:  z.string().optional().transform(v => (v ? parseInt(v, 10) : 1)),
   limit: z.string().optional().transform(v => {
@@ -12,7 +14,7 @@ export const listUsersQuerySchema = z.object({
   ...pagination,
   role:   z.enum(['admin', 'coach', 'parent']).optional(),
   status: z.enum(['active', 'inactive', 'suspended', 'pending']).optional(),
-  search: z.string().optional(),
+  search: z.string().optional().transform((v) => sanitizeIlikeSearchTerm(v)),
 });
 
 export const userIdParamSchema = z.object({

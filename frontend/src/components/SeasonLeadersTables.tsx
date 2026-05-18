@@ -5,12 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { getSeasonLeadersPublic, listPlayersAdmin, type SeasonLeaderRow } from '@/api/players';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { playerPublicPath } from '@/utils/player-path';
 
 export type SeasonLeadersTablesProps = {
   /** Filas máximas por tabla (goleo y disciplina vienen por separado del API). */
   limit?: number;
+  /** Si false, los nombres en goleo/tarjetas no enlazan (recomendado en inicio público). */
+  linkPlayerNames?: boolean;
   /** Ruta al detalle del jugador (público o panel). */
-  getPlayerHref?: (playerId: string) => string;
+  getPlayerHref?: (playerId: string, row: SeasonLeaderRow) => string;
   title?: string;
   description?: string;
   /** Ej. enlace a resultados del panel o a plantilla pública. */
@@ -28,7 +31,8 @@ function leaderName(r: SeasonLeaderRow) {
  */
 export function SeasonLeadersTables({
   limit = 12,
-  getPlayerHref = (id) => `/jugadores/${id}`,
+  linkPlayerNames = false,
+  getPlayerHref = (_id, row) => playerPublicPath({ id: row.player_id, slug: row.slug }),
   title = '⚽ Tabla de goleo y tarjetas',
   description = 'Estadísticas acumuladas de jugadores verificados en partidos cuyo resultado ya está publicado. Se actualiza al registrar estadísticas por jugador en cada resultado.',
   asideLink,
@@ -62,6 +66,26 @@ export function SeasonLeadersTables({
 
   function avatarFor(row: SeasonLeaderRow) {
     return row.avatar_url || avatarByPlayerId.get(row.player_id) || null;
+  }
+
+  function playerNameCell(row: SeasonLeaderRow) {
+    const inner = (
+      <>
+        <PlayerAvatar name={leaderName(row)} avatarUrl={avatarFor(row)} size="md" />
+        <span className="font-medium">{leaderName(row)}</span>
+      </>
+    );
+    if (!linkPlayerNames) {
+      return <div className="flex items-center gap-2 text-on-surface">{inner}</div>;
+    }
+    return (
+      <Link
+        to={getPlayerHref(row.player_id, row)}
+        className="flex items-center gap-2 text-on-surface hover:text-primary"
+      >
+        {inner}
+      </Link>
+    );
   }
 
   const panelClass =
@@ -127,15 +151,7 @@ export function SeasonLeadersTables({
                   {scoring.map((row, i) => (
                     <tr key={row.player_id} className="border-t border-outline-variant/10 hover:bg-surface-container/20">
                       <td className="p-3 text-on-surface-variant">{i + 1}</td>
-                      <td className="p-3">
-                        <Link
-                          to={getPlayerHref(row.player_id)}
-                          className="flex items-center gap-2 text-on-surface hover:text-primary"
-                        >
-                          <PlayerAvatar name={leaderName(row)} avatarUrl={avatarFor(row)} size="md" />
-                          <span className="font-medium">{leaderName(row)}</span>
-                        </Link>
-                      </td>
+                      <td className="p-3">{playerNameCell(row)}</td>
                       <td className="p-3 text-right font-stat-value text-primary">{row.goals}</td>
                       <td className="p-3 text-right text-on-surface-variant">{row.assists}</td>
                     </tr>
@@ -167,15 +183,7 @@ export function SeasonLeadersTables({
                   {discipline.map((row, i) => (
                     <tr key={row.player_id} className="border-t border-outline-variant/10 hover:bg-surface-container/20">
                       <td className="p-3 text-on-surface-variant">{i + 1}</td>
-                      <td className="p-3">
-                        <Link
-                          to={getPlayerHref(row.player_id)}
-                          className="flex items-center gap-2 text-on-surface hover:text-primary"
-                        >
-                          <PlayerAvatar name={leaderName(row)} avatarUrl={avatarFor(row)} size="md" />
-                          <span className="font-medium">{leaderName(row)}</span>
-                        </Link>
-                      </td>
+                      <td className="p-3">{playerNameCell(row)}</td>
                       <td className="p-3 text-right text-yellow-500 font-medium">{row.yellow_cards}</td>
                       <td className="p-3 text-right text-error font-medium">{row.red_cards}</td>
                     </tr>

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { sanitizeIlikeSearchTerm } from '@shared/utils/sanitize-search';
+
 const pagination = {
   page:  z.string().optional().transform(v => (v ? parseInt(v, 10) : 1)),
   limit: z.string().optional().transform(v => {
@@ -10,7 +12,7 @@ const pagination = {
 
 export const listParentsQuerySchema = z.object({
   ...pagination,
-  search: z.string().optional(),
+  search: z.string().optional().transform((v) => sanitizeIlikeSearchTerm(v)),
 });
 
 export const parentIdParamSchema = z.object({

@@ -133,6 +133,7 @@ export function HomePage() {
       <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto border-t border-outline-variant/20">
         <SeasonLeadersTables
           variant="public"
+          linkPlayerNames={false}
           asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
         />
       </section>

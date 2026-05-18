@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
 
 function normalizeLineup(raw: unknown): string[] {
@@ -72,7 +73,8 @@ export class MatchesService {
     if (opts.season)    query = query.eq('season', opts.season);
     if (opts.status)    query = query.eq('status', opts.status);
     if (opts.search) {
-      query = query.or(`title.ilike.%${opts.search}%,opponent_name.ilike.%${opts.search}%`);
+      const filter = buildIlikeOrFilter(['title', 'opponent_name'], opts.search);
+      if (filter) query = query.or(filter);
     }
 
     const { data, error, count } = await query;

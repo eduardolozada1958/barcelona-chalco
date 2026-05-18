@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { listPlayersPublic } from '@/api/players';
@@ -8,6 +9,7 @@ import { FilterChips } from '@/components/FilterChips';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
+import { playerPublicPath } from '@/utils/player-path';
 
 const filterOptions = [
   { key: 'all',      label: 'Todos' },
@@ -87,7 +89,9 @@ export function PublicPlayersPage() {
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
           {players.map((player) => (
             <StaggerItem key={player.id}>
-              <PlayerCard player={player} />
+              <Link to={playerPublicPath(player)} className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
+                <PlayerCard player={player} />
+              </Link>
             </StaggerItem>
           ))}
         </StaggerContainer>

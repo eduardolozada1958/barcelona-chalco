@@ -3,12 +3,15 @@ import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { buildPlayerNameIlikeFilter } from '@shared/utils/sanitize-search';
+import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
 import { CURRENT_SEASON } from '@config/constants';
 import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
 import type { UserRole } from '@shared/types';
 
 export interface PublicLeaderRow {
   player_id:     string;
+  slug:          string | null;
   first_name:    string;
   last_name:     string;
   avatar_url:    string | null;
@@ -22,7 +25,7 @@ export interface PublicLeaderRow {
 
 /** Columnas en APIs públicas (sin `curp` completo). */
 const PUBLIC_PLAYER_COLUMNS =
-  'id, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
+  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
 
 function extFromPhotoMime(mime: string): string {
   if (mime === 'image/png') return 'png';
@@ -62,9 +65,8 @@ export class PlayersService {
     if (opts.season)               query = query.eq('season', opts.season);
     if (opts.isVerified !== undefined) query = query.eq('is_verified', opts.isVerified);
     if (opts.search) {
-      query = query.or(
-        `first_name.ilike.%${opts.search}%,last_name.ilike.%${opts.search}%`
-      );
+      const filter = buildPlayerNameIlikeFilter(opts.search);
+      if (filter) query = query.or(filter);
     }
 
     const { data, error, count } = await query;
@@ -91,9 +93,8 @@ export class PlayersService {
 
     if (opts.category) query = query.eq('category', opts.category);
     if (opts.search) {
-      query = query.or(
-        `first_name.ilike.%${opts.search}%,last_name.ilike.%${opts.search}%`
-      );
+      const filter = buildPlayerNameIlikeFilter(opts.search);
+      if (filter) query = query.or(filter);
     }
 
     const { data, error, count } = await query;
@@ -150,7 +151,7 @@ export class PlayersService {
 
     const { data: playersRows, error: pErr } = await supabaseAdmin
       .from('players')
-      .select('id, first_name, last_name, avatar_url, category, jersey_number')
+      .select('id, slug, first_name, last_name, avatar_url, category, jersey_number')
       .in('id', playerIds)
       .eq('status', 'active')
       .is('deleted_at', null);
@@ -166,6 +167,7 @@ export class PlayersService {
       if (!p) continue;
       baseRows.push({
         player_id:     playerId,
+        slug:          typeof p.slug === 'string' ? p.slug : null,
         first_name:    String(p.first_name ?? ''),
         last_name:     String(p.last_name ?? ''),
         avatar_url:    typeof p.avatar_url === 'string' ? p.avatar_url : null,
@@ -206,14 +208,16 @@ export class PlayersService {
     return data;
   }
 
-  static async getPublicProfile(id: string) {
-    const { data, error } = await supabaseAdmin
+  static async getPublicProfile(ref: string) {
+    let query = supabaseAdmin
       .from('players')
       .select(PUBLIC_PLAYER_COLUMNS)
-      .eq('id', id)
       .eq('is_verified', true)
-      .is('deleted_at', null)
-      .single();
+      .is('deleted_at', null);
+
+    query = isPlayerUuid(ref) ? query.eq('id', ref) : query.eq('slug', ref);
+
+    const { data, error } = await query.single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
     return data;
@@ -237,9 +241,12 @@ export class PlayersService {
       }
     }
 
+    const slug = await allocateUniquePlayerSlug(input.firstName, input.lastName);
+
     const { data, error } = await supabaseAdmin
       .from('players')
       .insert({
+        slug,
         first_name:         input.firstName,
         last_name:          input.lastName,
         birth_date:         input.birthDate,
@@ -348,11 +355,19 @@ export class PlayersService {
   }
 
   static async update(id: string, input: UpdatePlayerInput, actor?: { userId: string }) {
-    await PlayersService.getById(id);
+    const existing = await PlayersService.getById(id);
 
     const updateData: Record<string, unknown> = {};
     if (input.firstName !== undefined)         updateData.first_name         = input.firstName;
     if (input.lastName !== undefined)          updateData.last_name          = input.lastName;
+
+    if (input.firstName !== undefined || input.lastName !== undefined) {
+      updateData.slug = await allocateUniquePlayerSlug(
+        String(input.firstName ?? existing.first_name),
+        String(input.lastName ?? existing.last_name),
+        id,
+      );
+    }
     if (input.birthDate !== undefined)         updateData.birth_date         = input.birthDate;
     if (input.nationality !== undefined)       updateData.nationality        = input.nationality;
     if (input.position !== undefined)          updateData.position           = input.position;

@@ -61,6 +61,8 @@ export interface Parent {
 
 export interface Player {
   id:                  string;
+  /** URL pública: /jugadores/eduardo-lozada-quiroz */
+  slug?:               string | null;
   first_name:          string;
   last_name:           string;
   birth_date:          string;

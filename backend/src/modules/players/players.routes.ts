@@ -11,6 +11,7 @@ import {
   createPlayerMultipartFieldsSchema,
   updatePlayerSchema,
   playerIdSchema,
+  playerPublicRefSchema,
   listPlayersQuerySchema,
 } from './players.validation';
 
@@ -29,7 +30,7 @@ playersRouter.get('/public/season-leaders', PlayersController.publicSeasonLeader
 
 // GET /api/v1/players/public/:id - Perfil público de un jugador
 playersRouter.get('/public/:id',
-  validateParams(playerIdSchema),
+  validateParams(playerPublicRefSchema),
   PlayersController.getPublicProfile
 );
 

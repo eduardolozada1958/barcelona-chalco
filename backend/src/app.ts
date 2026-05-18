@@ -9,6 +9,10 @@ import { env, isProd } from '@config/env';
 import { logger } from '@shared/utils/logger';
 import { errorMiddleware } from '@middlewares/error.middleware';
 import { requestContextMiddleware } from '@middlewares/request-context.middleware';
+import {
+  rejectOversizedJsonKeys,
+  securityHeadersMiddleware,
+} from '@middlewares/security.middleware';
 
 // Rutas de módulos
 import { authRouter }         from '@modules/auth/auth.routes';
@@ -46,10 +50,12 @@ export function createApp(): Application {
   }
 
   app.use(requestContextMiddleware);
+  app.use(securityHeadersMiddleware);
 
   // ── Seguridad ─────────────────────────────────────────────
   app.use(
     helmet({
+      hsts: isProd ? { maxAge: 31_536_000, includeSubDomains: true, preload: true } : false,
       // Permite que el front (Pages) cargue imágenes QR desde este API en otro dominio.
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
@@ -104,9 +110,21 @@ export function createApp(): Application {
   app.use(limiter);
   app.use(writeLimiter);
 
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max:      30,
+    standardHeaders: true,
+    legacyHeaders:   false,
+    message: {
+      success: false,
+      message: 'Demasiados intentos de acceso. Espera unos minutos.',
+    },
+  });
+
   // ── Body parsing ──────────────────────────────────────────
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ extended: false, limit: '2mb' }));
+  app.use(rejectOversizedJsonKeys());
   app.use(compression());
 
   // ── Logging HTTP ─────────────────────────────────────────
@@ -123,7 +141,7 @@ export function createApp(): Application {
   // ── Rutas de la API ───────────────────────────────────────
   const prefix = env.API_PREFIX;
 
-  app.use(`${prefix}/auth`,         authRouter);
+  app.use(`${prefix}/auth`, authLimiter, authRouter);
   app.use(`${prefix}/users`,        usersRouter);
   app.use(`${prefix}/parents`,      parentsRouter);
   app.use(`${prefix}/players`,      playersRouter);

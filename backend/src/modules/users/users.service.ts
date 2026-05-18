@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
@@ -23,7 +24,8 @@ export class UsersService {
     if (opts.role)   query = query.eq('role', opts.role);
     if (opts.status) query = query.eq('status', opts.status);
     if (opts.search) {
-      query = query.or(`email.ilike.%${opts.search}%,full_name.ilike.%${opts.search}%`);
+      const filter = buildIlikeOrFilter(['email', 'full_name'], opts.search);
+      if (filter) query = query.or(filter);
     }
 
     const { data, error, count } = await query;

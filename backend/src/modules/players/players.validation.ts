@@ -1,7 +1,19 @@
 import { z } from 'zod';
 
+import { isPlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
+import { sanitizeIlikeSearchTerm } from '@shared/utils/sanitize-search';
+
 export const playerIdSchema = z.object({
   id: z.string().uuid('ID de jugador inválido'),
+});
+
+/** UUID interno o slug público (/jugadores/eduardo-lozada-quiroz). */
+export const playerPublicRefSchema = z.object({
+  id: z
+    .string()
+    .min(2)
+    .max(120)
+    .refine((v) => isPlayerUuid(v) || isPlayerSlug(v), 'Referencia de jugador inválida'),
 });
 
 /** Altura: cm (175) o metros con decimal (1,75). Enteros 1–3 se interpretan como metros (2 → 200 cm). */
@@ -72,7 +84,7 @@ export const listPlayersQuerySchema = z.object({
   limit:      z.string().optional().transform(v => (v ? parseInt(v, 10) : 20)),
   category:   z.string().optional(),
   status:     z.string().optional(),
-  search:     z.string().optional(),
+  search:     z.string().optional().transform((v) => sanitizeIlikeSearchTerm(v)),
   season:     z.string().optional(),
   isVerified: z
     .string()

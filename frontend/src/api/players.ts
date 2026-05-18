@@ -6,13 +6,14 @@ export async function listPlayersPublic(params?: Record<string, string | number 
   return data;
 }
 
-export async function getPlayerPublic(id: string) {
-  const { data } = await apiClient.get<ApiResponse<unknown>>(`/players/public/${id}`);
+export async function getPlayerPublic(ref: string) {
+  const { data } = await apiClient.get<ApiResponse<unknown>>(`/players/public/${encodeURIComponent(ref)}`);
   return data;
 }
 
 export interface SeasonLeaderRow {
   player_id: string;
+  slug?:       string | null;
   first_name: string;
   last_name: string;
   avatar_url: string | null;

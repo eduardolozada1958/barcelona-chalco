@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@config/database';
 import { NotFoundError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListParentsQuery, UpdateParentBody } from './parents.validation';
 
 export class ParentsService {
@@ -16,9 +17,11 @@ export class ParentsService {
       );
 
     if (opts.search) {
-      query = query.or(
-        `first_name.ilike.%${opts.search}%,last_name.ilike.%${opts.search}%,phone_primary.ilike.%${opts.search}%`
+      const filter = buildIlikeOrFilter(
+        ['first_name', 'last_name', 'phone_primary'],
+        opts.search,
       );
+      if (filter) query = query.or(filter);
     }
 
     const { data, error, count } = await query;

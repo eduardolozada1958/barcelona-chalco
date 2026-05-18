@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { myPlayers } from '@/api/parents';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { playerPublicPath } from '@/utils/player-path';
 
 export function MyPlayersPage() {
   const q = useQuery({ queryKey: ['my-players'], queryFn: myPlayers });
@@ -50,7 +51,7 @@ export function MyPlayersPage() {
                         </span>
                       )}
                     </div>
-                    <Link to={`/jugadores/${pid}`} className="mt-4 inline-flex items-center gap-1 text-primary hover:underline font-label-caps text-label-caps">
+                    <Link to={playerPublicPath({ id: pid, slug: typeof pl.slug === 'string' ? pl.slug : null })} className="mt-4 inline-flex items-center gap-1 text-primary hover:underline font-label-caps text-label-caps">
                       <MaterialIcon name="visibility" size={14} /> Ver perfil público
                     </Link>
                   </div>

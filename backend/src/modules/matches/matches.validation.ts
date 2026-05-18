@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CURRENT_SEASON } from '@config/constants';
+import { sanitizeIlikeSearchTerm } from '@shared/utils/sanitize-search';
 
 const pagination = {
   page:  z.string().optional().transform(v => (v ? parseInt(v, 10) : 1)),
@@ -20,7 +21,7 @@ export const listMatchesQuerySchema = z.object({
     .enum(['scheduled', 'in_progress', 'completed', 'cancelled', 'postponed'])
     .optional(),
   season:   z.string().optional(),
-  search:   z.string().optional(),
+  search:   z.string().optional().transform((v) => sanitizeIlikeSearchTerm(v)),
 });
 
 const lineupPlayerIds = z.array(z.string().uuid()).max(11);

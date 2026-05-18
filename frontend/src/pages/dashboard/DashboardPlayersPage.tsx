@@ -342,6 +342,7 @@ export function DashboardPlayersPage() {
       <SeasonLeadersTables
         variant="dashboard"
         limit={15}
+        linkPlayerNames
         getPlayerHref={(id) => `/dashboard/players/${id}`}
         title="⚽ Tabla de goleo y tarjetas"
         description="Totales de la temporada (solo resultados publicados). Esta tabla es de consulta; para cambiar goles o tarjetas usa la sección de arriba o Resultados."
