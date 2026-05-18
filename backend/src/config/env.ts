@@ -102,6 +102,18 @@ const envSchema = z.object({
       })
       .optional(),
   ),
+
+  /** Brevo (API HTTPS, funciona en Render Free). https://app.brevo.com */
+  BREVO_API_KEY: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(1).optional(),
+  ),
+  BREVO_SENDER_EMAIL: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().email().optional(),
+  ),
+  BREVO_SENDER_NAME: z.string().default('F.C. Barcelona Cupido'),
+
   EMAIL_VERIFICATION_HOURS: z.string().default('24').transform(Number),
 });
 

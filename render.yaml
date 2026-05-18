@@ -42,3 +42,9 @@ services:
         value: info
       - key: LOG_FORMAT
         value: json
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        value: F.C. Barcelona Cupido
