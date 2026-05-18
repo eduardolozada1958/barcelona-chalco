@@ -110,7 +110,14 @@ const envSchema = z.object({
   ),
   BREVO_SENDER_EMAIL: z.preprocess(
     (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
-    z.string().email().optional(),
+    z
+      .string()
+      .email()
+      .refine((e) => !e.endsWith('@smtp-brevo.com'), {
+        message:
+          'BREVO_SENDER_EMAIL debe ser el correo verificado en Brevo → Remitentes, no el login SMTP (@smtp-brevo.com)',
+      })
+      .optional(),
   ),
   BREVO_SENDER_NAME: z.string().default('F.C. Barcelona Cupido'),
 
