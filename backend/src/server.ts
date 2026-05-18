@@ -6,6 +6,7 @@ dns.setDefaultResultOrder('ipv4first');
 import { createApp } from './app';
 import { env } from '@config/env';
 import { logger } from '@shared/utils/logger';
+import { verifySmtpOnStartup } from '@shared/services/email.service';
 
 const app = createApp();
 
@@ -13,6 +14,7 @@ const server = app.listen(env.PORT, () => {
   logger.info(`🚀 Academia Barcelona API corriendo en puerto ${env.PORT}`);
   logger.info(`📡 Ambiente: ${env.NODE_ENV}`);
   logger.info(`🔗 Prefijo: ${env.API_PREFIX}`);
+  verifySmtpOnStartup();
 });
 
 // Graceful shutdown
