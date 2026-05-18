@@ -56,28 +56,29 @@ export function PublicPlayerDetailPage() {
       {/* ═══════ Hero Section ═══════ */}
       <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 flex flex-col md:flex-row">
         {/* Player Image */}
-        <div className="relative w-full md:w-1/2 min-h-[400px] md:min-h-[600px] bg-secondary-container/20 overflow-hidden flex items-end justify-center pt-stack-lg">
+        <div className="relative w-full md:w-[38%] max-w-sm shrink-0 min-h-[200px] md:min-h-[300px] bg-secondary-container/20 overflow-hidden flex items-center justify-center p-4 md:p-6">
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10" />
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent" />
           {player.avatar_url ? (
             <img
               src={player.avatar_url}
               alt={fullName}
-              className="relative z-20 object-contain w-3/4 max-h-[110%] bottom-0 transform scale-110 translate-y-4"
+              className="relative z-20 object-contain w-full max-h-[200px] md:max-h-[260px] rounded-lg"
             />
           ) : (
-            <div className="relative z-20 flex items-center justify-center w-3/4 h-full">
-              <MaterialIcon name="person" className="text-surface-container-high" size={160} />
+            <div className="relative z-20 flex items-center justify-center">
+              <MaterialIcon name="person" className="text-surface-container-high" size={96} />
             </div>
           )}
           {/* Number watermark */}
-          <div className="absolute -right-8 bottom-1/4 font-display-hero text-[200px] text-surface-container-high z-0 leading-none select-none opacity-30">
-            {player.jersey_number ?? ''}
-          </div>
+          {player.jersey_number != null ? (
+            <div className="absolute right-2 bottom-2 font-display-hero text-5xl md:text-6xl text-surface-container-high opacity-25 pointer-events-none select-none">
+              {player.jersey_number}
+            </div>
+          ) : null}
         </div>
 
         {/* Info panel */}
-        <div className="relative w-full md:w-1/2 p-stack-md md:p-stack-lg flex flex-col justify-center z-30 bg-surface-container-lowest/80 backdrop-blur-sm border-l border-outline-variant/10">
+        <div className="relative w-full md:flex-1 p-stack-md md:p-stack-lg flex flex-col justify-center z-30 bg-surface-container-lowest/80 backdrop-blur-sm md:border-l border-outline-variant/10">
           {/* Name + Position + Badges */}
           <div className="mb-stack-md flex justify-between items-start">
             <div>

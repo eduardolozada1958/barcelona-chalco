@@ -6,24 +6,17 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
-
-const passwordRules = z
-  .string()
-  .min(8, 'Mínimo 8 caracteres')
-  .regex(/[A-Z]/, 'Debe incluir una mayúscula')
-  .regex(/[0-9]/, 'Debe incluir un número');
+import { PASSWORD_HINT, passwordFieldSchema } from '@/utils/password-rules';
 
 const schema = z
   .object({
-    fullName:        z.string().min(3, 'Mínimo 3 caracteres').max(150),
-    email:           z.string().email('Correo inválido'),
-    password:        passwordRules,
-    confirmPassword: z.string(),
-    phone:           z.string().max(30).optional(),
-    firstName:       z.string().min(2).max(100),
-    lastName:        z.string().min(2).max(100),
-    phonePrimary:    z.string().min(7, 'Teléfono principal').max(30),
+    firstName:       z.string().min(2, 'Mínimo 2 caracteres').max(100),
+    lastName:        z.string().min(2, 'Mínimo 2 caracteres').max(100),
     relationship:    z.enum(['padre', 'madre', 'tutor', 'tutora', 'abuelo', 'abuela', 'tio', 'tia', 'otro']),
+    phone:           z.string().min(7, 'Teléfono de contacto').max(30),
+    email:           z.string().email('Correo inválido'),
+    password:        passwordFieldSchema,
+    confirmPassword: z.string(),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Las contraseñas no coinciden',
@@ -32,7 +25,8 @@ const schema = z
 
 type Form = z.infer<typeof schema>;
 
-const inputClass = 'w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40';
+const inputClass =
+  'w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40';
 const labelClass = 'font-label-caps text-label-caps text-on-surface-variant block mb-2';
 
 export function RegisterPage() {
@@ -51,14 +45,14 @@ export function RegisterPage() {
   const onSubmit = async (data: Form) => {
     try {
       const result = await registerUser({
-        email:         data.email.toLowerCase(),
-        password:      data.password,
-        fullName:      data.fullName,
-        phone:         data.phone?.trim() || undefined,
-        firstName:     data.firstName,
-        lastName:      data.lastName,
-        phonePrimary:  data.phonePrimary,
-        relationship:  data.relationship,
+        email:        data.email.toLowerCase(),
+        password:     data.password,
+        fullName:     `${data.firstName.trim()} ${data.lastName.trim()}`,
+        phone:        data.phone.trim(),
+        firstName:    data.firstName.trim(),
+        lastName:     data.lastName.trim(),
+        phonePrimary: data.phone.trim(),
+        relationship: data.relationship,
       });
       toast.success('Revisa tu correo para activar la cuenta');
       navigate(`/verificar-email?email=${encodeURIComponent(result.email)}`, { replace: true });
@@ -69,87 +63,54 @@ export function RegisterPage() {
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex flex-col items-center px-margin-mobile md:px-margin-desktop py-stack-lg relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute inset-0 z-0 pointer-events-none flex justify-center items-start opacity-15">
         <div className="w-[600px] h-[600px] bg-primary rounded-full blur-[120px] mt-[-200px]" />
       </div>
 
       <main className="z-10 w-full max-w-2xl">
-        {/* Header */}
         <header className="mb-stack-lg">
           <h1 className="font-display-hero text-headline-lg-mobile md:text-display-hero text-primary tracking-tighter">
-            Registro
+            Registro de padre o tutor
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant mt-2">
-            Crea tu cuenta como padre o tutor para acceder a Barcelona Cupido.
+            Una sola persona = una cuenta. Con ella podrás iniciar sesión, recibir avisos y (próximamente) vincular a tu hijo en la plantilla.
           </p>
         </header>
 
-        {/* Form Card */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="bg-[#002366]/30 backdrop-blur-md rounded-xl border border-primary/20 p-stack-lg space-y-stack-md relative overflow-hidden"
         >
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Section: Account */}
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-stack-md border-b border-outline-variant/20 pb-3">
-              <MaterialIcon name="person" className="text-primary" />
-              <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface">Cuenta de usuario</h2>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className={labelClass}>NOMBRE COMPLETO</label>
-                <input className={inputClass} placeholder="Tu nombre completo" {...register('fullName')} />
-                {errors.fullName ? <p className="mt-2 text-sm text-error">{errors.fullName.message}</p> : null}
-              </div>
-              <div>
-                <label className={labelClass}>CORREO ELECTRÓNICO</label>
-                <input type="email" className={inputClass} placeholder="tu@email.com" {...register('email')} />
-                {errors.email ? <p className="mt-2 text-sm text-error">{errors.email.message}</p> : null}
-              </div>
-              <div>
-                <label className={labelClass}>TELÉFONO (OPCIONAL)</label>
-                <input className={inputClass} placeholder="+52..." {...register('phone')} />
-              </div>
-              <div>
-                <label className={labelClass}>CONTRASEÑA</label>
-                <input type="password" className={inputClass} placeholder="••••••••" {...register('password')} />
-                {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
-              </div>
-              <div>
-                <label className={labelClass}>CONFIRMAR CONTRASEÑA</label>
-                <input type="password" className={inputClass} placeholder="••••••••" {...register('confirmPassword')} />
-                {errors.confirmPassword ? <p className="mt-2 text-sm text-error">{errors.confirmPassword.message}</p> : null}
-              </div>
-            </div>
+          <div className="relative z-10 rounded-lg border border-outline-variant/20 bg-surface-container-low/30 px-4 py-3 text-sm text-on-surface-variant">
+            <p className="font-medium text-on-surface mb-1">¿Qué guardamos?</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li><strong>Tu identidad:</strong> nombre, parentesco y teléfono.</li>
+              <li><strong>Acceso:</strong> correo y contraseña (verificación por email).</li>
+              <li>No pedimos datos del jugador aquí; el vínculo con tu hijo será en otro paso.</li>
+            </ul>
           </div>
 
-          {/* Section: Guardian */}
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-stack-md border-b border-outline-variant/20 pb-3">
               <MaterialIcon name="family_restroom" className="text-primary" />
-              <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface">Datos del tutor</h2>
+              <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface">Tus datos</h2>
             </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelClass}>NOMBRE</label>
-                <input className={inputClass} placeholder="Nombre" {...register('firstName')} />
+                <input className={inputClass} placeholder="Ej. Anastacio" autoComplete="given-name" {...register('firstName')} />
                 {errors.firstName ? <p className="mt-2 text-sm text-error">{errors.firstName.message}</p> : null}
               </div>
               <div>
-                <label className={labelClass}>APELLIDO</label>
-                <input className={inputClass} placeholder="Apellido" {...register('lastName')} />
+                <label className={labelClass}>APELLIDOS</label>
+                <input className={inputClass} placeholder="Ej. Lozada Alonso" autoComplete="family-name" {...register('lastName')} />
                 {errors.lastName ? <p className="mt-2 text-sm text-error">{errors.lastName.message}</p> : null}
               </div>
               <div>
-                <label className={labelClass}>TELÉFONO PRINCIPAL</label>
-                <input className={inputClass} placeholder="+52..." {...register('phonePrimary')} />
-                {errors.phonePrimary ? <p className="mt-2 text-sm text-error">{errors.phonePrimary.message}</p> : null}
-              </div>
-              <div>
-                <label className={labelClass}>PARENTESCO</label>
+                <label className={labelClass}>PARENTESCO CON EL JUGADOR</label>
                 <select className={inputClass} {...register('relationship')}>
                   <option value="padre">Padre</option>
                   <option value="madre">Madre</option>
@@ -162,10 +123,32 @@ export function RegisterPage() {
                   <option value="otro">Otro</option>
                 </select>
               </div>
+              <div>
+                <label className={labelClass}>TELÉFONO CELULAR</label>
+                <input className={inputClass} placeholder="+52 …" autoComplete="tel" {...register('phone')} />
+                {errors.phone ? <p className="mt-2 text-sm text-error">{errors.phone.message}</p> : null}
+              </div>
+              <div className="sm:col-span-2">
+                <label className={labelClass}>CORREO ELECTRÓNICO</label>
+                <input type="email" className={inputClass} placeholder="tu@email.com" autoComplete="email" {...register('email')} />
+                {errors.email ? <p className="mt-2 text-sm text-error">{errors.email.message}</p> : null}
+              </div>
+              <div>
+                <label className={labelClass}>CONTRASEÑA</label>
+                <input type="password" className={inputClass} autoComplete="new-password" {...register('password')} />
+                <p className="mt-1.5 text-xs text-on-surface-variant">{PASSWORD_HINT}</p>
+                {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
+              </div>
+              <div>
+                <label className={labelClass}>CONFIRMAR CONTRASEÑA</label>
+                <input type="password" className={inputClass} autoComplete="new-password" {...register('confirmPassword')} />
+                {errors.confirmPassword ? (
+                  <p className="mt-2 text-sm text-error">{errors.confirmPassword.message}</p>
+                ) : null}
+              </div>
             </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -176,7 +159,7 @@ export function RegisterPage() {
             ) : (
               <MaterialIcon name="how_to_reg" size={18} />
             )}
-            Registrarme
+            Crear cuenta y enviar correo de verificación
           </button>
         </form>
 

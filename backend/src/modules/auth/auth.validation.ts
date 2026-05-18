@@ -11,7 +11,8 @@ export const registerParentSchema = z.object({
     .string()
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
     .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
-    .regex(/[0-9]/, 'Debe contener al menos un número'),
+    .regex(/[0-9]/, 'Debe contener al menos un número')
+    .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial'),
   fullName:   z.string().min(3, 'El nombre completo debe tener al menos 3 caracteres').max(150),
   phone:      z.string().optional(),
   firstName:  z.string().min(2).max(100),

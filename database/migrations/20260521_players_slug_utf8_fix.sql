@@ -1,12 +1,4 @@
--- Slug público para URLs amigables (/jugadores/eduardo-lozada-quiroz).
-ALTER TABLE public.players
-  ADD COLUMN IF NOT EXISTS slug TEXT;
-
-CREATE UNIQUE INDEX IF NOT EXISTS idx_players_slug_active
-  ON public.players (slug)
-  WHERE deleted_at IS NULL AND slug IS NOT NULL;
-
--- Relleno inicial; homónimos reciben sufijo -2, -3, …
+-- Corrige slugs con tildes mal convertidas (ej. garc-a-torres → garcia-torres).
 WITH base AS (
   SELECT
     id,
@@ -37,7 +29,4 @@ SET slug = CASE
   ELSE n.base_slug || '-' || n.rn::text
 END
 FROM numbered n
-WHERE p.id = n.id
-  AND (p.slug IS NULL OR p.slug = '');
-
-COMMENT ON COLUMN public.players.slug IS 'URL pública única; ej. eduardo-lozada-quiroz o eduardo-lozada-2 si hay homónimo.';
+WHERE p.id = n.id;
