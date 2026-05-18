@@ -45,12 +45,16 @@ export async function verifyEmail(token: string): Promise<ApiResponse<null>> {
 }
 
 export async function resendVerificationEmail(email: string): Promise<ApiResponse<null>> {
-  const { data } = await apiClient.post<ApiResponse<null>>('/auth/resend-verification', { email });
+  const { data } = await apiClient.post<ApiResponse<null>>('/auth/resend-verification', { email }, {
+    timeout: 15_000,
+  });
   return data;
 }
 
 export async function registerParent(body: RegisterParentBody): Promise<ApiResponse<RegisterParentResult>> {
-  const { data } = await apiClient.post<ApiResponse<RegisterParentResult>>('/auth/register', body);
+  const { data } = await apiClient.post<ApiResponse<RegisterParentResult>>('/auth/register', body, {
+    timeout: 60_000,
+  });
   return data;
 }
 

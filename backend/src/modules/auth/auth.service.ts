@@ -116,7 +116,7 @@ export class AuthService {
       relationship:  input.relationship,
     });
 
-    await EmailVerificationService.createAndSend(
+    EmailVerificationService.queueVerificationEmail(
       newUser.id,
       newUser.email,
       newUser.full_name,

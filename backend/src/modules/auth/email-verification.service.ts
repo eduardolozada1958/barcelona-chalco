@@ -17,7 +17,8 @@ function verificationUrl(rawToken: string): string {
 }
 
 export class EmailVerificationService {
-  static async createAndSend(userId: string, email: string, fullName: string): Promise<void> {
+  /** Crea token en BD y devuelve el valor en claro para el enlace. */
+  static async createToken(userId: string): Promise<string> {
     const rawToken = crypto.randomBytes(TOKEN_BYTES).toString('hex');
     const tokenHash = hashToken(rawToken);
     const expiresAt = new Date();
@@ -36,7 +37,14 @@ export class EmailVerificationService {
     });
 
     if (error) throw new Error(error.message);
+    return rawToken;
+  }
 
+  static async sendVerificationMessage(
+    email: string,
+    fullName: string,
+    rawToken: string,
+  ): Promise<void> {
     const link = verificationUrl(rawToken);
     const name = fullName.trim() || 'padre o tutor';
 
@@ -57,6 +65,24 @@ export class EmailVerificationService {
     if (process.env.NODE_ENV === 'development') {
       logger.info(`Enlace de verificación (dev): ${link}`);
     }
+  }
+
+  /** Respuesta HTTP rápida: el correo se envía en segundo plano. */
+  static queueVerificationEmail(userId: string, email: string, fullName: string): void {
+    void (async () => {
+      try {
+        const rawToken = await EmailVerificationService.createToken(userId);
+        await EmailVerificationService.sendVerificationMessage(email, fullName, rawToken);
+        logger.info(`Correo de verificación enviado a ${email}`);
+      } catch (err) {
+        logger.error(`No se pudo enviar verificación a ${email}: ${(err as Error).message}`);
+      }
+    })();
+  }
+
+  static async createAndSend(userId: string, email: string, fullName: string): Promise<void> {
+    const rawToken = await EmailVerificationService.createToken(userId);
+    await EmailVerificationService.sendVerificationMessage(email, fullName, rawToken);
   }
 
   static async verify(rawToken: string): Promise<void> {
@@ -105,7 +131,7 @@ export class EmailVerificationService {
     if (error) throw new Error(error.message);
     if (!user || user.role !== 'parent' || user.email_verified) return false;
 
-    await EmailVerificationService.createAndSend(
+    EmailVerificationService.queueVerificationEmail(
       user.id,
       user.email,
       String(user.full_name ?? ''),

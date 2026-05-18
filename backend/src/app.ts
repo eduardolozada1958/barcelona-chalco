@@ -5,6 +5,7 @@ import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 
+import { parseCorsOrigins } from '@config/cors-origins';
 import { env, isProd } from '@config/env';
 import { logger } from '@shared/utils/logger';
 import { errorMiddleware } from '@middlewares/error.middleware';
@@ -63,13 +64,24 @@ export function createApp(): Application {
   app.disable('x-powered-by');
 
   // ── CORS ──────────────────────────────────────────────────
+  const corsOrigins = parseCorsOrigins();
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin(origin, callback) {
+        if (!origin) {
+          callback(null, true);
+          return;
+        }
+        if (corsOrigins.includes(origin)) {
+          callback(null, origin);
+          return;
+        }
+        callback(new Error(`Origen no permitido por CORS: ${origin}`));
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
-    })
+    }),
   );
 
   // ── Health (antes del rate limit: monitores tipo UptimeRobot no consumen cuota) ──

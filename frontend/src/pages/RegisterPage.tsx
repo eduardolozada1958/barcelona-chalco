@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PasswordInput } from '@/components/PasswordInput';
 import { PASSWORD_HINT, passwordFieldSchema } from '@/utils/password-rules';
 
 const schema = z
@@ -16,7 +17,7 @@ const schema = z
     phone:           z.string().min(7, 'Teléfono de contacto').max(30),
     email:           z.string().email('Correo inválido'),
     password:        passwordFieldSchema,
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, 'Confirma tu contraseña'),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Las contraseñas no coinciden',
@@ -36,13 +37,24 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Form>({
     resolver:      zodResolver(schema),
+    mode:          'onChange',
     defaultValues: { relationship: 'padre' },
   });
 
+  const password = watch('password') ?? '';
+  const confirmPassword = watch('confirmPassword') ?? '';
+  const confirmTouched = confirmPassword.length > 0;
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
+
   const onSubmit = async (data: Form) => {
+    if (data.password !== data.confirmPassword) {
+      toast.error('Las contraseñas no coinciden');
+      return;
+    }
     try {
       const result = await registerUser({
         email:        data.email.toLowerCase(),
@@ -57,7 +69,14 @@ export function RegisterPage() {
       toast.success('Revisa tu correo para activar la cuenta');
       navigate(`/verificar-email?email=${encodeURIComponent(result.email)}`, { replace: true });
     } catch (e) {
-      toast.error((e as Error).message);
+      const msg = (e as Error).message ?? 'Error al registrarse';
+      if (/timeout/i.test(msg)) {
+        toast.error(
+          'El servidor tardó demasiado en responder. Si llega el correo de verificación, ábrelo; si no, espera un minuto y vuelve a intentar o usa «Reenviar enlace».',
+        );
+      } else {
+        toast.error(msg);
+      }
     }
   };
 
@@ -134,16 +153,33 @@ export function RegisterPage() {
                 {errors.email ? <p className="mt-2 text-sm text-error">{errors.email.message}</p> : null}
               </div>
               <div>
-                <label className={labelClass}>CONTRASEÑA</label>
-                <input type="password" className={inputClass} autoComplete="new-password" {...register('password')} />
-                <p className="mt-1.5 text-xs text-on-surface-variant">{PASSWORD_HINT}</p>
-                {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
+                <PasswordInput
+                  id="password"
+                  label="CONTRASEÑA"
+                  registration={register('password')}
+                  error={errors.password?.message}
+                  hint={PASSWORD_HINT}
+                />
               </div>
               <div>
-                <label className={labelClass}>CONFIRMAR CONTRASEÑA</label>
-                <input type="password" className={inputClass} autoComplete="new-password" {...register('confirmPassword')} />
-                {errors.confirmPassword ? (
-                  <p className="mt-2 text-sm text-error">{errors.confirmPassword.message}</p>
+                <PasswordInput
+                  id="confirmPassword"
+                  label="CONFIRMAR CONTRASEÑA"
+                  registration={register('confirmPassword')}
+                  error={errors.confirmPassword?.message}
+                />
+                {confirmTouched && !errors.confirmPassword ? (
+                  passwordsMatch ? (
+                    <p className="mt-2 text-sm text-green-500 flex items-center gap-1">
+                      <MaterialIcon name="check_circle" size={16} filled />
+                      Las contraseñas coinciden
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm text-error flex items-center gap-1">
+                      <MaterialIcon name="cancel" size={16} />
+                      Las contraseñas no coinciden
+                    </p>
+                  )
                 ) : null}
               </div>
             </div>
@@ -151,7 +187,7 @@ export function RegisterPage() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (confirmTouched && !passwordsMatch)}
             className="relative z-10 w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 rounded-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isSubmitting ? (

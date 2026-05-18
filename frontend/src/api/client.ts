@@ -3,11 +3,14 @@ import axios, { type AxiosError } from 'axios';
 import { API_PREFIX, STORAGE_KEYS } from '@utils/constants';
 import type { ApiResponse } from './types';
 
+const PROD_API_HOST =
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ||
+  'https://barcelona-chalco.onrender.com';
+
 /** En desarrollo usa el proxy de Vite (`/api` → backend). En prod, `VITE_API_URL` + prefijo. */
 export function resolveApiBaseUrl(): string {
   if (import.meta.env.DEV) return API_PREFIX;
-  const host = String(import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
-  return `${host}${API_PREFIX}`;
+  return `${PROD_API_HOST}${API_PREFIX}`;
 }
 
 export const apiClient = axios.create({

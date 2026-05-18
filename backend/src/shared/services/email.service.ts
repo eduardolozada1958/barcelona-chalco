@@ -22,6 +22,10 @@ function getTransporter(): Transporter {
         env.SMTP_USER && env.SMTP_PASS
           ? { user: env.SMTP_USER, pass: env.SMTP_PASS }
           : undefined,
+      /** Evita colgar el API si Gmail no responde (p. ej. desde Render). */
+      connectionTimeout: 10_000,
+      greetingTimeout:   10_000,
+      socketTimeout:     20_000,
     });
   }
   return transporter;
@@ -34,6 +38,8 @@ export type SendMailOptions = {
   html:    string;
 };
 
+const SMTP_SEND_TIMEOUT_MS = 25_000;
+
 export async function sendMail(opts: SendMailOptions): Promise<void> {
   if (!smtpConfigured()) {
     if (isDev) {
@@ -43,13 +49,20 @@ export async function sendMail(opts: SendMailOptions): Promise<void> {
     throw new Error('El servidor de correo no está configurado');
   }
 
-  await getTransporter().sendMail({
+  const send = getTransporter().sendMail({
     from:    env.SMTP_FROM,
     to:      opts.to,
     subject: opts.subject,
     text:    opts.text,
     html:    opts.html,
   });
+
+  await Promise.race([
+    send,
+    new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Tiempo de espera agotado al enviar correo')), SMTP_SEND_TIMEOUT_MS);
+    }),
+  ]);
 }
 
 export function isEmailConfigured(): boolean {
