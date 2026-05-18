@@ -54,10 +54,10 @@ export function PublicPlayerDetailPage() {
   return (
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
       {/* ═══════ Hero Section ═══════ */}
-      <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 flex flex-col md:flex-row md:items-start">
+      <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 grid grid-cols-1 md:grid-cols-[minmax(220px,280px)_1fr] gap-6 md:gap-8 p-4 md:p-6 md:items-start">
         {/* Foto retrato 3:4 — altura acotada, no crece con el panel derecho */}
-        <div className="w-full shrink-0 p-4 md:p-5 md:pr-0 flex justify-center md:justify-start">
-          <div className="relative w-full max-w-[240px] sm:max-w-[260px] aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/25 shadow-md">
+        <div className="flex justify-center md:justify-start">
+          <div className="relative w-[min(100%,260px)] aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/25 shadow-md">
             {player.avatar_url ? (
               <img
                 src={player.avatar_url}
@@ -79,8 +79,8 @@ export function PublicPlayerDetailPage() {
           </div>
         </div>
 
-        {/* Info panel */}
-        <div className="relative w-full md:flex-1 p-stack-md md:p-stack-lg flex flex-col md:border-l border-outline-variant/10 border-t md:border-t-0">
+        {/* Datos del jugador — min-w-0 evita que flex/grid colapse el texto */}
+        <div className="relative min-w-0 flex flex-col md:border-l border-outline-variant/10 md:pl-6 pt-2 md:pt-0">
           {/* Name + Position + Badges */}
           <div className="mb-stack-md flex justify-between items-start">
             <div>
