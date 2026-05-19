@@ -15,10 +15,11 @@ import { STORAGE_KEYS } from '@utils/constants';
 export type SessionRole = 'admin' | 'coach' | 'parent';
 
 export interface SessionUser {
-  id:       string;
-  email:    string;
-  role:     SessionRole;
-  fullName: string;
+  id:        string;
+  email:     string;
+  role:      SessionRole;
+  fullName:  string;
+  avatarUrl: string | null;
 }
 
 interface AuthState {
@@ -40,11 +41,13 @@ function persistSession(tokens: { accessToken: string; refreshToken: string }, u
 const AuthContext = createContext<AuthState | null>(null);
 
 function mapMeToUser(raw: Record<string, unknown>): SessionUser {
+  const avatar = raw.avatar_url ?? raw.avatarUrl;
   return {
-    id:       String(raw.id),
-    email:    String(raw.email),
-    role:     raw.role as SessionRole,
-    fullName: String(raw.full_name ?? raw.fullName ?? ''),
+    id:        String(raw.id),
+    email:     String(raw.email),
+    role:      raw.role as SessionRole,
+    fullName:  String(raw.full_name ?? raw.fullName ?? ''),
+    avatarUrl: typeof avatar === 'string' && avatar ? avatar : null,
   };
 }
 
@@ -95,10 +98,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { accessToken, refreshToken, user: u } = res.data;
     persistSession({ accessToken, refreshToken }, u);
     setUser({
-      id:       u.id,
-      email:    u.email,
-      role:     u.role as SessionRole,
-      fullName: u.fullName ?? '',
+      id:        u.id,
+      email:     u.email,
+      role:      u.role as SessionRole,
+      fullName:  u.fullName ?? '',
+      avatarUrl: null,
     });
     return res.data;
   }, []);
@@ -109,10 +113,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { accessToken, refreshToken, user: u } = res.data;
     persistSession({ accessToken, refreshToken }, u);
     setUser({
-      id:       u.id,
-      email:    u.email,
-      role:     u.role as SessionRole,
-      fullName: u.fullName ?? '',
+      id:        u.id,
+      email:     u.email,
+      role:      u.role as SessionRole,
+      fullName:  u.fullName ?? '',
+      avatarUrl: null,
     });
   }, []);
 

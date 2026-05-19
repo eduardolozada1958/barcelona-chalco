@@ -15,7 +15,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/dashboard',               label: '🏠 Inicio',        icon: 'dashboard',       roles: ['admin','coach','parent'], end: true },
-  { to: '/dashboard/cuenta',        label: '🔐 Mi cuenta',     icon: 'shield',          roles: ['admin','coach','parent'] },
+  { to: '/dashboard/cuenta',        label: '👤 Mi perfil',     icon: 'person',          roles: ['admin','coach','parent'] },
   { to: '/dashboard/mis-jugadores', label: '👨‍👩‍👦 Mis Jugadores', icon: 'family_restroom', roles: ['parent'] },
   { to: '/dashboard/players',       label: '⚽ Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
   { to: '/dashboard/matches',       label: '📅 Partidos',      icon: 'calendar_today',  roles: ['admin','coach'] },
@@ -94,9 +94,17 @@ export function DashboardLayout() {
             <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain" />
             <span className="font-display-hero text-body-lg text-primary">Barcelona Cupido</span>
           </div>
-          <div className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30">
-            <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
-          </div>
+          <NavLink
+            to="/dashboard/cuenta"
+            className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30 overflow-hidden"
+            title="Mi perfil"
+          >
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
+            )}
+          </NavLink>
         </div>
         <div className="max-w-container-max mx-auto"><Outlet /></div>
       </main>

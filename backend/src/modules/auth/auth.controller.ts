@@ -1,8 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { sendSuccess } from '@shared/utils/response';
+import { ValidationError } from '@middlewares/error.middleware';
 import { HTTP_STATUS } from '@config/constants';
 import { TotpService } from './totp.service';
+import { ProfileService } from './profile.service';
 import type {
   LoginInput,
   RegisterParentInput,
@@ -12,6 +14,8 @@ import type {
   TotpCodeInput,
   LoginTotpInput,
   TotpDisableInput,
+  UpdateProfileInput,
+  ChangePasswordInput,
 } from './auth.validation';
 
 export class AuthController {
@@ -136,6 +140,41 @@ export class AuthController {
       const { password, code } = req.body as TotpDisableInput;
       await TotpService.disable(req.user!.id, password, code);
       sendSuccess(res, null, 'Verificación en dos pasos desactivada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = await ProfileService.updateProfile(req.user!.id, req.body as UpdateProfileInput);
+      sendSuccess(res, user, 'Perfil actualizado');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await ProfileService.changePassword(req.user!.id, req.body as ChangePasswordInput);
+      sendSuccess(res, null, 'Contraseña actualizada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async uploadAvatar(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const f = req.file;
+      if (!f) {
+        return next(new ValidationError('Adjunta una imagen (PNG, JPEG o WebP)'));
+      }
+      const user = await ProfileService.uploadAvatar(req.user!.id, {
+        buffer:   f.buffer,
+        mimetype: f.mimetype,
+        size:     f.size,
+      });
+      sendSuccess(res, user, 'Foto de perfil actualizada');
     } catch (error) {
       next(error);
     }

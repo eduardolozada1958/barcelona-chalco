@@ -50,7 +50,26 @@ export const totpDisableSchema = z.object({
   code:     z.string().min(6).max(16),
 });
 
+const passwordRules = z
+  .string()
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
+  .regex(/[0-9]/, 'Debe contener al menos un número')
+  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial');
+
+export const updateProfileSchema = z.object({
+  fullName: z.string().min(2, 'Nombre muy corto').max(150).optional(),
+  phone:    z.string().max(30).optional().nullable(),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(6, 'Contraseña actual requerida'),
+  newPassword:     passwordRules,
+});
+
 export type LoginInput           = z.infer<typeof loginSchema>;
+export type UpdateProfileInput   = z.infer<typeof updateProfileSchema>;
+export type ChangePasswordInput  = z.infer<typeof changePasswordSchema>;
 export type TotpCodeInput        = z.infer<typeof totpCodeSchema>;
 export type LoginTotpInput       = z.infer<typeof loginTotpSchema>;
 export type TotpDisableInput     = z.infer<typeof totpDisableSchema>;

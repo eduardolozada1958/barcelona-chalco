@@ -11,7 +11,10 @@ import {
   loginTotpSchema,
   totpCodeSchema,
   totpDisableSchema,
+  updateProfileSchema,
+  changePasswordSchema,
 } from './auth.validation';
+import { runProfileAvatarUpload } from './profile-avatar.middleware';
 
 export const authRouter = Router();
 
@@ -68,3 +71,8 @@ authRouter.get('/totp/status', authMiddleware, AuthController.totpStatus);
 authRouter.post('/totp/setup', authMiddleware, AuthController.totpSetup);
 authRouter.post('/totp/confirm', authMiddleware, validateBody(totpCodeSchema), AuthController.totpConfirm);
 authRouter.post('/totp/disable', authMiddleware, validateBody(totpDisableSchema), AuthController.totpDisable);
+
+// Perfil personal (admin, coach, padre)
+authRouter.patch('/profile', authMiddleware, validateBody(updateProfileSchema), AuthController.updateProfile);
+authRouter.post('/change-password', authMiddleware, validateBody(changePasswordSchema), AuthController.changePassword);
+authRouter.post('/avatar', authMiddleware, runProfileAvatarUpload, AuthController.uploadAvatar);
