@@ -9,6 +9,7 @@ import {
 } from 'react';
 
 import * as authApi from '@/api/auth';
+import { loginTotp } from '@/api/totp';
 import { STORAGE_KEYS } from '@utils/constants';
 
 export type SessionRole = 'admin' | 'coach' | 'parent';
@@ -23,10 +24,17 @@ export interface SessionUser {
 interface AuthState {
   user:        SessionUser | null;
   loading:     boolean;
-  login:       (email: string, password: string) => Promise<void>;
+  login:       (email: string, password: string) => Promise<authApi.LoginResponse>;
+  completeLoginWithTotp: (pendingToken: string, code: string) => Promise<void>;
   register:    (body: authApi.RegisterParentBody) => Promise<authApi.RegisterParentResult>;
   logout:      () => Promise<void>;
   refreshUser: () => Promise<void>;
+}
+
+function persistSession(tokens: { accessToken: string; refreshToken: string }, u: authApi.AuthUser) {
+  localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
+  localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
+  localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -81,16 +89,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const res = await authApi.login({ email, password });
     if (!res.success || !res.data) throw new Error(res.message ?? 'Error al iniciar sesión');
+    if (res.data.requiresTotp) {
+      return res.data;
+    }
     const { accessToken, refreshToken, user: u } = res.data;
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+    persistSession({ accessToken, refreshToken }, u);
     setUser({
       id:       u.id,
       email:    u.email,
       role:     u.role as SessionRole,
       fullName: u.fullName ?? '',
     });
-    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(u));
+    return res.data;
+  }, []);
+
+  const completeLoginWithTotp = useCallback(async (pendingToken: string, code: string) => {
+    const res = await loginTotp(pendingToken, code);
+    if (!res.success || !res.data) throw new Error(res.message ?? 'Código incorrecto');
+    const { accessToken, refreshToken, user: u } = res.data;
+    persistSession({ accessToken, refreshToken }, u);
+    setUser({
+      id:       u.id,
+      email:    u.email,
+      role:     u.role as SessionRole,
+      fullName: u.fullName ?? '',
+    });
   }, []);
 
   const register = useCallback(async (body: authApi.RegisterParentBody) => {
@@ -112,8 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout, refreshUser }),
-    [user, loading, login, register, logout, refreshUser]
+    () => ({ user, loading, login, completeLoginWithTotp, register, logout, refreshUser }),
+    [user, loading, login, completeLoginWithTotp, register, logout, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

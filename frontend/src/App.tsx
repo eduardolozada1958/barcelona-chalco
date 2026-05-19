@@ -38,6 +38,7 @@ import { DashboardGalleryPage } from '@/pages/dashboard/DashboardGalleryPage';
 import { DashboardInscriptionsPage } from '@/pages/dashboard/DashboardInscriptionsPage';
 import { DashboardUsersPage } from '@/pages/dashboard/DashboardUsersPage';
 import { DashboardSettingsPage } from '@/pages/dashboard/DashboardSettingsPage';
+import { DashboardAccountPage } from '@/pages/dashboard/DashboardAccountPage';
 
 export default function App() {
   return (
@@ -77,6 +78,7 @@ export default function App() {
         }
       >
         <Route index element={<DashboardHomePage />} />
+        <Route path="cuenta" element={<DashboardAccountPage />} />
         <Route path="mis-jugadores" element={<MyPlayersPage />} />
         <Route
           path="players"

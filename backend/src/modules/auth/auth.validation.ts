@@ -33,7 +33,27 @@ export const resendVerificationSchema = z.object({
   email: z.string().email('Email inválido'),
 });
 
+export const totpCodeSchema = z.object({
+  code: z
+    .string()
+    .min(6, 'Código requerido')
+    .max(16, 'Código inválido'),
+});
+
+export const loginTotpSchema = z.object({
+  pendingToken: z.string().min(10, 'Token de verificación requerido'),
+  code:         z.string().min(6).max(16),
+});
+
+export const totpDisableSchema = z.object({
+  password: z.string().min(6, 'Contraseña requerida'),
+  code:     z.string().min(6).max(16),
+});
+
 export type LoginInput           = z.infer<typeof loginSchema>;
+export type TotpCodeInput        = z.infer<typeof totpCodeSchema>;
+export type LoginTotpInput       = z.infer<typeof loginTotpSchema>;
+export type TotpDisableInput     = z.infer<typeof totpDisableSchema>;
 export type RegisterParentInput  = z.infer<typeof registerParentSchema>;
 export type RefreshTokenInput    = z.infer<typeof refreshTokenSchema>;
 export type VerifyEmailInput     = z.infer<typeof verifyEmailSchema>;

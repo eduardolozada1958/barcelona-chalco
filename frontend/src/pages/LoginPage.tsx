@@ -21,12 +21,16 @@ type Form = z.infer<typeof schema>;
  * Features: background glow, two selector cards (Parent / Coach-Admin), login form.
  */
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, completeLoginWithTotp } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
   const [selectedRole, setSelectedRole] = useState<'parent' | 'admin' | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [totpStep, setTotpStep] = useState(false);
+  const [pendingToken, setPendingToken] = useState('');
+  const [totpCode, setTotpCode] = useState('');
+  const [totpSubmitting, setTotpSubmitting] = useState(false);
 
   const {
     register,
@@ -36,11 +40,33 @@ export function LoginPage() {
 
   const onSubmit = async (data: Form) => {
     try {
-      await login(data.email, data.password);
+      const result = await login(data.email, data.password);
+      if (result.requiresTotp) {
+        setPendingToken(result.pendingToken);
+        setTotpStep(true);
+        setTotpCode('');
+        toast.success('Ingresa el código de tu autenticador');
+        return;
+      }
       toast.success('Sesión iniciada');
       navigate(from, { replace: true });
     } catch (e) {
       toast.error((e as Error).message);
+    }
+  };
+
+  const onTotpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (totpCode.replace(/\s/g, '').length < 6) return;
+    setTotpSubmitting(true);
+    try {
+      await completeLoginWithTotp(pendingToken, totpCode);
+      toast.success('Sesión iniciada');
+      navigate(from, { replace: true });
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setTotpSubmitting(false);
     }
   };
 
@@ -138,6 +164,42 @@ export function LoginPage() {
                 </div>
               </div>
 
+              {totpStep ? (
+                <form onSubmit={onTotpSubmit} className="space-y-6 relative z-10">
+                  <p className="text-sm text-on-surface-variant">
+                    Abre Google Authenticator e ingresa el código de 6 dígitos (o un código de respaldo).
+                  </p>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    placeholder="000000"
+                    maxLength={12}
+                    value={totpCode}
+                    onChange={(ev) => setTotpCode(ev.target.value)}
+                    className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-center text-xl tracking-widest text-on-surface outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={totpSubmitting || totpCode.replace(/\s/g, '').length < 6}
+                    className="w-full bg-primary text-on-primary font-label-caps text-label-caps py-4 rounded-lg disabled:opacity-60"
+                  >
+                    Verificar código
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTotpStep(false);
+                      setPendingToken('');
+                      setTotpCode('');
+                    }}
+                    className="w-full text-sm text-on-surface-variant hover:text-primary"
+                  >
+                    Volver al inicio de sesión
+                  </button>
+                </form>
+              ) : (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 relative z-10">
                 <div>
                   <label htmlFor="email" className="font-label-caps text-label-caps text-on-surface-variant block mb-2">
@@ -192,6 +254,7 @@ export function LoginPage() {
                   Iniciar Sesión
                 </button>
               </form>
+              )}
             </div>
 
             <p className="mt-6 text-center text-sm text-on-surface-variant space-y-2">

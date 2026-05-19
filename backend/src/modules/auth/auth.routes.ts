@@ -8,6 +8,9 @@ import {
   refreshTokenSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  loginTotpSchema,
+  totpCodeSchema,
+  totpDisableSchema,
 } from './auth.validation';
 
 export const authRouter = Router();
@@ -16,6 +19,12 @@ export const authRouter = Router();
 authRouter.post('/login',
   validateBody(loginSchema),
   AuthController.login
+);
+
+// POST /api/v1/auth/login/totp — segundo paso si el usuario tiene 2FA
+authRouter.post('/login/totp',
+  validateBody(loginTotpSchema),
+  AuthController.loginVerifyTotp
 );
 
 // POST /api/v1/auth/register
@@ -53,3 +62,9 @@ authRouter.get('/me',
   authMiddleware,
   AuthController.me
 );
+
+// 2FA (TOTP / Google Authenticator) — opcional
+authRouter.get('/totp/status', authMiddleware, AuthController.totpStatus);
+authRouter.post('/totp/setup', authMiddleware, AuthController.totpSetup);
+authRouter.post('/totp/confirm', authMiddleware, validateBody(totpCodeSchema), AuthController.totpConfirm);
+authRouter.post('/totp/disable', authMiddleware, validateBody(totpDisableSchema), AuthController.totpDisable);

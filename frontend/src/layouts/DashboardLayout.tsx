@@ -15,6 +15,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/dashboard',               label: '🏠 Inicio',        icon: 'dashboard',       roles: ['admin','coach','parent'], end: true },
+  { to: '/dashboard/cuenta',        label: '🔐 Mi cuenta',     icon: 'shield',          roles: ['admin','coach','parent'] },
   { to: '/dashboard/mis-jugadores', label: '👨‍👩‍👦 Mis Jugadores', icon: 'family_restroom', roles: ['parent'] },
   { to: '/dashboard/players',       label: '⚽ Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
   { to: '/dashboard/matches',       label: '📅 Partidos',      icon: 'calendar_today',  roles: ['admin','coach'] },

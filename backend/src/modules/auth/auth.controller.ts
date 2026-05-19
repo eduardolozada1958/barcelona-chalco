@@ -2,12 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service';
 import { sendSuccess } from '@shared/utils/response';
 import { HTTP_STATUS } from '@config/constants';
+import { TotpService } from './totp.service';
 import type {
   LoginInput,
   RegisterParentInput,
   RefreshTokenInput,
   VerifyEmailInput,
   ResendVerificationInput,
+  TotpCodeInput,
+  LoginTotpInput,
+  TotpDisableInput,
 } from './auth.validation';
 
 export class AuthController {
@@ -84,6 +88,54 @@ export class AuthController {
     try {
       const user = await AuthService.getMe(req.user!.id);
       sendSuccess(res, user, 'Usuario autenticado');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async loginVerifyTotp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { pendingToken, code } = req.body as LoginTotpInput;
+      const result = await AuthService.loginVerifyTotp(pendingToken, code);
+      sendSuccess(res, result, 'Inicio de sesión exitoso');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async totpStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const status = await TotpService.getStatus(req.user!.id);
+      sendSuccess(res, status, 'Estado 2FA');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async totpSetup(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const setup = await TotpService.beginSetup(req.user!.id, req.user!.email);
+      sendSuccess(res, setup, 'Escanea el código QR con Google Authenticator');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async totpConfirm(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { code } = req.body as TotpCodeInput;
+      const result = await TotpService.confirmSetup(req.user!.id, code);
+      sendSuccess(res, result, 'Verificación en dos pasos activada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async totpDisable(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { password, code } = req.body as TotpDisableInput;
+      await TotpService.disable(req.user!.id, password, code);
+      sendSuccess(res, null, 'Verificación en dos pasos desactivada');
     } catch (error) {
       next(error);
     }

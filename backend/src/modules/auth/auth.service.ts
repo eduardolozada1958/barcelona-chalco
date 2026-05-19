@@ -13,13 +13,69 @@ import { isEmailConfigured } from '@shared/services/email.service';
 import { EmailVerificationService } from './email-verification.service';
 import type { LoginInput, RegisterParentInput } from './auth.validation';
 import type { JwtPayload } from '@shared/types';
+import { TotpService } from './totp.service';
+
+export type LoginResult =
+  | {
+      requiresTotp: true;
+      pendingToken: string;
+    }
+  | {
+      requiresTotp: false;
+      accessToken:  string;
+      refreshToken: string;
+      user: {
+        id:        string;
+        email:     string;
+        role:      string;
+        fullName:  string | null;
+        avatarUrl: string | null;
+      };
+    };
 
 export class AuthService {
-  // Login: valida credenciales y devuelve tokens
-  static async login(input: LoginInput) {
+  // Login: valida credenciales; si tiene 2FA pide código TOTP en un segundo paso
+  static async login(input: LoginInput): Promise<LoginResult> {
+    const user = await AuthService.validateCredentials(input);
+
+    if (user.totp_enabled) {
+      return {
+        requiresTotp: true,
+        pendingToken: TotpService.createPendingLoginToken(user.id),
+      };
+    }
+
+    return {
+      requiresTotp: false,
+      ...(await AuthService.issueSession(user)),
+    };
+  }
+
+  static async loginVerifyTotp(pendingToken: string, code: string) {
+    return TotpService.verifyLoginTotp(pendingToken, code, AuthService.completeLoginById);
+  }
+
+  static async completeLoginById(userId: string) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, password_hash, role, status, full_name, avatar_url, email_verified')
+      .select('id, email, role, status, full_name, avatar_url')
+      .eq('id', userId)
+      .is('deleted_at', null)
+      .single();
+
+    if (error || !user || user.status !== 'active') {
+      throw new UnauthorizedError('Usuario inactivo');
+    }
+
+    return AuthService.issueSession(user);
+  }
+
+  private static async validateCredentials(input: LoginInput) {
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select(
+        'id, email, password_hash, role, status, full_name, avatar_url, email_verified, totp_enabled',
+      )
       .eq('email', input.email.toLowerCase())
       .is('deleted_at', null)
       .single();
@@ -43,7 +99,16 @@ export class AuthService {
       throw new UnauthorizedError('Cuenta inactiva o suspendida');
     }
 
-    // Actualizar último login
+    return user;
+  }
+
+  private static async issueSession(user: {
+    id: string;
+    email: string;
+    role: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  }) {
     await supabaseAdmin
       .from('users')
       .update({ last_login_at: new Date().toISOString() })
@@ -55,10 +120,10 @@ export class AuthService {
       accessToken,
       refreshToken,
       user: {
-        id:       user.id,
-        email:    user.email,
-        role:     user.role,
-        fullName: user.full_name,
+        id:        user.id,
+        email:     user.email,
+        role:      user.role,
+        fullName:  user.full_name,
         avatarUrl: user.avatar_url,
       },
     };
@@ -197,7 +262,9 @@ export class AuthService {
   static async getMe(userId: string) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, created_at')
+      .select(
+        'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, created_at, totp_enabled, totp_enabled_at',
+      )
       .eq('id', userId)
       .is('deleted_at', null)
       .single();

@@ -6,6 +6,10 @@ export interface LoginBody {
   password: string;
 }
 
+export type LoginResponse =
+  | { requiresTotp: true; pendingToken: string }
+  | { requiresTotp: false; accessToken: string; refreshToken: string; user: AuthUser };
+
 export interface RegisterParentBody {
   email:          string;
   password:       string;
@@ -29,8 +33,8 @@ export interface AuthUser {
   fullName?: string;
 }
 
-export async function login(body: LoginBody): Promise<ApiResponse<AuthTokens & { user: AuthUser }>> {
-  const { data } = await apiClient.post<ApiResponse<AuthTokens & { user: AuthUser }>>('/auth/login', body);
+export async function login(body: LoginBody): Promise<ApiResponse<LoginResponse>> {
+  const { data } = await apiClient.post<ApiResponse<LoginResponse>>('/auth/login', body);
   return data;
 }
 
