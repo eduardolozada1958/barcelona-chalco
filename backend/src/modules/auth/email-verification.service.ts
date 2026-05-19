@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
 import { BadRequestError } from '@middlewares/error.middleware';
 import { sendMail } from '@shared/services/email.service';
+import { buildVerificationEmail } from '@shared/services/email-templates';
 import { publicSiteBaseUrl } from '@shared/utils/public-site-url';
 import { logger } from '@shared/utils/logger';
 
@@ -46,20 +47,17 @@ export class EmailVerificationService {
     rawToken: string,
   ): Promise<void> {
     const link = verificationUrl(rawToken);
-    const name = fullName.trim() || 'padre o tutor';
+    const { html, text } = buildVerificationEmail({
+      fullName,
+      link,
+      hours: env.EMAIL_VERIFICATION_HOURS,
+    });
 
     await sendMail({
       to:      email,
       subject: 'Confirma tu correo — F.C. Barcelona Cupido',
-      text:    `Hola ${name},\n\nGracias por registrarte. Abre este enlace para confirmar tu correo (válido ${env.EMAIL_VERIFICATION_HOURS} h):\n\n${link}\n\nSi no creaste esta cuenta, ignora este mensaje.`,
-      html:    `
-        <p>Hola <strong>${escapeHtml(name)}</strong>,</p>
-        <p>Gracias por registrarte en <strong>F.C. Barcelona Cupido</strong>.</p>
-        <p>Pulsa el botón para confirmar tu correo (enlace válido ${env.EMAIL_VERIFICATION_HOURS} horas):</p>
-        <p><a href="${link}" style="display:inline-block;padding:12px 20px;background:#D4AF37;color:#000;text-decoration:none;border-radius:8px;font-weight:bold">Confirmar correo</a></p>
-        <p style="font-size:12px;color:#666">O copia este enlace: ${escapeHtml(link)}</p>
-        <p style="font-size:12px;color:#666">Si no creaste esta cuenta, ignora este correo.</p>
-      `,
+      text,
+      html,
     });
 
     if (process.env.NODE_ENV === 'development') {
@@ -138,12 +136,4 @@ export class EmailVerificationService {
     );
     return true;
   }
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
