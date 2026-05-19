@@ -17,7 +17,6 @@ import type { JwtPayload } from '@shared/types';
 import { TotpService } from './totp.service';
 import {
   assertNotLocked,
-  clearLoginLockout,
   isLoginLocked,
   lockedAccountMessage,
   recordFailedLogin,
@@ -79,7 +78,6 @@ export class AuthService {
       throw new ForbiddenError(lockedAccountMessage());
     }
 
-    await clearLoginLockout(userId);
     return AuthService.issueSession(user);
   }
 
@@ -117,7 +115,6 @@ export class AuthService {
       );
     }
 
-    await clearLoginLockout(user.id);
     return user;
   }
 
@@ -130,7 +127,11 @@ export class AuthService {
   }) {
     await supabaseAdmin
       .from('users')
-      .update({ last_login_at: new Date().toISOString() })
+      .update({
+        last_login_at:           new Date().toISOString(),
+        failed_login_attempts:   0,
+        login_locked_at:         null,
+      })
       .eq('id', user.id);
 
     const { accessToken, refreshToken } = await AuthService.generateTokens(user);

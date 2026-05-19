@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
 import { UnauthorizedError } from './error.middleware';
 import type { JwtPayload, AuthenticatedUser } from '@shared/types';
+import { getCachedUser, setCachedUser } from '@shared/utils/user-cache';
 
 declare global {
   namespace Express {
@@ -17,6 +18,9 @@ declare global {
 }
 
 async function loadActiveUser(userId: string): Promise<AuthenticatedUser | null> {
+  const cached = getCachedUser(userId);
+  if (cached) return cached;
+
   const { data, error } = await supabaseAdmin
     .from('users')
     .select('id, email, role, full_name, status, email_verified, deleted_at')
@@ -26,12 +30,14 @@ async function loadActiveUser(userId: string): Promise<AuthenticatedUser | null>
   if (error || !data || data.deleted_at) return null;
   if (data.status !== 'active') return null;
 
-  return {
+  const user: AuthenticatedUser = {
     id:       data.id as string,
     email:    data.email as string,
     role:     data.role as AuthenticatedUser['role'],
     fullName: (data.full_name as string) ?? '',
   };
+  setCachedUser(userId, user);
+  return user;
 }
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {

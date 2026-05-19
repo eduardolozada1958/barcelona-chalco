@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { getApiErrorMessage } from '@utils/api-error';
+import { warmApiBackend } from '@utils/api-warmup';
 
 const schema = z.object({
   email:    z.string().email('Correo inválido'),
@@ -38,6 +39,10 @@ export function LoginPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<Form>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    warmApiBackend();
+  }, []);
 
   const onSubmit = async (data: Form) => {
     try {
