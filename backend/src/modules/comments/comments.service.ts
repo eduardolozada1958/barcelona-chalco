@@ -14,6 +14,7 @@ import type {
 
 type CommentStatus = 'pending' | 'approved' | 'rejected';
 
+/** FK explícita: hay dos referencias comments → users (user_id y reviewed_by). */
 const COMMENT_SELECT = `
   id,
   resource_type,
@@ -24,7 +25,7 @@ const COMMENT_SELECT = `
   created_at,
   reviewed_at,
   reject_reason,
-  users (
+  author:users!comments_user_id_fkey (
     id,
     full_name,
     role,
@@ -33,7 +34,7 @@ const COMMENT_SELECT = `
 `;
 
 function mapCommentRow(row: Record<string, unknown>) {
-  const user = row.users as Record<string, unknown> | null;
+  const user = row.author as Record<string, unknown> | null;
   return {
     id:           row.id,
     resourceType: row.resource_type,
