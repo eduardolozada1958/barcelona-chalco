@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '@utils/api-error';
 
 import * as authApi from '@/api/auth';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -50,7 +51,7 @@ export function VerifyEmailPage() {
       if (!res.success) throw new Error(res.message);
       toast.success(res.message ?? 'Si el correo está registrado, recibirás un nuevo enlace.');
     } catch (err) {
-      toast.error((err as Error).message);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setResending(false);
     }

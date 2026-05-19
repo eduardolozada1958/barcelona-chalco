@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { CLUB_LOGO_URL } from '@/config/club';
+import { getApiErrorMessage } from '@utils/api-error';
 
 const schema = z.object({
   email:    z.string().email('Correo inválido'),
@@ -51,7 +52,7 @@ export function LoginPage() {
       toast.success('Sesión iniciada');
       navigate(from, { replace: true });
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(getApiErrorMessage(e));
     }
   };
 
@@ -64,7 +65,7 @@ export function LoginPage() {
       toast.success('Sesión iniciada');
       navigate(from, { replace: true });
     } catch (err) {
-      toast.error((err as Error).message);
+      toast.error(getApiErrorMessage(err));
     } finally {
       setTotpSubmitting(false);
     }
@@ -240,6 +241,11 @@ export function LoginPage() {
                   </div>
                   {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
                 </div>
+                <p className="text-right -mt-2">
+                  <Link to="/olvide-contraseña" className="text-sm text-primary hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
+                </p>
 
                 <button
                   type="submit"

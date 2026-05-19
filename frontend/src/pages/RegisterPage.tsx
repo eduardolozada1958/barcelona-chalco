@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { getApiErrorMessage } from '@utils/api-error';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -69,8 +70,8 @@ export function RegisterPage() {
       toast.success('Revisa tu correo para activar la cuenta');
       navigate(`/verificar-email?email=${encodeURIComponent(result.email)}`, { replace: true });
     } catch (e) {
-      const msg = (e as Error).message ?? 'Error al registrarse';
-      if (/timeout/i.test(msg)) {
+      const msg = getApiErrorMessage(e);
+      if (/tardó|timeout/i.test(msg)) {
         toast.error(
           'El servidor tardó demasiado en responder. Si llega el correo de verificación, ábrelo; si no, espera un minuto y vuelve a intentar o usa «Reenviar enlace».',
         );

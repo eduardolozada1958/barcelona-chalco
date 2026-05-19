@@ -148,3 +148,84 @@ export function buildVerificationEmail(opts: VerificationEmailOptions): { html: 
 
   return { html, text };
 }
+
+type PasswordResetEmailOptions = {
+  fullName: string;
+  link:     string;
+  hours:    number;
+};
+
+export function buildPasswordResetEmail(opts: PasswordResetEmailOptions): { html: string; text: string } {
+  const { fullName, link, hours } = opts;
+  const safeName = escapeHtml(fullName.trim() || 'usuario');
+  const safeHref = sanitizeHttpUrl(link) ?? CLUB_SITE;
+  const safeLink = escapeHtml(safeHref);
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px;font-size:22px;color:${COLOR_NAVY};font-weight:700;">Restablece tu contraseña</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hola <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;">
+      Recibimos una solicitud para cambiar la contraseña de tu cuenta en <strong>${escapeHtml(CLUB_NAME)}</strong>.
+      Si fuiste tú, usa el botón siguiente. Si no, ignora este correo.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" bgcolor="${COLOR_GOLD}" style="border-radius:8px;">
+          <a href="${safeHref}"
+             style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:${COLOR_NAVY};text-decoration:none;border-radius:8px;">
+            Crear nueva contraseña
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px;font-size:13px;color:${COLOR_MUTED};">El enlace expira en <strong>${hours} hora(s)</strong>.</p>
+    <p style="margin:0;font-size:12px;word-break:break-all;color:${COLOR_MUTED};">${safeLink}</p>
+  `;
+
+  const html = emailLayout({
+    preheader: `Restablece tu contraseña en ${CLUB_NAME}.`,
+    title:     `Restablecer contraseña — ${CLUB_NAME}`,
+    bodyHtml,
+    footerNote: 'Si no solicitaste este cambio, tu cuenta sigue segura; no hagas clic en el enlace.',
+  });
+
+  const text =
+    `Hola ${fullName.trim() || 'usuario'},\n\n` +
+    `Para restablecer tu contraseña en ${CLUB_NAME}, abre este enlace (válido ${hours} h):\n\n` +
+    `${link}\n\n` +
+    `Si no lo solicitaste, ignora este mensaje.\n`;
+
+  return { html, text };
+}
+
+type PasswordChangedEmailOptions = {
+  fullName: string;
+};
+
+export function buildPasswordChangedEmail(opts: PasswordChangedEmailOptions): { html: string; text: string } {
+  const safeName = escapeHtml(opts.fullName.trim() || 'usuario');
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px;font-size:22px;color:${COLOR_NAVY};font-weight:700;">Contraseña actualizada</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hola <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+      Te confirmamos que la contraseña de tu cuenta en <strong>${escapeHtml(CLUB_NAME)}</strong> se cambió correctamente.
+    </p>
+    <p style="margin:0;font-size:14px;color:${COLOR_MUTED};line-height:1.6;">
+      Si no fuiste tú, contacta de inmediato al administrador del club y restablece tu acceso desde «Olvidé mi contraseña».
+    </p>
+  `;
+
+  const html = emailLayout({
+    preheader: 'Tu contraseña fue cambiada.',
+    title:     `Contraseña actualizada — ${CLUB_NAME}`,
+    bodyHtml,
+  });
+
+  const text =
+    `Hola ${opts.fullName.trim() || 'usuario'},\n\n` +
+    `Tu contraseña en ${CLUB_NAME} fue actualizada correctamente.\n` +
+    `Si no reconoces este cambio, contacta al club de inmediato.\n`;
+
+  return { html, text };
+}

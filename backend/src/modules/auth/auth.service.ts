@@ -8,12 +8,20 @@ import {
   ConflictError,
   NotFoundError,
   BadRequestError,
+  ForbiddenError,
 } from '@middlewares/error.middleware';
 import { isEmailConfigured } from '@shared/services/email.service';
 import { EmailVerificationService } from './email-verification.service';
 import type { LoginInput, RegisterParentInput } from './auth.validation';
 import type { JwtPayload } from '@shared/types';
 import { TotpService } from './totp.service';
+import {
+  assertNotLocked,
+  clearLoginLockout,
+  isLoginLocked,
+  lockedAccountMessage,
+  recordFailedLogin,
+} from './login-lockout';
 
 export type LoginResult =
   | {
@@ -58,7 +66,7 @@ export class AuthService {
   static async completeLoginById(userId: string) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, role, status, full_name, avatar_url')
+      .select('id, email, role, status, full_name, avatar_url, failed_login_attempts, login_locked_at')
       .eq('id', userId)
       .is('deleted_at', null)
       .single();
@@ -67,26 +75,40 @@ export class AuthService {
       throw new UnauthorizedError('Usuario inactivo');
     }
 
+    if (isLoginLocked(user)) {
+      throw new ForbiddenError(lockedAccountMessage());
+    }
+
+    await clearLoginLockout(userId);
     return AuthService.issueSession(user);
   }
 
   private static async validateCredentials(input: LoginInput) {
+    const email = input.email.toLowerCase().trim();
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select(
-        'id, email, password_hash, role, status, full_name, avatar_url, email_verified, totp_enabled',
+        'id, email, password_hash, role, status, full_name, avatar_url, email_verified, totp_enabled, failed_login_attempts, login_locked_at',
       )
-      .eq('email', input.email.toLowerCase())
+      .eq('email', email)
       .is('deleted_at', null)
-      .single();
+      .maybeSingle();
 
-    if (error || !user) {
-      throw new UnauthorizedError('Credenciales inválidas');
+    if (error) throw new Error(error.message);
+
+    if (!user) {
+      throw new UnauthorizedError('No hay una cuenta registrada con este correo.');
+    }
+
+    await assertNotLocked(user);
+
+    if (user.status !== 'active') {
+      throw new UnauthorizedError('Cuenta inactiva o suspendida. Contacta al administrador.');
     }
 
     const passwordMatch = await bcrypt.compare(input.password, user.password_hash);
     if (!passwordMatch) {
-      throw new UnauthorizedError('Credenciales inválidas');
+      await recordFailedLogin(user.id, user.failed_login_attempts ?? 0);
     }
 
     if (user.role === 'parent' && !user.email_verified) {
@@ -95,10 +117,7 @@ export class AuthService {
       );
     }
 
-    if (user.status !== 'active') {
-      throw new UnauthorizedError('Cuenta inactiva o suspendida');
-    }
-
+    await clearLoginLockout(user.id);
     return user;
   }
 

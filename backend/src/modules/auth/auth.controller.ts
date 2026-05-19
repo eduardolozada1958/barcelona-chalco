@@ -5,6 +5,7 @@ import { ValidationError } from '@middlewares/error.middleware';
 import { HTTP_STATUS } from '@config/constants';
 import { TotpService } from './totp.service';
 import { ProfileService } from './profile.service';
+import { PasswordResetService } from './password-reset.service';
 import type {
   LoginInput,
   RegisterParentInput,
@@ -16,6 +17,8 @@ import type {
   TotpDisableInput,
   UpdateProfileInput,
   ChangePasswordInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
 } from './auth.validation';
 
 export class AuthController {
@@ -158,6 +161,34 @@ export class AuthController {
     try {
       await ProfileService.changePassword(req.user!.id, req.body as ChangePasswordInput);
       sendSuccess(res, null, 'Contraseña actualizada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { email } = req.body as ForgotPasswordInput;
+      await PasswordResetService.requestReset(email);
+      sendSuccess(
+        res,
+        null,
+        'Si el correo está registrado, recibirás un enlace para restablecer tu contraseña en unos minutos.',
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async resetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const input = req.body as ResetPasswordInput;
+      await PasswordResetService.resetPassword(input);
+      sendSuccess(
+        res,
+        null,
+        'Contraseña actualizada. Ya puedes iniciar sesión. Revisa tu correo para confirmación.',
+      );
     } catch (error) {
       next(error);
     }

@@ -122,6 +122,7 @@ const envSchema = z.object({
   BREVO_SENDER_NAME: z.string().default('F.C. Barcelona Cupido'),
 
   EMAIL_VERIFICATION_HOURS: z.string().default('24').transform(Number),
+  PASSWORD_RESET_HOURS: z.string().default('1').transform(Number),
 });
 
 const parsed = envSchema.safeParse(process.env);

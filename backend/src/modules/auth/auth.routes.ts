@@ -13,6 +13,8 @@ import {
   totpDisableSchema,
   updateProfileSchema,
   changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from './auth.validation';
 import { runProfileAvatarUpload } from './profile-avatar.middleware';
 
@@ -46,6 +48,16 @@ authRouter.post('/verify-email',
 authRouter.post('/resend-verification',
   validateBody(resendVerificationSchema),
   AuthController.resendVerification
+);
+
+// Recuperación de contraseña
+authRouter.post('/forgot-password',
+  validateBody(forgotPasswordSchema),
+  AuthController.forgotPassword
+);
+authRouter.post('/reset-password',
+  validateBody(resetPasswordSchema),
+  AuthController.resetPassword
 );
 
 // POST /api/v1/auth/refresh

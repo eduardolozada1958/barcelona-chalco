@@ -7,6 +7,7 @@ import {
   UnauthorizedError,
 } from '@middlewares/error.middleware';
 import { assertImageUpload } from '@shared/utils/file-magic';
+import { PasswordResetService } from './password-reset.service';
 import type { ChangePasswordInput, UpdateProfileInput } from './auth.validation';
 
 const PROFILE_SELECT =
@@ -43,7 +44,7 @@ export class ProfileService {
   static async changePassword(userId: string, input: ChangePasswordInput) {
     const { data: user } = await supabaseAdmin
       .from('users')
-      .select('password_hash')
+      .select('password_hash, email, full_name')
       .eq('id', userId)
       .is('deleted_at', null)
       .single();
@@ -60,6 +61,14 @@ export class ProfileService {
       .eq('id', userId);
 
     if (error) throw new Error(error.message);
+
+    await supabaseAdmin
+      .from('refresh_tokens')
+      .update({ revoked: true, revoked_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('revoked', false);
+
+    await PasswordResetService.sendPasswordChangedNotice(user.email, user.full_name ?? '');
   }
 
   static async uploadAvatar(

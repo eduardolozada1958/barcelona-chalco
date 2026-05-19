@@ -1,6 +1,7 @@
 import axios, { type AxiosError } from 'axios';
 
 import { API_PREFIX, STORAGE_KEYS } from '@utils/constants';
+import { getApiErrorMessage } from '@utils/api-error';
 import type { ApiResponse } from './types';
 
 const PROD_API_HOST =
@@ -43,7 +44,10 @@ apiClient.interceptors.response.use(
         window.dispatchEvent(new CustomEvent('auth:logout'));
       }
     }
-    const err = new Error(payload?.message ?? error.message) as Error & { status?: number; payload?: ApiResponse };
+    const err = new Error(getApiErrorMessage({ message: payload?.message, status, payload })) as Error & {
+      status?: number;
+      payload?: ApiResponse;
+    };
     err.status = status;
     err.payload = payload;
     return Promise.reject(err);

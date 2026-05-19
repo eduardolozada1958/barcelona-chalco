@@ -33,6 +33,22 @@ export const resendVerificationSchema = z.object({
   email: z.string().email('Email inválido'),
 });
 
+export const passwordRules = z
+  .string()
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
+  .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
+  .regex(/[0-9]/, 'Debe contener al menos un número')
+  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial');
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Correo inválido'),
+});
+
+export const resetPasswordSchema = z.object({
+  token:       z.string().min(32, 'Enlace inválido'),
+  newPassword: passwordRules,
+});
+
 export const totpCodeSchema = z.object({
   code: z
     .string()
@@ -49,13 +65,6 @@ export const totpDisableSchema = z.object({
   password: z.string().min(6, 'Contraseña requerida'),
   code:     z.string().min(6).max(16),
 });
-
-const passwordRules = z
-  .string()
-  .min(8, 'La contraseña debe tener al menos 8 caracteres')
-  .regex(/[A-Z]/, 'Debe contener al menos una letra mayúscula')
-  .regex(/[0-9]/, 'Debe contener al menos un número')
-  .regex(/[^A-Za-z0-9]/, 'Debe contener al menos un carácter especial');
 
 export const updateProfileSchema = z.object({
   fullName: z.string().min(2, 'Nombre muy corto').max(150).optional(),
@@ -77,3 +86,5 @@ export type RegisterParentInput  = z.infer<typeof registerParentSchema>;
 export type RefreshTokenInput    = z.infer<typeof refreshTokenSchema>;
 export type VerifyEmailInput     = z.infer<typeof verifyEmailSchema>;
 export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+export type ForgotPasswordInput     = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput      = z.infer<typeof resetPasswordSchema>;
