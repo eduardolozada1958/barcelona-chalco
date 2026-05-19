@@ -45,6 +45,14 @@ usersRouter.patch(
   UsersController.update
 );
 
+usersRouter.post(
+  '/:id/unlock-login',
+  authMiddleware,
+  requireAdmin,
+  validateParams(userIdParamSchema),
+  UsersController.unlockLogin
+);
+
 usersRouter.delete(
   '/:id',
   authMiddleware,

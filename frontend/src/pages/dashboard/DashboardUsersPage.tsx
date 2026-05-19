@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { createUser, listUsers, type CreateUserBody } from '@/api/users';
+import { createUser, isUserLoginLocked, listUsers, unlockUserLogin, type CreateUserBody } from '@/api/users';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -32,6 +32,15 @@ export function DashboardUsersPage() {
       void qc.invalidateQueries({ queryKey: ['users-admin'] });
       setCreateOpen(false);
       reset();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const unlockMut = useMutation({
+    mutationFn: (id: string) => unlockUserLogin(id),
+    onSuccess: () => {
+      toast.success('Cuenta desbloqueada');
+      void qc.invalidateQueries({ queryKey: ['users-admin'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -77,12 +86,14 @@ export function DashboardUsersPage() {
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Usuario</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Rol</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Estado</th>
+              <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((u) => {
               const role = String(u.role);
               const status = String(u.status);
+              const locked = isUserLoginLocked(u);
               return (
                 <tr key={String(u.id)} className="border-t border-outline-variant/10 hover:bg-surface-container/30 transition-colors">
                   <td className="p-4">
@@ -103,12 +114,38 @@ export function DashboardUsersPage() {
                     </span>
                   </td>
                   <td className="p-4">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps ${
-                      u.status === 'active' ? 'bg-primary/15 text-primary' : 'bg-surface-variant text-on-surface-variant'
-                    }`}>
-                      <MaterialIcon name={u.status === 'active' ? 'check_circle' : 'block'} size={12} />
-                      {userStatusLabel(status)}
-                    </span>
+                    <div className="flex flex-col gap-1 items-start">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps ${
+                        u.status === 'active' ? 'bg-primary/15 text-primary' : 'bg-surface-variant text-on-surface-variant'
+                      }`}>
+                        <MaterialIcon name={u.status === 'active' ? 'check_circle' : 'block'} size={12} />
+                        {userStatusLabel(status)}
+                      </span>
+                      {locked && (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps bg-error/15 text-error">
+                          <MaterialIcon name="lock" size={12} />
+                          Login bloqueado
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    {locked ? (
+                      <button
+                        type="button"
+                        disabled={unlockMut.isPending}
+                        onClick={() => {
+                          if (!window.confirm(`¿Desbloquear el acceso de ${String(u.email)}?`)) return;
+                          unlockMut.mutate(String(u.id));
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-error/40 text-error text-[10px] font-label-caps hover:bg-error/10 transition-colors disabled:opacity-50"
+                      >
+                        <MaterialIcon name="lock_open" size={14} />
+                        Desbloquear
+                      </button>
+                    ) : (
+                      <span className="text-on-surface-variant text-xs">—</span>
+                    )}
                   </td>
                 </tr>
               );

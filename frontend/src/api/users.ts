@@ -23,3 +23,14 @@ export async function createUser(body: CreateUserBody) {
   const { data } = await apiClient.post<ApiResponse<unknown>>('/users', body);
   return data;
 }
+
+export async function unlockUserLogin(id: string) {
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/users/${id}/unlock-login`);
+  return data;
+}
+
+export function isUserLoginLocked(u: Record<string, unknown>): boolean {
+  if (u.login_locked_at) return true;
+  const attempts = typeof u.failed_login_attempts === 'number' ? u.failed_login_attempts : 0;
+  return attempts >= 5;
+}

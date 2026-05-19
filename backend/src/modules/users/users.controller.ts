@@ -47,6 +47,15 @@ export class UsersController {
     }
   }
 
+  static async unlockLogin(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const user = await UsersService.unlockLogin(routeParam(req, 'id'), req.user!.id);
+      sendSuccess(res, user, 'Cuenta desbloqueada. El usuario ya puede iniciar sesión.');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async softDelete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await UsersService.softDelete(routeParam(req, 'id'), req.user!.id);

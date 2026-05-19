@@ -4,10 +4,11 @@ import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
+import { clearLoginLockout, isLoginLocked } from '@modules/auth/login-lockout';
 import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
-  'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, created_at, updated_at';
+  'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, failed_login_attempts, login_locked_at, created_at, updated_at';
 
 export class UsersService {
   static async list(opts: ListUsersQuery) {
@@ -117,6 +118,23 @@ export class UsersService {
       throw new Error(error.message);
     }
     return data;
+  }
+
+  static async unlockLogin(id: string, actorUserId: string) {
+    const user = await UsersService.getById(id);
+
+    if (!isLoginLocked(user)) {
+      throw new BadRequestError('Esta cuenta no está bloqueada por intentos de login');
+    }
+
+    if (id === actorUserId) {
+      throw new BadRequestError(
+        'No puedes desbloquearte desde aquí si no tienes sesión. Usa «Olvidé mi contraseña» o pide a otro administrador.',
+      );
+    }
+
+    await clearLoginLockout(id);
+    return UsersService.getById(id);
   }
 
   static async softDelete(id: string, actorUserId: string) {
