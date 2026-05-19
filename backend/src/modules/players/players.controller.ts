@@ -6,11 +6,13 @@ import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
 import { ValidationError } from '@middlewares/error.middleware';
 import { env } from '@config/env';
+import { MvpOfWeekService } from './mvp-of-week.service';
 import type {
   CreatePlayerInput,
   CreatePlayerMultipartInput,
   UpdatePlayerInput,
   ListPlayersQuery,
+  SetMvpOfWeekBody,
 } from './players.validation';
 
 const PHOTO_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
@@ -56,6 +58,28 @@ export class PlayersController {
       const n = raw != null ? parseInt(String(raw), 10) : 15;
       const data = await PlayersService.publicSeasonLeaders(Number.isFinite(n) ? n : 15);
       sendSuccess(res, data, 'Clasificación de temporada');
+    } catch (e) { next(e); }
+  }
+
+  static async getMvpOfWeekPublic(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await MvpOfWeekService.getPublic();
+      sendSuccess(res, data, 'MVP de la semana');
+    } catch (e) { next(e); }
+  }
+
+  static async getMvpOfWeekAdmin(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await MvpOfWeekService.getAdmin();
+      sendSuccess(res, data, 'MVP de la semana (panel)');
+    } catch (e) { next(e); }
+  }
+
+  static async setMvpOfWeek(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = req.body as SetMvpOfWeekBody;
+      const data = await MvpOfWeekService.set(body.playerId, body.weekLabel ?? null);
+      sendSuccess(res, data, body.playerId ? 'MVP de la semana actualizado' : 'MVP de la semana quitado');
     } catch (e) { next(e); }
   }
 

@@ -13,6 +13,7 @@ import {
   playerIdSchema,
   playerPublicRefSchema,
   listPlayersQuerySchema,
+  setMvpOfWeekBodySchema,
 } from './players.validation';
 
 export const playersRouter = Router();
@@ -27,6 +28,9 @@ playersRouter.get('/public',
 
 // GET /api/v1/players/public/season-leaders — Goles y tarjetas (resultados publicados)
 playersRouter.get('/public/season-leaders', PlayersController.publicSeasonLeaders);
+
+// GET /api/v1/players/public/mvp-of-week — MVP visible en inicio
+playersRouter.get('/public/mvp-of-week', PlayersController.getMvpOfWeekPublic);
 
 // GET /api/v1/players/public/:id - Perfil público de un jugador
 playersRouter.get('/public/:id',
@@ -51,6 +55,22 @@ playersRouter.post('/:id/photo',
 );
 
 // ── Rutas protegidas (Admin / Coach) ──────────────────────────
+
+// GET/PUT /api/v1/players/mvp-of-week — Asignar MVP de la semana (Plantilla)
+playersRouter.get(
+  '/mvp-of-week',
+  authMiddleware,
+  requireAdminOrCoach,
+  PlayersController.getMvpOfWeekAdmin,
+);
+
+playersRouter.put(
+  '/mvp-of-week',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateBody(setMvpOfWeekBodySchema),
+  PlayersController.setMvpOfWeek,
+);
 
 // GET /api/v1/players - Listado completo para admin/coach
 playersRouter.get('/',

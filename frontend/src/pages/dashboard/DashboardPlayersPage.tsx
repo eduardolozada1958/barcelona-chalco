@@ -20,6 +20,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerStatusLabel } from '@/config/labels';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
 import { MatchStatsQuickEdit } from '@/components/MatchStatsQuickEdit';
+import { MvpOfWeekPanel } from '@/components/MvpOfWeekPanel';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 
 /** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
@@ -276,6 +277,8 @@ export function DashboardPlayersPage() {
           <MaterialIcon name="person_add" size={18} /> Agregar
         </button>
       </div>
+
+      <MvpOfWeekPanel />
 
       <div className="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low/50">
         <table className="min-w-full text-left text-sm">

@@ -2,9 +2,12 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
+import { getMvpOfWeekPublic } from '@/api/players';
 import { latestResultPublic } from '@/api/results';
+import { playerPublicPath } from '@/utils/player-path';
 import { listMatchesPublic } from '@/api/matches';
 import { listNoticesPublic } from '@/api/notices';
 import type { Result, Match, Notice } from '@/types';
@@ -19,10 +22,13 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018
 export function HomePage() {
   // Fetch real data for highlights
   const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
+  const mvpQ = useQuery({ queryKey: ['mvp-of-week-public'], queryFn: getMvpOfWeekPublic });
   const matchesQ = useQuery({ queryKey: ['matches-public'], queryFn: () => listMatchesPublic() });
   const noticesQ = useQuery({ queryKey: ['notices-public'], queryFn: () => listNoticesPublic() });
 
   const latest = latestResult.data?.data as Result | undefined;
+  const mvp = mvpQ.data?.data;
+  const mvpPlayer = mvp?.player;
   const nextMatch = (matchesQ.data?.data as Match[] | undefined)?.[0];
   const urgentNotice = (noticesQ.data?.data as Notice[] | undefined)?.find((n) => n.type === 'urgent')
     ?? (noticesQ.data?.data as Notice[] | undefined)?.[0];
@@ -186,20 +192,55 @@ export function HomePage() {
           </div>
 
           {/* MVP Spotlight */}
-          <div className="glass-panel rounded-xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-surface-container-low z-0 flex items-center justify-center">
-              <MaterialIcon name="emoji_events" className="text-surface-container-high" size={80} />
+          {mvpPlayer ? (
+            <Link
+              to={playerPublicPath({ id: mvpPlayer.id, slug: mvpPlayer.slug })}
+              className="glass-panel rounded-xl relative overflow-hidden group block min-h-[200px] md:min-h-0"
+            >
+              {mvpPlayer.avatarUrl ? (
+                <img
+                  src={mvpPlayer.avatarUrl}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover z-0 grayscale group-hover:grayscale-0 transition-all duration-500"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-surface-container-low z-0 flex items-center justify-center">
+                  <PlayerAvatar
+                    name={`${mvpPlayer.firstName} ${mvpPlayer.lastName}`}
+                    avatarUrl={null}
+                    size="md"
+                  />
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10" />
+              <div className="relative z-20 h-full p-stack-md flex flex-col justify-end">
+                <span className="text-primary font-label-caps text-label-caps tracking-widest text-[10px] mb-1 flex items-center gap-1">
+                  <MaterialIcon name="emoji_events" size={12} filled /> MVP DE LA SEMANA
+                </span>
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
+                  {mvpPlayer.firstName} {mvpPlayer.lastName}
+                </h3>
+                {mvp?.weekLabel ? (
+                  <p className="text-xs text-on-surface-variant mt-1">{mvp.weekLabel}</p>
+                ) : null}
+              </div>
+            </Link>
+          ) : (
+            <div className="glass-panel rounded-xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-surface-container-low z-0 flex items-center justify-center">
+                <MaterialIcon name="emoji_events" className="text-surface-container-high" size={80} />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
+              <div className="relative z-20 h-full p-stack-md flex flex-col justify-end">
+                <span className="text-primary font-label-caps text-label-caps tracking-widest text-[10px] mb-1">
+                  MVP DE LA SEMANA
+                </span>
+                <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface-variant">
+                  Por definir
+                </h3>
+              </div>
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-10" />
-            <div className="relative z-20 h-full p-stack-md flex flex-col justify-end">
-              <span className="text-primary font-label-caps text-label-caps tracking-widest text-[10px] mb-1">
-                MVP DE LA SEMANA
-              </span>
-              <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">
-                {latest?.featured_player_id ? 'MVP' : '—'}
-              </h3>
-            </div>
-          </div>
+          )}
 
           {/* Last Result */}
           <div className="glass-panel rounded-xl p-stack-md flex flex-col justify-center items-center text-center border-l-4 border-l-primary">
@@ -242,3 +283,5 @@ export function HomePage() {
     </>
   );
 }
+
+

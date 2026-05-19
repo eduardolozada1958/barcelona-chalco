@@ -37,6 +37,40 @@ export async function getSeasonLeadersPublic(limit = 15) {
   return data;
 }
 
+export interface MvpOfWeekPlayer {
+  id:               string;
+  slug?:            string | null;
+  firstName:        string;
+  lastName:         string;
+  jerseyNumber?:    number | null;
+  position?:        string | null;
+  category?:        string | null;
+  avatarUrl?:       string | null;
+  sportDescription?: string | null;
+}
+
+export interface MvpOfWeekPayload {
+  playerId:  string | null;
+  weekLabel: string | null;
+  updatedAt: string | null;
+  player:    MvpOfWeekPlayer | null;
+}
+
+export async function getMvpOfWeekPublic() {
+  const { data } = await apiClient.get<ApiResponse<MvpOfWeekPayload>>('/players/public/mvp-of-week');
+  return data;
+}
+
+export async function getMvpOfWeekAdmin() {
+  const { data } = await apiClient.get<ApiResponse<MvpOfWeekPayload>>('/players/mvp-of-week');
+  return data;
+}
+
+export async function setMvpOfWeek(body: { playerId: string | null; weekLabel?: string | null }) {
+  const { data } = await apiClient.put<ApiResponse<MvpOfWeekPayload>>('/players/mvp-of-week', body);
+  return data;
+}
+
 /** Carga jugadores del once titular por ID (endpoint público por jugador). */
 export async function fetchPlayersPublicByIds(ids: string[]): Promise<Record<string, unknown>[]> {
   const unique = [...new Set(ids.filter(Boolean))];

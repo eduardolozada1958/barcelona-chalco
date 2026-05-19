@@ -8,6 +8,13 @@ export const playerIdSchema = z.object({
 });
 
 /** UUID interno o slug público (/jugadores/eduardo-lozada-quiroz). */
+export const setMvpOfWeekBodySchema = z.object({
+  playerId:  z.string().uuid('ID de jugador inválido').nullable(),
+  weekLabel: z.string().trim().max(120, 'Máximo 120 caracteres').nullable().optional(),
+});
+
+export type SetMvpOfWeekBody = z.infer<typeof setMvpOfWeekBodySchema>;
+
 export const playerPublicRefSchema = z.object({
   id: z
     .string()
