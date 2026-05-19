@@ -1,24 +1,31 @@
 import axios, { type AxiosError } from 'axios';
 
-import { API_PREFIX, STORAGE_KEYS } from '@utils/constants';
+import { STORAGE_KEYS } from '@utils/constants';
 import { getApiErrorMessage } from '@utils/api-error';
 import type { ApiResponse } from './types';
 
-const PROD_API_HOST =
-  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ||
-  'https://barcelona-chalco.onrender.com';
+const DEFAULT_API_HOST = 'https://barcelona-chalco.onrender.com';
 
-/** En desarrollo usa el proxy de Vite (`/api` → backend). En prod, `VITE_API_URL` + prefijo. */
+/** URL base del API — calculada una vez al cargar el módulo. */
+const API_BASE_URL = (() => {
+  // Desarrollo: proxy Vite en /api → backend local
+  if (import.meta.env.MODE === 'development') {
+    return '/api/v1';
+  }
+  // Producción: siempre URL absoluta a Render (nunca relativa a pages.dev)
+  const host = String(import.meta.env.VITE_API_URL || DEFAULT_API_HOST).replace(/\/$/, '');
+  return `${host}/api/v1`;
+})();
+
 export function resolveApiBaseUrl(): string {
-  if (import.meta.env.DEV) return API_PREFIX;
-  return `${PROD_API_HOST}${API_PREFIX}`;
+  return API_BASE_URL;
 }
 
 export const apiClient = axios.create({
-  baseURL: resolveApiBaseUrl(),
+  baseURL: API_BASE_URL,
   timeout: 30_000,
   headers: {
-    Accept:       'application/json',
+    Accept:         'application/json',
     'Content-Type': 'application/json',
   },
 });
@@ -51,5 +58,5 @@ apiClient.interceptors.response.use(
     err.status = status;
     err.payload = payload;
     return Promise.reject(err);
-  }
+  },
 );

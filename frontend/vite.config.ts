@@ -5,8 +5,14 @@ import path from 'path';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
+  const apiUrl = (env.VITE_API_URL || 'https://barcelona-chalco.onrender.com').replace(/\/$/, '');
+
   return {
     plugins: [react()],
+    define: {
+      'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl),
+      'import.meta.env.MODE': JSON.stringify(mode),
+    },
     resolve: {
       alias: {
         '@':            path.resolve(__dirname, 'src'),
