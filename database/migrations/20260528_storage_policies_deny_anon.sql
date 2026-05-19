@@ -1,69 +1,74 @@
--- Políticas de Storage: bloquear anon/authenticated en buckets sensibles.
--- El backend (service_role) sigue subiendo/leyendo sin cambios.
+-- Políticas de Storage (Supabase SQL Editor).
+-- NO ejecutes: ALTER TABLE storage.objects ...  → error 42501 "must be owner of table objects".
+-- En Supabase, RLS en storage.objects ya viene activado por defecto.
 --
--- Buckets PUBLIC (gallery, players-avatars): las fotos se ven en la web por URL; es normal.
--- Bloqueamos que alguien con anon key suba o borre archivos por la API de Storage.
---
--- player-curp-documents: debe estar PRIVADO (sin etiqueta PUBLIC en el Dashboard).
--- Ejecutar en Supabase → SQL Editor.
+-- El backend (service_role) ignora estas políticas y sigue igual.
+-- Ejecuta este archivo completo en SQL Editor (rol: postgres).
 
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- ═══════════════════════════════════════════════════════════════
+-- player-curp-documents (PRIVADO) — bloquear anon y authenticated
+-- ═══════════════════════════════════════════════════════════════
 
-DO $$
-DECLARE
-  b text;
-  role_name text;
-  pol text;
-  private_buckets text[] := ARRAY['player-curp-documents'];
-  public_buckets text[] := ARRAY['gallery', 'players-avatars', 'match-logos', 'notices-covers'];
-BEGIN
-  -- Buckets privados: ninguna operación con anon ni authenticated
-  FOREACH b IN ARRAY private_buckets LOOP
-    IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE name = b) THEN
-      RAISE NOTICE 'Bucket % no existe, se omite', b;
-      CONTINUE;
-    END IF;
+DROP POLICY IF EXISTS "storage_block_player_curp_documents_anon" ON storage.objects;
+CREATE POLICY "storage_block_player_curp_documents_anon"
+  ON storage.objects
+  FOR ALL TO anon
+  USING (bucket_id = 'player-curp-documents' AND false)
+  WITH CHECK (bucket_id = 'player-curp-documents' AND false);
 
-    FOREACH role_name IN ARRAY ARRAY['anon', 'authenticated'] LOOP
-      pol := 'storage_block_' || replace(b, '-', '_') || '_' || role_name;
-      EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol);
-      EXECUTE format(
-        'CREATE POLICY %I ON storage.objects FOR ALL TO %I USING (bucket_id = %L AND false) WITH CHECK (bucket_id = %L AND false)',
-        pol, role_name, b, b
-      );
-    END LOOP;
+DROP POLICY IF EXISTS "storage_block_player_curp_documents_authenticated" ON storage.objects;
+CREATE POLICY "storage_block_player_curp_documents_authenticated"
+  ON storage.objects
+  FOR ALL TO authenticated
+  USING (bucket_id = 'player-curp-documents' AND false)
+  WITH CHECK (bucket_id = 'player-curp-documents' AND false);
 
-    RAISE NOTICE 'Bucket privado % bloqueado para anon/authenticated', b;
-  END LOOP;
+-- ═══════════════════════════════════════════════════════════════
+-- Buckets PUBLIC — prohibir subir / editar / borrar con anon
+-- (la lectura por URL pública del bucket no se toca)
+-- ═══════════════════════════════════════════════════════════════
 
-  -- Buckets públicos: prohibir subir/editar/borrar con anon (lectura pública sigue por URL del bucket)
-  FOREACH b IN ARRAY public_buckets LOOP
-    IF NOT EXISTS (SELECT 1 FROM storage.buckets WHERE name = b) THEN
-      RAISE NOTICE 'Bucket % no existe, se omite', b;
-      CONTINUE;
-    END IF;
+-- gallery
+DROP POLICY IF EXISTS "storage_gallery_no_anon_insert" ON storage.objects;
+CREATE POLICY "storage_gallery_no_anon_insert"
+  ON storage.objects FOR INSERT TO anon
+  WITH CHECK (bucket_id = 'gallery' AND false);
 
-    pol := 'storage_' || replace(b, '-', '_') || '_no_anon_insert';
-    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol);
-    EXECUTE format(
-      'CREATE POLICY %I ON storage.objects FOR INSERT TO anon WITH CHECK (bucket_id = %L AND false)',
-      pol, b
-    );
+DROP POLICY IF EXISTS "storage_gallery_no_anon_update" ON storage.objects;
+CREATE POLICY "storage_gallery_no_anon_update"
+  ON storage.objects FOR UPDATE TO anon
+  USING (bucket_id = 'gallery' AND false);
 
-    pol := 'storage_' || replace(b, '-', '_') || '_no_anon_update';
-    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol);
-    EXECUTE format(
-      'CREATE POLICY %I ON storage.objects FOR UPDATE TO anon USING (bucket_id = %L AND false)',
-      pol, b
-    );
+DROP POLICY IF EXISTS "storage_gallery_no_anon_delete" ON storage.objects;
+CREATE POLICY "storage_gallery_no_anon_delete"
+  ON storage.objects FOR DELETE TO anon
+  USING (bucket_id = 'gallery' AND false);
 
-    pol := 'storage_' || replace(b, '-', '_') || '_no_anon_delete';
-    EXECUTE format('DROP POLICY IF EXISTS %I ON storage.objects', pol);
-    EXECUTE format(
-      'CREATE POLICY %I ON storage.objects FOR DELETE TO anon USING (bucket_id = %L AND false)',
-      pol, b
-    );
+-- players-avatars
+DROP POLICY IF EXISTS "storage_players_avatars_no_anon_insert" ON storage.objects;
+CREATE POLICY "storage_players_avatars_no_anon_insert"
+  ON storage.objects FOR INSERT TO anon
+  WITH CHECK (bucket_id = 'players-avatars' AND false);
 
-    RAISE NOTICE 'Bucket público %: escritura anon bloqueada', b;
-  END LOOP;
-END $$;
+DROP POLICY IF EXISTS "storage_players_avatars_no_anon_update" ON storage.objects;
+CREATE POLICY "storage_players_avatars_no_anon_update"
+  ON storage.objects FOR UPDATE TO anon
+  USING (bucket_id = 'players-avatars' AND false);
+
+DROP POLICY IF EXISTS "storage_players_avatars_no_anon_delete" ON storage.objects;
+CREATE POLICY "storage_players_avatars_no_anon_delete"
+  ON storage.objects FOR DELETE TO anon
+  USING (bucket_id = 'players-avatars' AND false);
+
+-- Opcional: descomenta si ya creaste estos buckets en Storage
+/*
+DROP POLICY IF EXISTS "storage_match_logos_no_anon_insert" ON storage.objects;
+CREATE POLICY "storage_match_logos_no_anon_insert"
+  ON storage.objects FOR INSERT TO anon
+  WITH CHECK (bucket_id = 'match-logos' AND false);
+
+DROP POLICY IF EXISTS "storage_notices_covers_no_anon_insert" ON storage.objects;
+CREATE POLICY "storage_notices_covers_no_anon_insert"
+  ON storage.objects FOR INSERT TO anon
+  WITH CHECK (bucket_id = 'notices-covers' AND false);
+*/
