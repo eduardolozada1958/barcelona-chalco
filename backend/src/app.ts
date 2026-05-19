@@ -58,6 +58,7 @@ export function createApp(): Application {
   app.use(
     helmet({
       hsts: isProd ? { maxAge: 31_536_000, includeSubDomains: true, preload: true } : false,
+      frameguard: { action: 'deny' },
       // Permite que el front (Pages) cargue imágenes QR desde este API en otro dominio.
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),

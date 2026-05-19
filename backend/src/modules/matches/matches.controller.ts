@@ -4,6 +4,7 @@ import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
 import { ValidationError } from '@middlewares/error.middleware';
+import { assertImageUpload } from '@shared/utils/file-magic';
 import { env } from '@config/env';
 import type {
   ListMatchesQuery,
@@ -11,8 +12,6 @@ import type {
   UpdateMatchBody,
   ConvocatoryBody,
 } from './matches.validation';
-
-const LOGO_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 export class MatchesController {
   static async listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -87,8 +86,10 @@ export class MatchesController {
       if (!f) {
         return next(new ValidationError('Adjunta el logo del rival (PNG, JPEG o WebP)', [{ field: 'logo', message: 'Requerido' }]));
       }
-      if (!LOGO_MIMES.has(f.mimetype)) {
-        return next(new ValidationError('El logo debe ser PNG, JPEG o WebP', [{ field: 'logo', message: 'Formato no permitido' }]));
+      try {
+        assertImageUpload(f);
+      } catch (e) {
+        return next(e);
       }
       if (f.size > env.STORAGE_MAX_FILE_SIZE) {
         return next(new ValidationError('El logo supera el tamaño máximo permitido', [{ field: 'logo', message: 'Muy grande' }]));

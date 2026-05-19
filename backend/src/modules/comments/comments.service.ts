@@ -5,6 +5,11 @@ import {
   UnauthorizedError,
 } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import {
+  containsDangerousTextPatterns,
+  sanitizePlainText,
+} from '@shared/utils/sanitize-content';
+import { BadRequestError } from '@middlewares/error.middleware';
 import type {
   AdminListCommentsQuery,
   CreateCommentBody,
@@ -56,18 +61,29 @@ function mapCommentRow(row: Record<string, unknown>) {
   };
 }
 
-async function ensureResourceExists(resourceType: string, resourceId: string): Promise<void> {
+async function ensureResourcePublished(resourceType: string, resourceId: string): Promise<void> {
   const table = resourceType === 'notice' ? 'notices' : 'gallery_posts';
   const { data, error } = await supabaseAdmin
     .from(table)
-    .select('id, deleted_at')
+    .select('id, deleted_at, is_published')
     .eq('id', resourceId)
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  if (!data || data.deleted_at) {
+  if (!data || data.deleted_at || !data.is_published) {
     throw new NotFoundError('Recurso no encontrado');
   }
+}
+
+function sanitizeCommentContent(raw: string): string {
+  const cleaned = sanitizePlainText(raw, 1000);
+  if (cleaned.length < 2) {
+    throw new BadRequestError('El comentario es demasiado corto');
+  }
+  if (containsDangerousTextPatterns(raw)) {
+    throw new BadRequestError('El comentario contiene contenido no permitido');
+  }
+  return cleaned;
 }
 
 async function getUserOrThrow(userId: string) {
@@ -84,7 +100,7 @@ async function getUserOrThrow(userId: string) {
 
 export class CommentsService {
   static async listPublic(opts: ListCommentsQuery) {
-    await ensureResourceExists(opts.resourceType, opts.resourceId);
+    await ensureResourcePublished(opts.resourceType, opts.resourceId);
 
     const offset = getPaginationOffset(opts.page, opts.limit);
     const { data, error, count } = await supabaseAdmin
@@ -155,7 +171,9 @@ export class CommentsService {
       throw new ForbiddenError('Verifica tu correo antes de comentar.');
     }
 
-    await ensureResourceExists(input.resourceType, input.resourceId);
+    await ensureResourcePublished(input.resourceType, input.resourceId);
+
+    const content = sanitizeCommentContent(input.content);
 
     // Cualquier usuario autenticado y verificado publica al instante.
     const status: CommentStatus = 'approved';
@@ -165,7 +183,7 @@ export class CommentsService {
       resource_type: input.resourceType,
       resource_id:   input.resourceId,
       user_id:       userId,
-      content:       input.content.trim(),
+      content,
       status,
       reviewed_at:   now,
       reviewed_by:   userId,

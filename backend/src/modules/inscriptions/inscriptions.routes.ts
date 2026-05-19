@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
+import { publicInscriptionLimiter } from '@middlewares/rate-limit.middleware';
 import { InscriptionsController } from './inscriptions.controller';
 import {
   listInscriptionsQuerySchema,
@@ -15,6 +16,7 @@ export const inscriptionsRouter = Router();
 
 inscriptionsRouter.post(
   '/public',
+  publicInscriptionLimiter,
   validateBody(publicInscriptionBodySchema),
   InscriptionsController.createPublic
 );

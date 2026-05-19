@@ -7,10 +7,16 @@ export function sanitizeIlikeSearchTerm(raw: string | undefined): string | undef
   const trimmed = raw.trim().slice(0, 80);
   if (!trimmed) return undefined;
   const safe = trimmed
-    .replace(/[%_(),.\\]/g, ' ')
+    .replace(/[%_(),.\\'";\-<>=]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  return safe.length > 0 ? safe : undefined;
+  if (!safe || !/[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]{3,}/.test(safe)) {
+    return undefined;
+  }
+  if (/^(or|and|select|union|drop|delete)\b/i.test(safe)) {
+    return undefined;
+  }
+  return safe;
 }
 
 export function buildIlikeOrFilter(fields: readonly string[], search: string): string {

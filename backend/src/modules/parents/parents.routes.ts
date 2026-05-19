@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdminOrCoach, requireParent } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
+import { linkRequestLimiter } from '@middlewares/rate-limit.middleware';
 import { ParentsController } from './parents.controller';
 import {
   createLinkRequestSchema,
@@ -33,6 +34,7 @@ parentsRouter.post(
   '/link-requests',
   authMiddleware,
   requireParent,
+  linkRequestLimiter,
   validateBody(createLinkRequestSchema),
   ParentsController.createLinkRequest,
 );

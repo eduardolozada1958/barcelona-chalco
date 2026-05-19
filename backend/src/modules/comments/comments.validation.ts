@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { sanitizePlainText } from '@shared/utils/sanitize-content';
 
 const pagination = {
   page:  z.string().optional().transform(v => (v ? parseInt(v, 10) : 1)),
@@ -25,7 +26,12 @@ export const adminListCommentsQuerySchema = z.object({
 export const createCommentBodySchema = z.object({
   resourceType: commentResourceType,
   resourceId:   z.string().uuid('resourceId inválido'),
-  content:      z.string().trim().min(2, 'Mínimo 2 caracteres').max(1000, 'Máximo 1000 caracteres'),
+  content: z
+    .string()
+    .trim()
+    .min(2, 'Mínimo 2 caracteres')
+    .max(1000, 'Máximo 1000 caracteres')
+    .transform((v) => sanitizePlainText(v, 1000)),
 });
 
 export const commentIdParamSchema = z.object({

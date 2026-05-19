@@ -233,7 +233,7 @@ export class ParentsService {
     const player = await ParentsService.findPlayerByCurp(input.curp);
     if (!player) {
       throw new NotFoundError(
-        'No encontramos un jugador con esa CURP en la plantilla. Contacta al entrenador o administrador para que registre a tu hijo con su CURP.',
+        'No se pudo vincular con esa CURP. Verifica que esté correcta o contacta al entrenador para registrar a tu hijo.',
       );
     }
 

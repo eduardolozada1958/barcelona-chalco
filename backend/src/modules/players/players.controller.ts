@@ -6,6 +6,7 @@ import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
 import { ValidationError } from '@middlewares/error.middleware';
 import { env } from '@config/env';
+import { assertImageUpload, assertPdfUpload } from '@shared/utils/file-magic';
 import { MvpOfWeekService } from './mvp-of-week.service';
 import type {
   CreatePlayerInput,
@@ -14,8 +15,6 @@ import type {
   ListPlayersQuery,
   SetMvpOfWeekBody,
 } from './players.validation';
-
-const PHOTO_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 function forViewer(row: unknown): Record<string, unknown> {
   return sanitizePlayerRecordForApi(row as Record<string, unknown>);
@@ -112,12 +111,16 @@ export class PlayersController {
       if (!curpPdf) {
         return next(new ValidationError('Adjunta el PDF oficial de la CURP', [{ field: 'curpPdf', message: 'Requerido' }]));
       }
-      if (curpPdf.mimetype !== 'application/pdf') {
-        return next(new ValidationError('El documento de CURP debe ser PDF', [{ field: 'curpPdf', message: 'Solo PDF' }]));
+      try {
+        assertPdfUpload(curpPdf);
+      } catch (e) {
+        return next(e);
       }
       if (photo) {
-        if (!PHOTO_MIMES.has(photo.mimetype)) {
-          return next(new ValidationError('La foto debe ser PNG, JPEG o WebP', [{ field: 'photo', message: 'Formato no permitido' }]));
+        try {
+          assertImageUpload(photo);
+        } catch (e) {
+          return next(e);
         }
         if (photo.size > env.STORAGE_MAX_FILE_SIZE) {
           return next(new ValidationError('La foto supera el tamaño máximo permitido', [{ field: 'photo', message: 'Muy grande' }]));
@@ -157,8 +160,10 @@ export class PlayersController {
       if (!f) {
         return next(new ValidationError('Adjunta una imagen (PNG, JPEG o WebP)', [{ field: 'photo', message: 'Requerido' }]));
       }
-      if (!PHOTO_MIMES.has(f.mimetype)) {
-        return next(new ValidationError('La foto debe ser PNG, JPEG o WebP', [{ field: 'photo', message: 'Formato no permitido' }]));
+      try {
+        assertImageUpload(f);
+      } catch (e) {
+        return next(e);
       }
       if (f.size > env.STORAGE_MAX_FILE_SIZE) {
         return next(new ValidationError('La foto supera el tamaño máximo permitido', [{ field: 'photo', message: 'Muy grande' }]));
@@ -173,7 +178,7 @@ export class PlayersController {
       const player = await PlayersService.update(
         routeParam(req, 'id'),
         req.body as UpdatePlayerInput,
-        { userId: req.user!.id },
+        { userId: req.user!.id, role: req.user!.role },
       );
       sendSuccess(res, forViewer(player), 'Jugador actualizado exitosamente');
     } catch (e) { next(e); }

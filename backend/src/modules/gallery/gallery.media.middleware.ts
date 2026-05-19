@@ -2,13 +2,14 @@ import type { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import { env } from '@config/env';
 import { ValidationError } from '@middlewares/error.middleware';
+import { assertImageUpload } from '@shared/utils/file-magic';
 
 const IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 const _multer = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.STORAGE_MAX_FILE_SIZE, files: 20 },
-}).array('images', 20);
+  limits: { fileSize: env.STORAGE_MAX_FILE_SIZE, files: 12 },
+}).array('images', 12);
 
 function isMulterFileSizeLimit(err: unknown): boolean {
   return (
@@ -39,6 +40,14 @@ export function assertGalleryImageFiles(files: Express.Multer.File[]): void {
   for (const f of files) {
     if (!IMAGE_MIMES.has(f.mimetype)) {
       throw new ValidationError('Solo se permiten imágenes PNG, JPEG o WebP', [{ field: 'images', message: 'Formato no permitido' }]);
+    }
+    try {
+      assertImageUpload(f);
+    } catch (e) {
+      throw new ValidationError(
+        e instanceof Error ? e.message : 'Imagen no válida',
+        [{ field: 'images', message: 'Contenido no válido' }],
+      );
     }
   }
 }

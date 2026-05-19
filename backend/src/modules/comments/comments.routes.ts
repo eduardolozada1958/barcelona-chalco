@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '@middlewares/auth.middleware';
 import { requireAdminOrCoach } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
+import { commentsWriteLimiter } from '@middlewares/rate-limit.middleware';
 import { CommentsController } from './comments.controller';
 import {
   adminListCommentsQuerySchema,
@@ -44,6 +45,7 @@ commentsRouter.get(
 commentsRouter.post(
   '/',
   authMiddleware,
+  commentsWriteLimiter,
   validateBody(createCommentBodySchema),
   CommentsController.create,
 );

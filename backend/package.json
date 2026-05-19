@@ -12,6 +12,7 @@
     "test:watch": "cross-env NODE_ENV=test jest --watch --runInBand",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand",
     "test:ci": "cross-env NODE_ENV=test jest --ci --runInBand --forceExit",
+    "test:security": "cross-env NODE_ENV=test jest --runInBand tests/security",
     "lint": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit"
   },

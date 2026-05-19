@@ -5,6 +5,8 @@
  * Paleta del club: azul marino #002366 y dorado #D4AF37.
  */
 
+import { sanitizeHttpUrl } from '@shared/utils/safe-url';
+
 const CLUB_NAME = 'F.C. Barcelona Cupido';
 const CLUB_SITE = 'https://barcelona-chalco.pages.dev';
 const CLUB_LOGO = `${CLUB_SITE}/images/logo.webp`;
@@ -69,7 +71,7 @@ export function emailLayout(opts: EmailLayoutOptions): string {
 
           <tr>
             <td style="background:#fafbfc;border-top:1px solid ${COLOR_BORDER};padding:20px 32px;text-align:center;font-size:12px;color:${COLOR_MUTED};line-height:1.5;">
-              ${footerNote ? `<p style="margin:0 0 8px;">${footerNote}</p>` : ''}
+              ${footerNote ? `<p style="margin:0 0 8px;">${escapeHtml(footerNote)}</p>` : ''}
               <p style="margin:0;">
                 ${escapeHtml(CLUB_NAME)} ·
                 <a href="${CLUB_SITE}" style="color:${COLOR_MUTED};text-decoration:underline;">${CLUB_SITE.replace(/^https?:\/\//, '')}</a>
@@ -94,7 +96,8 @@ type VerificationEmailOptions = {
 export function buildVerificationEmail(opts: VerificationEmailOptions): { html: string; text: string } {
   const { fullName, link, hours } = opts;
   const safeName = escapeHtml(fullName.trim() || 'padre o tutor');
-  const safeLink = escapeHtml(link);
+  const safeHref = sanitizeHttpUrl(link) ?? CLUB_SITE;
+  const safeLink = escapeHtml(safeHref);
 
   const bodyHtml = `
     <h1 style="margin:0 0 16px;font-size:22px;color:${COLOR_NAVY};font-weight:700;">Confirma tu correo</h1>
@@ -107,7 +110,7 @@ export function buildVerificationEmail(opts: VerificationEmailOptions): { html: 
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
       <tr>
         <td align="center" bgcolor="${COLOR_GOLD}" style="border-radius:8px;">
-          <a href="${link}"
+          <a href="${safeHref}"
              style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:${COLOR_NAVY};text-decoration:none;border-radius:8px;letter-spacing:0.3px;">
             Confirmar mi correo
           </a>
@@ -118,7 +121,7 @@ export function buildVerificationEmail(opts: VerificationEmailOptions): { html: 
     <p style="margin:0 0 8px;font-size:13px;color:${COLOR_MUTED};">El enlace es válido durante <strong>${hours} horas</strong>.</p>
     <p style="margin:0 0 16px;font-size:13px;color:${COLOR_MUTED};">¿El botón no funciona? Copia y pega este enlace en tu navegador:</p>
     <p style="margin:0 0 24px;font-size:12px;word-break:break-all;background:#fafbfc;border:1px solid ${COLOR_BORDER};border-radius:6px;padding:10px 12px;color:${COLOR_TEXT};">
-      <a href="${link}" style="color:${COLOR_NAVY};text-decoration:none;">${safeLink}</a>
+      <a href="${safeHref}" style="color:${COLOR_NAVY};text-decoration:none;">${safeLink}</a>
     </p>
 
     <hr style="border:none;border-top:1px solid ${COLOR_BORDER};margin:24px 0;" />

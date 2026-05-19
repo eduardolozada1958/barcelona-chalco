@@ -24,8 +24,9 @@ export interface PublicLeaderRow {
 }
 
 /** Columnas en APIs públicas (sin `curp` completo). */
+/** Sin qr_token: el token de credencial no debe exponerse en APIs públicas. */
 const PUBLIC_PLAYER_COLUMNS =
-  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, verified_at, verified_by, qr_token, qr_generated_at, season, achievements, notes, created_at, updated_at';
+  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, season, achievements, created_at, updated_at';
 
 function extFromPhotoMime(mime: string): string {
   if (mime === 'image/png') return 'png';
@@ -354,8 +355,20 @@ export class PlayersService {
     return data.signedUrl;
   }
 
-  static async update(id: string, input: UpdatePlayerInput, actor?: { userId: string }) {
+  static async update(
+    id: string,
+    input: UpdatePlayerInput,
+    actor?: { userId: string; role?: UserRole },
+  ) {
     const existing = await PlayersService.getById(id);
+    const actorRole = actor?.role;
+
+    if (input.curp !== undefined && actorRole !== 'admin') {
+      throw new ForbiddenError('Solo un administrador puede modificar la CURP.');
+    }
+    if (input.isVerified !== undefined && actorRole !== 'admin') {
+      throw new ForbiddenError('Solo un administrador puede cambiar la verificación.');
+    }
 
     const updateData: Record<string, unknown> = {};
     if (input.firstName !== undefined)         updateData.first_name         = input.firstName;
