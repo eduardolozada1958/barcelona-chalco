@@ -38,7 +38,6 @@ import { DashboardMatchesPage } from '@/pages/dashboard/DashboardMatchesPage';
 import { DashboardResultsPage } from '@/pages/dashboard/DashboardResultsPage';
 import { DashboardNoticesPage } from '@/pages/dashboard/DashboardNoticesPage';
 import { DashboardGalleryPage } from '@/pages/dashboard/DashboardGalleryPage';
-import { DashboardInscriptionsPage } from '@/pages/dashboard/DashboardInscriptionsPage';
 import { DashboardUsersPage } from '@/pages/dashboard/DashboardUsersPage';
 import { DashboardSettingsPage } from '@/pages/dashboard/DashboardSettingsPage';
 import { DashboardAccountPage } from '@/pages/dashboard/DashboardAccountPage';
@@ -131,14 +130,6 @@ export default function App() {
           element={
             <ProtectedRoute roles={['admin', 'coach']}>
               <DashboardGalleryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="inscriptions"
-          element={
-            <ProtectedRoute roles={['admin', 'coach']}>
-              <DashboardInscriptionsPage />
             </ProtectedRoute>
           }
         />

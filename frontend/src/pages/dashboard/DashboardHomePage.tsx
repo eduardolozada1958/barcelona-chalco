@@ -59,7 +59,6 @@ export function DashboardHomePage() {
   const total = statsQ.data?.success ? statsQ.data.data?.totalPlayers ?? 0 : 0;
   const verifiedPct = total > 0 ? Math.round((verified / total) * 100) : 0;
   const newMonth = statsQ.data?.success ? statsQ.data.data?.newPlayersThisMonth ?? 0 : 0;
-  const pending = statsQ.data?.success ? String(statsQ.data.data?.pendingInscriptions ?? '—') : statsQ.isLoading ? '…' : '—';
 
   return (
     <div className="flex flex-col gap-stack-lg">
@@ -107,7 +106,7 @@ export function DashboardHomePage() {
       {isCoachOrAdmin && (
         <section>
           <h3 className="font-label-caps text-label-caps text-on-surface-variant mb-stack-sm tracking-widest">Métricas Clave</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter">
             <MetricCard
               icon="groups_2"
               label="Total Jugadores"
@@ -121,14 +120,6 @@ export function DashboardHomePage() {
               value={statsQ.isLoading ? '…' : String(verified)}
               progress={verifiedPct}
               color="primary"
-            />
-            <MetricCard
-              icon="pending_actions"
-              label="Solicitudes Pendientes"
-              value={pending}
-              color="error"
-              actionLabel="Ver Todas"
-              actionTo="/dashboard/inscriptions"
             />
           </div>
         </section>

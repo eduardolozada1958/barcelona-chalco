@@ -22,7 +22,6 @@ export const AUTH_ROUTES = {
   RESULTS:       '/dashboard/results',
   NOTICES:       '/dashboard/notices',
   GALLERY:       '/dashboard/gallery',
-  INSCRIPTIONS:  '/dashboard/inscriptions',
   SETTINGS:      '/dashboard/settings',
   PROFILE:       '/profile',
 };
