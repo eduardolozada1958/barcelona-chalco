@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getNoticePublic } from '@/api/notices';
 import { Spinner } from '@/components/Spinner';
+import { CommentsSection } from '@/components/CommentsSection';
 
 export function PublicNoticeDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,8 @@ export function PublicNoticeDetailPage() {
         {String(n.type)} · {String(n.audience)}
       </p>
       <div className="mt-8 max-w-none whitespace-pre-wrap leading-relaxed text-on-surface-variant">{String(n.content)}</div>
+
+      {id ? <CommentsSection resourceType="notice" resourceId={id} /> : null}
     </article>
   );
 }

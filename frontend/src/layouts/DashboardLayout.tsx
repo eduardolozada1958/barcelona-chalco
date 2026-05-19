@@ -23,6 +23,7 @@ const NAV: NavItem[] = [
   { to: '/dashboard/gallery',       label: '📸 Galería',       icon: 'photo_library',   roles: ['admin','coach'] },
   { to: '/dashboard/inscriptions',  label: '📝 Inscripciones', icon: 'assignment',      roles: ['admin','coach'] },
   { to: '/dashboard/link-requests', label: '🔗 Vínculos padres', icon: 'link',          roles: ['admin','coach'] },
+  { to: '/dashboard/comments',      label: '💬 Comentarios',     icon: 'forum',           roles: ['admin','coach'] },
   { to: '/dashboard/users',         label: '👥 Usuarios',      icon: 'manage_accounts', roles: ['admin'] },
   { to: '/dashboard/settings',      label: '⚙️ Ajustes',       icon: 'settings',        roles: ['admin'] },
 ];

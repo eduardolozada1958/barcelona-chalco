@@ -29,6 +29,7 @@ import { inscriptionsRouter } from '@modules/inscriptions/inscriptions.routes';
 import { settingsRouter }     from '@modules/settings/settings.routes';
 import { dashboardRouter }    from '@modules/dashboard/dashboard.routes';
 import { pushRouter }         from '@modules/push/push.routes';
+import { commentsRouter }     from '@modules/comments/comments.routes';
 
 /** Rutas de solo lectura pública: no deben agotar la cuota global tan rápido. */
 function isPublicReadRoute(path: string, method: string): boolean {
@@ -166,6 +167,7 @@ export function createApp(): Application {
   app.use(`${prefix}/settings`,     settingsRouter);
   app.use(`${prefix}/dashboard`,    dashboardRouter);
   app.use(`${prefix}/push`,         pushRouter);
+  app.use(`${prefix}/comments`,     commentsRouter);
 
   // ── Manejador de rutas no encontradas ────────────────────
   app.use((_req, res) => {

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getGalleryPublic } from '@/api/gallery';
 import { Spinner } from '@/components/Spinner';
+import { CommentsSection } from '@/components/CommentsSection';
 
 export function PublicGalleryDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +35,8 @@ export function PublicGalleryDetailPage() {
           </figure>
         ))}
       </div>
+
+      {id ? <CommentsSection resourceType="gallery_post" resourceId={id} /> : null}
     </div>
   );
 }
