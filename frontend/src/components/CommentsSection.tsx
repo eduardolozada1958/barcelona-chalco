@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import {
   createComment,
   deleteComment,
-  listMyCommentsForResource,
   listPublicComments,
   type CommentItem,
   type CommentResourceType,
@@ -56,19 +55,12 @@ export function CommentsSection({ resourceType, resourceId }: Props) {
     enabled:  Boolean(resourceId),
   });
 
-  const mineQ = useQuery({
-    queryKey: ['comments-mine', resourceType, resourceId],
-    queryFn:  () => listMyCommentsForResource({ resourceType, resourceId }),
-    enabled:  Boolean(resourceId) && Boolean(user),
-  });
-
   const create = useMutation({
     mutationFn: () => createComment({ resourceType, resourceId, content: content.trim() }),
     onSuccess: (res) => {
-      toast.success(res.message ?? 'Comentario enviado');
+      toast.success(res.message ?? 'Comentario publicado');
       setContent('');
       void qc.invalidateQueries({ queryKey: ['comments-public', resourceType, resourceId] });
-      void qc.invalidateQueries({ queryKey: ['comments-mine', resourceType, resourceId] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -78,16 +70,13 @@ export function CommentsSection({ resourceType, resourceId }: Props) {
     onSuccess: () => {
       toast.success('Comentario eliminado');
       void qc.invalidateQueries({ queryKey: ['comments-public', resourceType, resourceId] });
-      void qc.invalidateQueries({ queryKey: ['comments-mine', resourceType, resourceId] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const approved = (publicQ.data?.data ?? []) as CommentItem[];
-  const mine = (mineQ.data?.data ?? []) as CommentItem[];
   const total = approved.length;
 
-  const isParent = user?.role === 'parent';
   const isStaff = user?.role === 'admin' || user?.role === 'coach';
 
   return (
@@ -122,17 +111,12 @@ export function CommentsSection({ resourceType, resourceId }: Props) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, MAX_LEN))}
-            placeholder={
-              isParent
-                ? 'Escribe un comentario (un administrador lo revisará antes de publicarlo).'
-                : 'Escribe un comentario.'
-            }
+            placeholder="Escribe un comentario."
             className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-3 py-2 text-on-surface min-h-[80px] outline-none transition-colors"
           />
           <div className="flex items-center justify-between mt-2 gap-3">
             <span className="text-xs text-on-surface-variant">
               {content.length}/{MAX_LEN}
-              {isParent ? ' · Tu comentario pasará por moderación.' : ''}
             </span>
             <button
               type="submit"
@@ -145,39 +129,6 @@ export function CommentsSection({ resourceType, resourceId }: Props) {
           </div>
         </form>
       )}
-
-      {mine.length > 0 ? (
-        <div className="mb-stack-md space-y-2">
-          {mine.map((c) => (
-            <div
-              key={c.id}
-              className={`rounded-lg border px-4 py-3 text-sm ${
-                c.status === 'pending'
-                  ? 'border-amber-500/30 bg-amber-500/10'
-                  : 'border-error/30 bg-error/10'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-3 mb-1">
-                <span className="font-label-caps text-xs">
-                  {c.status === 'pending' ? 'Tu comentario · pendiente de moderación' : 'Tu comentario · rechazado'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => remove.mutate(c.id)}
-                  className="text-on-surface-variant hover:text-error"
-                  aria-label="Eliminar comentario"
-                >
-                  <MaterialIcon name="delete" size={16} />
-                </button>
-              </div>
-              <p className="text-on-surface whitespace-pre-wrap">{c.content}</p>
-              {c.status === 'rejected' && c.rejectReason ? (
-                <p className="mt-2 text-xs text-error">Motivo: {c.rejectReason}</p>
-              ) : null}
-            </div>
-          ))}
-        </div>
-      ) : null}
 
       {publicQ.isLoading ? (
         <p className="text-sm text-on-surface-variant">Cargando comentarios…</p>

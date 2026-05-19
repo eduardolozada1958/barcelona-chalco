@@ -157,7 +157,8 @@ export class CommentsService {
 
     await ensureResourceExists(input.resourceType, input.resourceId);
 
-    const status: CommentStatus = user.role === 'parent' ? 'pending' : 'approved';
+    // Cualquier usuario autenticado y verificado publica al instante.
+    const status: CommentStatus = 'approved';
     const now = new Date().toISOString();
 
     const insert = {
@@ -166,8 +167,8 @@ export class CommentsService {
       user_id:       userId,
       content:       input.content.trim(),
       status,
-      reviewed_at:   status === 'approved' ? now : null,
-      reviewed_by:   status === 'approved' ? userId : null,
+      reviewed_at:   now,
+      reviewed_by:   userId,
     };
 
     const { data, error } = await supabaseAdmin

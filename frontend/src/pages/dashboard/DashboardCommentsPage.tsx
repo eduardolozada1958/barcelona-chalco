@@ -14,10 +14,10 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
 const STATUS_TABS = [
-  { value: 'pending', label: 'Pendientes' },
+  { value: 'all', label: 'Todos' },
   { value: 'approved', label: 'Aprobados' },
   { value: 'rejected', label: 'Rechazados' },
-  { value: 'all', label: 'Todos' },
+  { value: 'pending', label: 'Pendientes' },
 ] as const;
 
 const RESOURCE_LABEL: Record<string, string> = {
@@ -35,7 +35,7 @@ function formatDate(iso: string): string {
 
 export function DashboardCommentsPage() {
   const qc = useQueryClient();
-  const [status, setStatus] = useState<string>('pending');
+  const [status, setStatus] = useState<string>('all');
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
@@ -82,7 +82,7 @@ export function DashboardCommentsPage() {
       <div className="mb-stack-md">
         <h1 className="font-headline-lg text-headline-lg text-on-surface">Comentarios</h1>
         <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-          Modera los comentarios de avisos y galería antes de publicarlos.
+          Revisa, rechaza o elimina los comentarios publicados en avisos y galería.
         </p>
       </div>
 
