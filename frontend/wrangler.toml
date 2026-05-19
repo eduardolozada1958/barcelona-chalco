@@ -1,0 +1,6 @@
+# Cloudflare Pages — F.C. Barcelona Cupido
+# Despliegue: npm run build && npm run deploy:pages
+
+name = "barcelona-chalco"
+compatibility_date = "2024-09-01"
+pages_build_output_dir = "dist"
