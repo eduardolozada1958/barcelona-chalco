@@ -10,6 +10,7 @@ import { latestResultPublic } from '@/api/results';
 import { playerPublicPath } from '@/utils/player-path';
 import { listMatchesPublic } from '@/api/matches';
 import { listNoticesPublic } from '@/api/notices';
+import { useClubSettings } from '@/hooks/useClubSettings';
 import type { Result, Match, Notice } from '@/types';
 
 /* ─── Hero placeholder image (cinematic stadium) ─── */
@@ -20,6 +21,9 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018
  * Sections: Hero → "¿Para qué sirve Barcelona Cupido?" → Info Cards → Highlights Bento Grid → Footer.
  */
 export function HomePage() {
+  const clubSettings = useClubSettings();
+  const season = clubSettings.data?.season?.trim();
+
   // Fetch real data for highlights
   const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
   const mvpQ = useQuery({ queryKey: ['mvp-of-week-public'], queryFn: getMvpOfWeekPublic });
@@ -56,6 +60,11 @@ export function HomePage() {
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
             Plantilla, resultados, avisos y credencial digital del club, reunidos en un solo lugar para padres, jugadores y el cuerpo técnico.
           </p>
+          {season ? (
+            <p className="font-label-caps text-label-caps text-primary tracking-[0.2em] border border-primary/30 px-4 py-1.5 rounded-full bg-primary/10">
+              Temporada {season}
+            </p>
+          ) : null}
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-8 w-full sm:w-auto px-4 sm:px-0">
             <Link
               to="/jugadores"
@@ -140,6 +149,7 @@ export function HomePage() {
         <SeasonLeadersTables
           variant="public"
           linkPlayerNames={false}
+          title={season ? `⚽ Tabla de goleo y tarjetas — Temporada ${season}` : undefined}
           asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
         />
       </section>

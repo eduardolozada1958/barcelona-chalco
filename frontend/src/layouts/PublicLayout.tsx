@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PushNotificationsPrompt } from '@/components/PushNotificationsPrompt';
 import { CLUB_LOGO_URL } from '@/config/club';
+import { useClubSettings } from '@/hooks/useClubSettings';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -30,6 +31,8 @@ export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  const clubSettings = useClubSettings();
+  const season = clubSettings.data?.season?.trim();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md">
@@ -170,7 +173,8 @@ export function PublicLayout() {
           ))}
         </div>
         <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">
-          © {new Date().getFullYear()} F.C. BARCELONA CUPIDO. Rendimiento Élite & Identidad Digital.
+          © {new Date().getFullYear()} F.C. BARCELONA CUPIDO
+          {season ? ` · Temporada ${season}` : ''}. Rendimiento Élite & Identidad Digital.
         </div>
       </footer>
     </div>
