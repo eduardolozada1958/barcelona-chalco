@@ -78,7 +78,16 @@ export function DashboardSettingsPage() {
           </div>
           <div>
             <label className={labelClass}>EMAIL DE CONTACTO</label>
-            <input className={inputClass} value={form.contactEmail ?? ''} onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))} />
+            <input
+              type="email"
+              className={inputClass}
+              value={form.contactEmail ?? ''}
+              onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
+            />
+            <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
+              Correo público del club (sitio web, avisos). No es el usuario para iniciar sesión; eso se cambia en{' '}
+              <strong className="text-on-surface">Mi perfil</strong> o en <strong className="text-on-surface">Usuarios</strong>.
+            </p>
           </div>
           <div>
             <label className={labelClass}>TELÉFONO</label>

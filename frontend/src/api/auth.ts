@@ -75,3 +75,16 @@ export async function me(): Promise<ApiResponse<Record<string, unknown>>> {
   const { data } = await apiClient.get<ApiResponse<Record<string, unknown>>>('/auth/me');
   return data;
 }
+
+export async function requestEmailChange(body: {
+  newEmail:        string;
+  currentPassword: string;
+}): Promise<ApiResponse<{ newEmail: string }>> {
+  const { data } = await apiClient.post<ApiResponse<{ newEmail: string }>>('/auth/request-email-change', body);
+  return data;
+}
+
+export async function confirmEmailChange(token: string): Promise<ApiResponse<{ email: string }>> {
+  const { data } = await apiClient.post<ApiResponse<{ email: string }>>('/auth/confirm-email-change', { token });
+  return data;
+}

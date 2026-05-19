@@ -6,6 +6,7 @@ import { HTTP_STATUS } from '@config/constants';
 import { TotpService } from './totp.service';
 import { ProfileService } from './profile.service';
 import { PasswordResetService } from './password-reset.service';
+import { EmailChangeService } from './email-change.service';
 import type {
   LoginInput,
   RegisterParentInput,
@@ -17,6 +18,8 @@ import type {
   TotpDisableInput,
   UpdateProfileInput,
   ChangePasswordInput,
+  RequestEmailChangeInput,
+  ConfirmEmailChangeInput,
   ForgotPasswordInput,
   ResetPasswordInput,
 } from './auth.validation';
@@ -94,7 +97,8 @@ export class AuthController {
   static async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const user = await AuthService.getMe(req.user!.id);
-      sendSuccess(res, user, 'Usuario autenticado');
+      const pendingEmailChange = await EmailChangeService.getPending(req.user!.id);
+      sendSuccess(res, { ...user, pending_email_change: pendingEmailChange }, 'Usuario autenticado');
     } catch (error) {
       next(error);
     }
@@ -152,6 +156,34 @@ export class AuthController {
     try {
       const user = await ProfileService.updateProfile(req.user!.id, req.body as UpdateProfileInput);
       sendSuccess(res, user, 'Perfil actualizado');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async requestEmailChange(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { newEmail, currentPassword } = req.body as RequestEmailChangeInput;
+      const result = await EmailChangeService.requestSelf(req.user!.id, newEmail, currentPassword);
+      sendSuccess(
+        res,
+        result,
+        `Revisa ${result.newEmail} y confirma el enlace que te enviamos (también avisamos a tu correo actual).`,
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async confirmEmailChange(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { token } = req.body as ConfirmEmailChangeInput;
+      const result = await EmailChangeService.confirm(token);
+      sendSuccess(
+        res,
+        result,
+        'Correo actualizado. Inicia sesión con tu nuevo correo (las sesiones anteriores se cerraron).',
+      );
     } catch (error) {
       next(error);
     }

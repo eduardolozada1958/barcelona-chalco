@@ -29,6 +29,21 @@ export async function unlockUserLogin(id: string) {
   return data;
 }
 
+export async function updateUser(
+  id: string,
+  body: { status?: string; fullName?: string; phone?: string | null; role?: string },
+) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/users/${id}`, body);
+  return data;
+}
+
+export async function requestUserEmailChange(id: string, newEmail: string) {
+  const { data } = await apiClient.post<ApiResponse<{ newEmail: string }>>(`/users/${id}/request-email-change`, {
+    newEmail,
+  });
+  return data;
+}
+
 export function isUserLoginLocked(u: Record<string, unknown>): boolean {
   if (u.login_locked_at) return true;
   const attempts = typeof u.failed_login_attempts === 'number' ? u.failed_login_attempts : 0;

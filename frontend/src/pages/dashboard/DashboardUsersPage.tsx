@@ -3,11 +3,20 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { createUser, isUserLoginLocked, listUsers, unlockUserLogin, type CreateUserBody } from '@/api/users';
+import {
+  createUser,
+  isUserLoginLocked,
+  listUsers,
+  requestUserEmailChange,
+  unlockUserLogin,
+  updateUser,
+  type CreateUserBody,
+} from '@/api/users';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { userRoleLabel, userStatusLabel } from '@/config/labels';
+import { getApiErrorMessage } from '@utils/api-error';
 
 type CreateUserForm = {
   email: string;
@@ -16,9 +25,14 @@ type CreateUserForm = {
   role: CreateUserBody['role'];
 };
 
+const STATUS_OPTIONS = ['active', 'inactive', 'suspended', 'pending'] as const;
+
 export function DashboardUsersPage() {
   const qc = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [manageUser, setManageUser] = useState<Record<string, unknown> | null>(null);
+  const [manageStatus, setManageStatus] = useState<string>('active');
+  const [manageNewEmail, setManageNewEmail] = useState('');
 
   const q = useQuery({
     queryKey: ['users-admin'],
@@ -45,6 +59,24 @@ export function DashboardUsersPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const statusMut = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) => updateUser(id, { status }),
+    onSuccess: () => {
+      toast.success('Estado actualizado');
+      void qc.invalidateQueries({ queryKey: ['users-admin'] });
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
+  const emailChangeMut = useMutation({
+    mutationFn: ({ id, newEmail }: { id: string; newEmail: string }) => requestUserEmailChange(id, newEmail),
+    onSuccess: (res) => {
+      toast.success(res.message ?? 'Enlace enviado al nuevo correo');
+      setManageNewEmail('');
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateUserForm>({
     defaultValues: { email: '', password: '', fullName: '', role: 'coach' },
   });
@@ -57,6 +89,12 @@ export function DashboardUsersPage() {
       role:     data.role,
     });
   });
+
+  const openManage = (u: Record<string, unknown>) => {
+    setManageUser(u);
+    setManageStatus(String(u.status ?? 'active'));
+    setManageNewEmail('');
+  };
 
   if (q.isLoading) return <Spinner />;
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
@@ -130,22 +168,14 @@ export function DashboardUsersPage() {
                     </div>
                   </td>
                   <td className="p-4">
-                    {locked ? (
-                      <button
-                        type="button"
-                        disabled={unlockMut.isPending}
-                        onClick={() => {
-                          if (!window.confirm(`¿Desbloquear el acceso de ${String(u.email)}?`)) return;
-                          unlockMut.mutate(String(u.id));
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-error/40 text-error text-[10px] font-label-caps hover:bg-error/10 transition-colors disabled:opacity-50"
-                      >
-                        <MaterialIcon name="lock_open" size={14} />
-                        Desbloquear
-                      </button>
-                    ) : (
-                      <span className="text-on-surface-variant text-xs">—</span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => openManage(u)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-[10px] font-label-caps hover:bg-primary/10 transition-colors"
+                    >
+                      <MaterialIcon name="manage_accounts" size={14} />
+                      Gestionar
+                    </button>
                   </td>
                 </tr>
               );
@@ -187,6 +217,83 @@ export function DashboardUsersPage() {
             </button>
           </div>
         </form>
+      </DashboardModal>
+
+      <DashboardModal
+        open={Boolean(manageUser)}
+        onClose={() => setManageUser(null)}
+        title={manageUser ? `Gestionar: ${String(manageUser.email)}` : 'Usuario'}
+      >
+        {manageUser ? (
+          <div className="space-y-6">
+            <div>
+              <label className={formLabelClass}>Estado de la cuenta</label>
+              <select
+                className={formInputClass}
+                value={manageStatus}
+                onChange={(e) => setManageStatus(e.target.value)}
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>{userStatusLabel(s)}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={statusMut.isPending || manageStatus === String(manageUser.status)}
+                onClick={() => statusMut.mutate({ id: String(manageUser.id), status: manageStatus })}
+                className="mt-2 text-[10px] font-label-caps text-primary hover:underline disabled:opacity-50"
+              >
+                Guardar estado
+              </button>
+            </div>
+
+            {isUserLoginLocked(manageUser) ? (
+              <div className="p-3 rounded-lg bg-error/10 border border-error/30">
+                <p className="text-sm text-on-surface-variant mb-2">Cuenta bloqueada por intentos fallidos de login.</p>
+                <button
+                  type="button"
+                  disabled={unlockMut.isPending}
+                  onClick={() => {
+                    if (!window.confirm('¿Desbloquear acceso de login?')) return;
+                    unlockMut.mutate(String(manageUser.id));
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-error/40 text-error text-[10px] font-label-caps"
+                >
+                  <MaterialIcon name="lock_open" size={14} />
+                  Desbloquear login
+                </button>
+              </div>
+            ) : null}
+
+            <div>
+              <label className={formLabelClass}>Cambiar correo de acceso</label>
+              <p className="text-xs text-on-surface-variant mb-2">
+                Se envía un enlace al nuevo correo; el usuario debe confirmarlo. También se avisa al correo actual.
+              </p>
+              <input
+                type="email"
+                className={formInputClass}
+                placeholder="nuevo@correo.com"
+                value={manageNewEmail}
+                onChange={(e) => setManageNewEmail(e.target.value)}
+              />
+              <button
+                type="button"
+                disabled={emailChangeMut.isPending || !manageNewEmail.trim()}
+                onClick={() =>
+                  emailChangeMut.mutate({
+                    id:       String(manageUser.id),
+                    newEmail: manageNewEmail.trim(),
+                  })
+                }
+                className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-[10px] font-label-caps disabled:opacity-50"
+              >
+                <MaterialIcon name="forward_to_inbox" size={14} />
+                Enviar enlace de confirmación
+              </button>
+            </div>
+          </div>
+        ) : null}
       </DashboardModal>
     </div>
   );

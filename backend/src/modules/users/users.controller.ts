@@ -3,7 +3,12 @@ import { UsersService } from './users.service';
 import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
-import type { CreateUserBody, UpdateUserBody, ListUsersQuery } from './users.validation';
+import type {
+  CreateUserBody,
+  UpdateUserBody,
+  ListUsersQuery,
+  AdminRequestEmailChangeBody,
+} from './users.validation';
 
 export class UsersController {
   static async list(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -42,6 +47,24 @@ export class UsersController {
         req.user!.id
       );
       sendSuccess(res, user, 'Usuario actualizado');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async requestEmailChange(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { newEmail } = req.body as AdminRequestEmailChangeBody;
+      const result = await UsersService.requestEmailChange(
+        routeParam(req, 'id'),
+        req.user!.id,
+        newEmail,
+      );
+      sendSuccess(
+        res,
+        result,
+        `Se envió un enlace de confirmación a ${result.newEmail}. El usuario debe abrirlo para completar el cambio.`,
+      );
     } catch (e) {
       next(e);
     }

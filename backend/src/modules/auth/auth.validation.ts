@@ -76,9 +76,25 @@ export const changePasswordSchema = z.object({
   newPassword:     passwordRules,
 });
 
+export const requestEmailChangeSchema = z.object({
+  newEmail:        z.string().email('Correo inválido'),
+  currentPassword: z.string().min(6, 'Contraseña actual requerida'),
+});
+
+export const confirmEmailChangeSchema = z.object({
+  token: z.string().min(32, 'Enlace inválido'),
+});
+
+export const adminRequestEmailChangeSchema = z.object({
+  newEmail: z.string().email('Correo inválido'),
+});
+
 export type LoginInput           = z.infer<typeof loginSchema>;
 export type UpdateProfileInput   = z.infer<typeof updateProfileSchema>;
-export type ChangePasswordInput  = z.infer<typeof changePasswordSchema>;
+export type ChangePasswordInput       = z.infer<typeof changePasswordSchema>;
+export type RequestEmailChangeInput   = z.infer<typeof requestEmailChangeSchema>;
+export type ConfirmEmailChangeInput   = z.infer<typeof confirmEmailChangeSchema>;
+export type AdminRequestEmailChangeInput = z.infer<typeof adminRequestEmailChangeSchema>;
 export type TotpCodeInput        = z.infer<typeof totpCodeSchema>;
 export type LoginTotpInput       = z.infer<typeof loginTotpSchema>;
 export type TotpDisableInput     = z.infer<typeof totpDisableSchema>;

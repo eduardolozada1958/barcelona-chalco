@@ -8,6 +8,7 @@ import {
   userIdParamSchema,
   createUserBodySchema,
   updateUserBodySchema,
+  adminRequestEmailChangeSchema,
 } from './users.validation';
 
 export const usersRouter = Router();
@@ -43,6 +44,15 @@ usersRouter.patch(
   validateParams(userIdParamSchema),
   validateBody(updateUserBodySchema),
   UsersController.update
+);
+
+usersRouter.post(
+  '/:id/request-email-change',
+  authMiddleware,
+  requireAdmin,
+  validateParams(userIdParamSchema),
+  validateBody(adminRequestEmailChangeSchema),
+  UsersController.requestEmailChange,
 );
 
 usersRouter.post(

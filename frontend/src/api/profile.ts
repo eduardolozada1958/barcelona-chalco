@@ -10,6 +10,7 @@ export interface UserProfile {
   phone:           string | null;
   totp_enabled?:   boolean;
   totp_enabled_at?: string | null;
+  pending_email_change?: { newEmail: string; expiresAt: string } | null;
 }
 
 export async function updateProfile(body: {

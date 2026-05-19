@@ -5,6 +5,7 @@ import { NotFoundError, ConflictError, BadRequestError } from '@middlewares/erro
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import { clearLoginLockout, isLoginLocked } from '@modules/auth/login-lockout';
+import { EmailChangeService } from '@modules/auth/email-change.service';
 import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
@@ -118,6 +119,11 @@ export class UsersService {
       throw new Error(error.message);
     }
     return data;
+  }
+
+  static async requestEmailChange(id: string, actorUserId: string, newEmail: string) {
+    await UsersService.getById(id);
+    return EmailChangeService.requestByAdmin(actorUserId, id, newEmail);
   }
 
   static async unlockLogin(id: string, actorUserId: string) {

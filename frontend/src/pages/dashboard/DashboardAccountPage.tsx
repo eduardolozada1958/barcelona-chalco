@@ -11,6 +11,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { PasswordInput } from '@/components/PasswordInput';
 import * as authApi from '@/api/auth';
 import * as profileApi from '@/api/profile';
+import { getApiErrorMessage } from '@utils/api-error';
 
 const profileSchema = z.object({
   fullName: z.string().min(2, 'Mínimo 2 caracteres').max(150),
@@ -47,13 +48,22 @@ export function DashboardAccountPage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailChangePassword, setEmailChangePassword] = useState('');
 
   const profileQ = useQuery({
     queryKey: ['my-profile'],
     queryFn: async () => {
       const res = await authApi.me();
       if (!res.success || !res.data) throw new Error(res.message ?? 'Error al cargar perfil');
-      return res.data as unknown as profileApi.UserProfile;
+      const raw = res.data as Record<string, unknown>;
+      const pending = raw.pending_email_change as { newEmail?: string; expiresAt?: string } | null | undefined;
+      return {
+        ...(raw as unknown as profileApi.UserProfile),
+        pending_email_change: pending?.newEmail
+          ? { newEmail: pending.newEmail, expiresAt: pending.expiresAt ?? '' }
+          : null,
+      };
     },
   });
 
@@ -120,6 +130,22 @@ export function DashboardAccountPage() {
   const avatarUrl = avatarPreview ?? profileQ.data?.avatar_url ?? null;
   const email = profileQ.data?.email ?? user?.email ?? '';
   const roleLabel = ROLE_LABEL[user?.role ?? ''] ?? user?.role;
+  const pendingChange = profileQ.data?.pending_email_change as { newEmail: string } | null | undefined;
+
+  const requestEmailMut = useMutation({
+    mutationFn: () =>
+      authApi.requestEmailChange({
+        newEmail:        newEmail.trim().toLowerCase(),
+        currentPassword: emailChangePassword,
+      }),
+    onSuccess: (res) => {
+      toast.success(res.message ?? 'Revisa tu nuevo correo y confirma el enlace');
+      setNewEmail('');
+      setEmailChangePassword('');
+      void qc.invalidateQueries({ queryKey: ['my-profile'] });
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
 
   const onPickAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -192,6 +218,64 @@ export function DashboardAccountPage() {
             <p className="text-xs text-primary font-label-caps uppercase">{roleLabel}</p>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-stack-md">
+        <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface mb-4 flex items-center gap-2">
+          <MaterialIcon name="alternate_email" className="text-primary" size={22} /> Correo de acceso
+        </h2>
+        {pendingChange?.newEmail ? (
+          <p className="text-sm text-on-surface-variant mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20">
+            Pendiente de confirmación en <strong className="text-primary break-all">{pendingChange.newEmail}</strong>.
+            Revisa ese buzón (y spam) y abre el enlace. También enviamos aviso a <strong>{email}</strong>.
+          </p>
+        ) : (
+          <p className="text-sm text-on-surface-variant mb-4">
+            Para cambiar el correo con el que inicias sesión, confirma desde el enlace que enviaremos al nuevo buzón.
+          </p>
+        )}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!newEmail.trim() || !emailChangePassword) return;
+            requestEmailMut.mutate();
+          }}
+          className="space-y-4"
+        >
+          <div>
+            <label htmlFor="newEmail" className="font-label-caps text-label-caps text-on-surface-variant block mb-2">
+              Nuevo correo
+            </label>
+            <input
+              id="newEmail"
+              type="email"
+              autoComplete="email"
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface outline-none focus:border-primary"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="emailChangePassword" className="font-label-caps text-label-caps text-on-surface-variant block mb-2">
+              Contraseña actual (para confirmar)
+            </label>
+            <input
+              id="emailChangePassword"
+              type="password"
+              autoComplete="current-password"
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface outline-none focus:border-primary"
+              value={emailChangePassword}
+              onChange={(e) => setEmailChangePassword(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={requestEmailMut.isPending || !newEmail.trim()}
+            className="border border-primary/50 text-primary px-6 py-3 rounded-lg font-label-caps text-label-caps hover:bg-primary/10 disabled:opacity-60"
+          >
+            {requestEmailMut.isPending ? 'Enviando…' : 'Solicitar cambio de correo'}
+          </button>
+        </form>
       </section>
 
       <section className="rounded-xl border border-outline-variant/20 bg-surface-container-low p-stack-md">

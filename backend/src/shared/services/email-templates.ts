@@ -229,3 +229,89 @@ export function buildPasswordChangedEmail(opts: PasswordChangedEmailOptions): { 
 
   return { html, text };
 }
+
+type EmailChangeConfirmOptions = {
+  fullName: string;
+  link:     string;
+  hours:    number;
+  newEmail: string;
+};
+
+export function buildEmailChangeConfirmEmail(opts: EmailChangeConfirmOptions): { html: string; text: string } {
+  const { fullName, link, hours, newEmail } = opts;
+  const safeName = escapeHtml(fullName.trim() || 'usuario');
+  const safeHref = sanitizeHttpUrl(link) ?? CLUB_SITE;
+  const safeEmail = escapeHtml(newEmail);
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px;font-size:22px;color:${COLOR_NAVY};font-weight:700;">Confirma tu nuevo correo</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hola <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 20px;font-size:15px;line-height:1.6;">
+      Recibimos una solicitud para usar <strong>${safeEmail}</strong> como correo de acceso en
+      <strong>${escapeHtml(CLUB_NAME)}</strong>. Confirma solo si fuiste tú.
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" bgcolor="${COLOR_GOLD}" style="border-radius:8px;">
+          <a href="${safeHref}"
+             style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:700;color:${COLOR_NAVY};text-decoration:none;border-radius:8px;">
+            Confirmar nuevo correo
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:13px;color:${COLOR_MUTED};">Válido ${hours} horas. Si no solicitaste esto, ignora el mensaje.</p>
+  `;
+
+  const html = emailLayout({
+    preheader: `Confirma ${newEmail} como tu nuevo correo de acceso.`,
+    title:     `Confirma tu nuevo correo — ${CLUB_NAME}`,
+    bodyHtml,
+  });
+
+  const text =
+    `Hola ${fullName.trim() || 'usuario'},\n\n` +
+    `Confirma tu nuevo correo (${newEmail}) en ${CLUB_NAME}:\n${link}\n\n` +
+    `Válido ${hours} h. Si no fuiste tú, ignora este mensaje.\n`;
+
+  return { html, text };
+}
+
+type EmailChangeNoticeOptions = {
+  fullName: string;
+  oldEmail: string;
+  newEmail: string;
+  hours:    number;
+};
+
+export function buildEmailChangeNoticeEmail(opts: EmailChangeNoticeOptions): { html: string; text: string } {
+  const safeName = escapeHtml(opts.fullName.trim() || 'usuario');
+  const safeNew = escapeHtml(opts.newEmail);
+  const safeOld = escapeHtml(opts.oldEmail);
+
+  const bodyHtml = `
+    <h1 style="margin:0 0 16px;font-size:22px;color:${COLOR_NAVY};font-weight:700;">Cambio de correo solicitado</h1>
+    <p style="margin:0 0 12px;font-size:15px;line-height:1.6;">Hola <strong>${safeName}</strong>,</p>
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;">
+      Alguien solicitó cambiar el correo de acceso de <strong>${safeOld}</strong> a <strong>${safeNew}</strong>.
+      El cambio solo se aplicará si se confirma desde el enlace enviado al nuevo correo (válido ${opts.hours} h).
+    </p>
+    <p style="margin:0;font-size:14px;color:${COLOR_MUTED};">
+      Si no reconoces esta acción, ignora el otro correo y contacta al administrador del club.
+    </p>
+  `;
+
+  const html = emailLayout({
+    preheader: 'Aviso de solicitud de cambio de correo.',
+    title:     `Aviso de cambio de correo — ${CLUB_NAME}`,
+    bodyHtml,
+  });
+
+  const text =
+    `Hola ${opts.fullName.trim() || 'usuario'},\n\n` +
+    `Se solicitó cambiar tu correo de ${opts.oldEmail} a ${opts.newEmail}.\n` +
+    `Solo se aplicará si se confirma desde el nuevo correo.\n` +
+    `Si no fuiste tú, contacta al club.\n`;
+
+  return { html, text };
+}

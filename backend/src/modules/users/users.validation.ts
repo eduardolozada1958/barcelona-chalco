@@ -39,4 +39,9 @@ export const updateUserBodySchema = z.object({
 
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
+export const adminRequestEmailChangeSchema = z.object({
+  newEmail: z.string().email('Correo inválido'),
+});
+
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
+export type AdminRequestEmailChangeBody = z.infer<typeof adminRequestEmailChangeSchema>;

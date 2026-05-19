@@ -13,6 +13,8 @@ import {
   totpDisableSchema,
   updateProfileSchema,
   changePasswordSchema,
+  requestEmailChangeSchema,
+  confirmEmailChangeSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from './auth.validation';
@@ -87,4 +89,15 @@ authRouter.post('/totp/disable', authMiddleware, validateBody(totpDisableSchema)
 // Perfil personal (admin, coach, padre)
 authRouter.patch('/profile', authMiddleware, validateBody(updateProfileSchema), AuthController.updateProfile);
 authRouter.post('/change-password', authMiddleware, validateBody(changePasswordSchema), AuthController.changePassword);
+authRouter.post(
+  '/request-email-change',
+  authMiddleware,
+  validateBody(requestEmailChangeSchema),
+  AuthController.requestEmailChange,
+);
+authRouter.post(
+  '/confirm-email-change',
+  validateBody(confirmEmailChangeSchema),
+  AuthController.confirmEmailChange,
+);
 authRouter.post('/avatar', authMiddleware, runProfileAvatarUpload, AuthController.uploadAvatar);

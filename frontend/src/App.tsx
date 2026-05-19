@@ -8,6 +8,7 @@ import { HomePage } from '@/pages/HomePage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { VerifyEmailPage } from '@/pages/VerifyEmailPage';
+import { ConfirmEmailChangePage } from '@/pages/ConfirmEmailChangePage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage';
 import { CredentialPage } from '@/pages/CredentialPage';
@@ -56,6 +57,7 @@ export default function App() {
         <Route path="/restablecer-password" element={<ResetPasswordPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verificar-email" element={<VerifyEmailPage />} />
+        <Route path="/confirmar-email" element={<ConfirmEmailChangePage />} />
         <Route path="/contacto" element={<InscriptionPublicPage />} />
         <Route path="/inscripcion" element={<Navigate to="/contacto" replace />} />
         <Route path="/partidos" element={<PublicMatchesPage />} />
