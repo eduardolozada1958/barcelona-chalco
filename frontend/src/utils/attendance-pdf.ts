@@ -4,28 +4,49 @@ import autoTable, { type CellHookData } from 'jspdf-autotable';
 import type { AttendanceGrid } from '@/api/attendance';
 import { formatSessionColumnHeader } from '@/utils/attendance-calendar';
 
-/** Marcadores internos (no Unicode) para dibujar palomita en PDF. */
+/** Marcadores internos para celdas de asistencia (no usar Unicode en el PDF). */
 const PDF_PRESENT = '__PRESENT__';
 const PDF_ABSENT = '__ABSENT__';
 
-/** Palomita con fuente ZapfDingbats (incluida en jsPDF; el carácter "4" = check). */
-function applyAttendanceCellStyle(data: CellHookData): void {
+const CHECK_COLOR: [number, number, number] = [180, 140, 30];
+
+function getPdfDoc(data: CellHookData): jsPDF {
+  const doc = data.doc as jsPDF & { getDocument?: () => jsPDF };
+  return typeof doc.getDocument === 'function' ? doc.getDocument() : doc;
+}
+
+function prepareAttendanceCell(data: CellHookData): void {
   if (data.section !== 'body' || data.column.index < 2) return;
   const raw = String(data.cell.raw ?? '');
   if (raw === PDF_PRESENT) {
-    data.cell.text = ['4'];
-    data.cell.styles.font = 'ZapfDingbats';
-    data.cell.styles.fontStyle = 'normal';
+    data.cell.text = [];
     data.cell.styles.halign = 'center';
     data.cell.styles.valign = 'middle';
-    data.cell.styles.fontSize = 11;
-    data.cell.styles.textColor = [180, 140, 30];
   } else if (raw === PDF_ABSENT) {
     data.cell.text = ['-'];
     data.cell.styles.halign = 'center';
     data.cell.styles.valign = 'middle';
     data.cell.styles.textColor = [120, 120, 120];
   }
+}
+
+/** Palomita dibujada con líneas (no depende de fuentes especiales). */
+function drawPresentCheck(data: CellHookData): void {
+  if (data.section !== 'body' || data.column.index < 2) return;
+  if (String(data.cell.raw ?? '') !== PDF_PRESENT) return;
+
+  const pdf = getPdfDoc(data);
+  const { x, y, width, height } = data.cell;
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  const s = Math.min(width, height) * 0.22;
+
+  pdf.setDrawColor(...CHECK_COLOR);
+  pdf.setLineWidth(0.42);
+  pdf.setLineCap('round');
+  pdf.setLineJoin('round');
+  pdf.line(cx - 1.15 * s, cy + 0.12 * s, cx - 0.28 * s, cy + 0.92 * s);
+  pdf.line(cx - 0.28 * s, cy + 0.92 * s, cx + 1.38 * s, cy - 0.95 * s);
 }
 
 function monthLabel(period: string): string {
@@ -80,7 +101,8 @@ export function downloadAttendancePdf(
       1: { cellWidth: 8, halign: 'center' },
     },
     margin: { left: 10, right: 10 },
-    didParseCell: applyAttendanceCellStyle,
+    didParseCell: prepareAttendanceCell,
+    didDrawCell: drawPresentCheck,
   });
 
   const safeName = periodYm.replace(/[^\d-]/g, '');
