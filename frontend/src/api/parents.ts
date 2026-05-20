@@ -34,6 +34,29 @@ export interface CreateLinkRequestBody {
   isPrimaryContact?: boolean;
 }
 
+export type ParentSummaryChild = {
+  playerId: string;
+  firstName: string;
+  lastName: string;
+  registrationPaid: boolean;
+  monthlyFeePaid: boolean;
+  attendancePresent: number;
+  attendanceTotal: number;
+  allPaid: boolean;
+};
+
+export type ParentAccountSummary = {
+  paymentHold: boolean;
+  periodMonth: string;
+  coach: { name: string; phone: string; whatsapp: string };
+  children: ParentSummaryChild[];
+};
+
+export async function getMyAccountSummary() {
+  const { data } = await apiClient.get<ApiResponse<ParentAccountSummary>>('/parents/my-summary');
+  return data;
+}
+
 export async function myPlayers() {
   const { data } = await apiClient.get<ApiResponse<unknown[]>>('/parents/my-players');
   return data;

@@ -14,6 +14,7 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerPublicPath } from '@/utils/player-path';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
+import { ParentAccountStatus } from '@/components/ParentAccountStatus';
 
 const inputClass =
   'w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors uppercase tracking-wide';
@@ -94,6 +95,10 @@ export function MyPlayersPage() {
           <MaterialIcon name="link" size={20} />
           Vincular un hijo
         </button>
+      </div>
+
+      <div className="mb-stack-lg">
+        <ParentAccountStatus compact />
       </div>
 
       {requests.length > 0 && (

@@ -17,6 +17,13 @@ import {
 export const parentsRouter = Router();
 
 parentsRouter.get(
+  '/my-summary',
+  authMiddleware,
+  requireParent,
+  ParentsController.myAccountSummary,
+);
+
+parentsRouter.get(
   '/my-players',
   authMiddleware,
   requireParent,

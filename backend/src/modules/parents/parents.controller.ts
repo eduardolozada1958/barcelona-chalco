@@ -49,6 +49,15 @@ export class ParentsController {
     }
   }
 
+  static async myAccountSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const data = await ParentsService.getMyAccountSummary(req.user!.id);
+      sendSuccess(res, data, 'Estado de cuenta');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async myLinkRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data = await ParentsService.getMyLinkRequests(req.user!.id);

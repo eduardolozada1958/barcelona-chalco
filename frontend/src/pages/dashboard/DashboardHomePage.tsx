@@ -8,6 +8,7 @@ import { listMatchesAdmin } from '@/api/matches';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { DashboardModal } from '@/components/DashboardModal';
+import { ParentAccountStatus } from '@/components/ParentAccountStatus';
 
 const quickActions = [
   { icon: 'person_add',    label: 'Agregar Jugador',       to: '/dashboard/players?crear=1' },
@@ -134,6 +135,8 @@ export function DashboardHomePage() {
           </div>
         </section>
       )}
+
+      {user?.role === 'parent' && <ParentAccountStatus />}
 
       {user?.role === 'parent' && (
         <section>

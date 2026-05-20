@@ -7,6 +7,16 @@ import {
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import { normalizeCurp } from '@shared/utils/curp';
+import {
+  COACH_DISPLAY_NAME,
+  COACH_PHONE_DISPLAY,
+  COACH_WHATSAPP_URL,
+} from '@config/coach-contact';
+import {
+  currentPeriodMonthIso,
+  parsePeriodMonth,
+  sessionDatesInMonth,
+} from '@shared/utils/attendance-calendar';
 import type {
   CreateLinkRequestInput,
   ListLinkRequestsQuery,
@@ -404,5 +414,91 @@ export class ParentsService {
 
     if (error) throw new Error(error.message);
     return ParentsService.mapLinkRow(data as Record<string, unknown>);
+  }
+
+  /** Resumen privado para el padre: cuotas de sus hijos y asistencia del mes (sin datos de otros familias). */
+  static async getMyAccountSummary(userId: string) {
+    const parent = await ParentsService.getParentByUserId(userId);
+    const periodMonth = currentPeriodMonthIso();
+    const { year, month } = parsePeriodMonth(periodMonth);
+    const sessionDates = sessionDatesInMonth(year, month);
+    const sessionDateList = sessionDates.map((d) => d.date);
+
+    const { data: userRow, error: uErr } = await supabaseAdmin
+      .from('users')
+      .select('payment_hold')
+      .eq('id', userId)
+      .single();
+    if (uErr) throw new Error(uErr.message);
+
+    const { data: links, error: lErr } = await supabaseAdmin
+      .from('parent_players')
+      .select('player_id, players(id, first_name, last_name, registration_paid)')
+      .eq('parent_id', parent.id)
+      .eq('status', 'approved');
+    if (lErr) throw new Error(lErr.message);
+
+    const children: {
+      playerId: string;
+      firstName: string;
+      lastName: string;
+      registrationPaid: boolean;
+      monthlyFeePaid: boolean;
+      attendancePresent: number;
+      attendanceTotal: number;
+      allPaid: boolean;
+    }[] = [];
+
+    for (const link of links ?? []) {
+      const row = link as Record<string, unknown>;
+      const p = row.players as Record<string, unknown> | null;
+      if (!p?.id) continue;
+      const playerId = String(p.id);
+      const registrationPaid = Boolean(p.registration_paid);
+
+      const { data: feeRow } = await supabaseAdmin
+        .from('player_monthly_fees')
+        .select('monthly_fee_paid')
+        .eq('player_id', playerId)
+        .eq('period_month', periodMonth)
+        .maybeSingle();
+      const monthlyFeePaid = Boolean(
+        (feeRow as { monthly_fee_paid?: boolean } | null)?.monthly_fee_paid,
+      );
+
+      let attendancePresent = 0;
+      if (sessionDateList.length > 0) {
+        const { data: attRows, error: aErr } = await supabaseAdmin
+          .from('attendance_records')
+          .select('attendance_date, present')
+          .eq('player_id', playerId)
+          .in('attendance_date', sessionDateList)
+          .eq('present', true);
+        if (aErr) throw new Error(aErr.message);
+        attendancePresent = attRows?.length ?? 0;
+      }
+
+      children.push({
+        playerId,
+        firstName:         String(p.first_name ?? ''),
+        lastName:          String(p.last_name ?? ''),
+        registrationPaid,
+        monthlyFeePaid,
+        attendancePresent,
+        attendanceTotal:   sessionDateList.length,
+        allPaid:           registrationPaid && monthlyFeePaid,
+      });
+    }
+
+    return {
+      paymentHold: Boolean(userRow?.payment_hold),
+      periodMonth,
+      coach: {
+        name:     COACH_DISPLAY_NAME,
+        phone:    COACH_PHONE_DISPLAY,
+        whatsapp: COACH_WHATSAPP_URL,
+      },
+      children,
+    };
   }
 }
