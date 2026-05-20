@@ -82,7 +82,7 @@ export function DashboardPlayerDetailPage() {
   const p = q.data?.data as Record<string, unknown> | undefined;
   if (!p) return <p className="text-on-surface">No encontrado.</p>;
 
-  const imgUrl = playerQrImageUrl(String(p.id));
+  const imgUrl = `${playerQrImageUrl(String(p.id))}?v=${encodeURIComponent(String(p.qr_generated_at ?? p.qr_token ?? p.id))}`;
 
   return (
     <div className="max-w-3xl">
@@ -215,7 +215,7 @@ export function DashboardPlayerDetailPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <img
-              key={String(p.qr_token)}
+              key={String(p.qr_generated_at ?? p.qr_token)}
               src={imgUrl}
               alt="QR jugador"
               className="h-48 w-48 rounded-lg border border-outline-variant/20 bg-white p-2"

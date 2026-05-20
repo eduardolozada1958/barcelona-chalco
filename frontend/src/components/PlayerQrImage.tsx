@@ -11,7 +11,8 @@ const SIZE_CLASS = {
 
 interface PlayerQrImageProps {
   playerId: string;
-  qrToken: string;
+  /** Token o fecha de generación; invalida caché del navegador al renovar el QR. */
+  cacheKey: string;
   size?: keyof typeof SIZE_CLASS;
   className?: string;
 }
@@ -19,9 +20,9 @@ interface PlayerQrImageProps {
 /**
  * QR único por jugador (generado en backend). Sin enlace táctil ni selección de texto.
  */
-export function PlayerQrImage({ playerId, qrToken, size = 'md', className = '' }: PlayerQrImageProps) {
+export function PlayerQrImage({ playerId, cacheKey, size = 'md', className = '' }: PlayerQrImageProps) {
   const dim = SIZE_CLASS[size];
-  const src = `${playerQrImageUrl(playerId)}?v=${encodeURIComponent(qrToken)}`;
+  const src = `${playerQrImageUrl(playerId)}?v=${encodeURIComponent(cacheKey)}`;
 
   return (
     <div

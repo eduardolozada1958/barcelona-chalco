@@ -5,6 +5,7 @@ import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildPlayerNameIlikeFilter } from '@shared/utils/sanitize-search';
 import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
+import { normalizeCurp } from '@shared/utils/curp';
 import { CURRENT_SEASON } from '@config/constants';
 import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
 import type { UserRole } from '@shared/types';
@@ -23,10 +24,9 @@ export interface PublicLeaderRow {
   red_cards:     number;
 }
 
-/** Columnas en APIs públicas (sin `curp` completo). */
-/** Sin qr_token: el token de credencial no debe exponerse en APIs públicas. */
+/** Columnas en APIs públicas (sin `curp` ni `qr_token`; sí `qr_generated_at` para mostrar el QR). */
 const PUBLIC_PLAYER_COLUMNS =
-  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, season, achievements, created_at, updated_at';
+  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, qr_generated_at, season, achievements, created_at, updated_at';
 
 function extFromPhotoMime(mime: string): string {
   if (mime === 'image/png') return 'png';
@@ -197,6 +197,42 @@ export class PlayersService {
     return { scoring, discipline };
   }
 
+  /** Impide dos jugadores activos con la misma CURP. */
+  private static async assertCurpNotDuplicate(curp: string, excludePlayerId?: string) {
+    const normalized = normalizeCurp(curp);
+    let query = supabaseAdmin
+      .from('players')
+      .select('id, first_name, last_name')
+      .eq('curp', normalized)
+      .is('deleted_at', null);
+
+    if (excludePlayerId) query = query.neq('id', excludePlayerId);
+
+    const { data, error } = await query.maybeSingle();
+    if (error) throw new Error(error.message);
+    if (data) {
+      throw new ConflictError(
+        `Ya existe un jugador con esa CURP: ${data.first_name} ${data.last_name}. Revisa la plantilla o corrige el registro duplicado.`,
+      );
+    }
+  }
+
+  private static async ensurePlayerQr(playerId: string): Promise<void> {
+    const { data: row } = await supabaseAdmin
+      .from('players')
+      .select('qr_token')
+      .eq('id', playerId)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (row?.qr_token) return;
+
+    const { error } = await supabaseAdmin.rpc('generate_player_qr_token', {
+      p_player_id: playerId,
+    });
+    if (error) throw new Error(error.message);
+  }
+
   static async getById(id: string) {
     const { data, error } = await supabaseAdmin
       .from('players')
@@ -210,9 +246,12 @@ export class PlayersService {
   }
 
   static async getPublicProfile(ref: string) {
+    /** En detalle público se expone el token solo para enlaces a credencial AR del propio jugador. */
+    const detailColumns = `${PUBLIC_PLAYER_COLUMNS}, qr_token`;
+
     let query = supabaseAdmin
       .from('players')
-      .select(PUBLIC_PLAYER_COLUMNS)
+      .select(detailColumns)
       .eq('is_verified', true)
       .is('deleted_at', null);
 
@@ -225,6 +264,10 @@ export class PlayersService {
   }
 
   static async create(input: CreatePlayerInput) {
+    if (input.curp) {
+      await PlayersService.assertCurpNotDuplicate(input.curp);
+    }
+
     // Verificar número de camiseta único por categoría
     if (input.jerseyNumber) {
       const { data: existing } = await supabaseAdmin
@@ -264,12 +307,17 @@ export class PlayersService {
         achievements:       input.achievements ?? null,
         notes:              input.notes ?? null,
         season:             CURRENT_SEASON,
-        curp:               input.curp ?? null,
+        curp:               input.curp ? normalizeCurp(input.curp) : null,
       })
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23505') {
+        throw new ConflictError('Ya existe un jugador con esa CURP.');
+      }
+      throw new Error(error.message);
+    }
     return data;
   }
 
@@ -394,7 +442,14 @@ export class PlayersService {
     if (input.avatarUrl !== undefined)         updateData.avatar_url         = input.avatarUrl;
     if (input.achievements !== undefined)      updateData.achievements       = input.achievements;
     if (input.notes !== undefined)             updateData.notes              = input.notes;
-    if (input.curp !== undefined)              updateData.curp               = input.curp;
+    if (input.curp !== undefined) {
+      if (input.curp) {
+        await PlayersService.assertCurpNotDuplicate(input.curp, id);
+        updateData.curp = normalizeCurp(input.curp);
+      } else {
+        updateData.curp = null;
+      }
+    }
 
     if (input.isVerified === true) {
       updateData.is_verified = true;
@@ -420,7 +475,17 @@ export class PlayersService {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23505') {
+        throw new ConflictError('Ya existe un jugador con esa CURP.');
+      }
+      throw new Error(error.message);
+    }
+
+    if (input.isVerified === true || data.is_verified) {
+      await PlayersService.ensurePlayerQr(id);
+    }
+
     return data;
   }
 
@@ -441,7 +506,16 @@ export class PlayersService {
       .single();
 
     if (error) throw new Error(error.message);
-    return data;
+
+    await PlayersService.ensurePlayerQr(id);
+
+    const { data: refreshed } = await supabaseAdmin
+      .from('players')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    return refreshed ?? data;
   }
 
   static async generateQr(id: string) {

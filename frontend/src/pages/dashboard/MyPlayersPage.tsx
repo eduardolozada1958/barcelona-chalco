@@ -13,6 +13,7 @@ import { DashboardModal } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerPublicPath } from '@/utils/player-path';
+import { PlayerQrImage } from '@/components/PlayerQrImage';
 
 const inputClass =
   'w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors uppercase tracking-wide';
@@ -149,15 +150,23 @@ export function MyPlayersPage() {
             const pl = row.player ?? {};
             const pid = String(pl.id ?? i);
             const primary = row.is_primary_contact ?? row.isPrimaryContact;
+            const qrAt = typeof pl.qr_generated_at === 'string' ? pl.qr_generated_at : null;
+            const qrToken = typeof pl.qr_token === 'string' ? pl.qr_token : null;
+            const avatarUrl = typeof pl.avatar_url === 'string' ? pl.avatar_url : null;
             return (
               <div
                 key={pid}
                 className="bg-[#002366]/20 backdrop-blur-md border border-primary/20 rounded-xl p-6 relative overflow-hidden group hover:border-primary/40 transition-all"
               >
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
-                <div className="flex items-start gap-4 relative z-10">
-                  <div className="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/30">
-                    <MaterialIcon name="person" className="text-primary" size={28} />
+                <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center shrink-0 border border-outline-variant/30 overflow-hidden">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <MaterialIcon name="person" className="text-primary" size={28} />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-headline-lg text-headline-lg-mobile text-on-surface truncate">
@@ -177,13 +186,39 @@ export function MyPlayersPage() {
                         <MaterialIcon name="check_circle" size={12} /> Vinculado
                       </span>
                     </div>
-                    <Link
-                      to={playerPublicPath({ id: pid, slug: typeof pl.slug === 'string' ? pl.slug : null })}
-                      className="mt-4 inline-flex items-center gap-1 text-primary hover:underline font-label-caps text-label-caps"
-                    >
-                      <MaterialIcon name="visibility" size={14} /> Ver perfil público
-                    </Link>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Link
+                        to={playerPublicPath({ id: pid, slug: typeof pl.slug === 'string' ? pl.slug : null })}
+                        className="inline-flex items-center gap-1 text-primary hover:underline font-label-caps text-label-caps"
+                      >
+                        <MaterialIcon name="visibility" size={14} /> Ver perfil público
+                      </Link>
+                      {qrToken ? (
+                        <Link
+                          to={`/credencial-ar/${encodeURIComponent(qrToken)}`}
+                          className="inline-flex items-center gap-1 text-on-surface-variant hover:text-primary font-label-caps text-label-caps"
+                        >
+                          <MaterialIcon name="qr_code_2" size={14} /> Credencial QR
+                        </Link>
+                      ) : null}
+                    </div>
                   </div>
+                  </div>
+                  {qrAt ? (
+                    <div className="flex flex-col items-center shrink-0 sm:border-l sm:border-primary/15 sm:pl-4">
+                      <PlayerQrImage playerId={pid} cacheKey={qrAt} size="md" />
+                      <p className="text-[10px] text-on-surface-variant mt-2 text-center max-w-[8rem]">
+                        Escanea con otro teléfono
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center w-32 h-32 rounded-xl bg-surface-variant/40 border border-outline-variant/20 shrink-0">
+                      <MaterialIcon name="qr_code_2" size={32} className="text-on-surface-variant/40" />
+                      <p className="text-[10px] text-on-surface-variant mt-2 text-center px-2">
+                        QR pendiente (contacta al club)
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             );

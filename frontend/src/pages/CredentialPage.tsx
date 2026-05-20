@@ -38,7 +38,8 @@ function CredentialCard({ player }: { player: Player }) {
     player.jersey_number != null && !Number.isNaN(Number(player.jersey_number))
       ? `#${player.jersey_number}`
       : `ID·${player.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
-  const hasQr     = Boolean(player.qr_token);
+  const hasQr     = Boolean(player.qr_generated_at);
+  const qrCache   = player.qr_generated_at ?? player.id;
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-outline-variant/20 bg-gradient-to-br from-surface-container via-surface-container to-surface-container-high shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.15)] transition-all duration-500">
@@ -99,7 +100,7 @@ function CredentialCard({ player }: { player: Player }) {
         <div className="flex flex-col items-center justify-center flex-shrink-0 mx-auto md:mx-0">
           {hasQr ? (
             <div className="flex flex-col items-center">
-              <PlayerQrImage playerId={player.id} qrToken={player.qr_token!} size="xl" />
+              <PlayerQrImage playerId={player.id} cacheKey={qrCache} size="xl" />
               <p className="mt-3 text-[11px] text-center text-on-surface-variant/75 max-w-[14rem] leading-snug">
                 Acerca el teléfono; buena luz. El código es grande a propósito para que sea más fácil de leer.
               </p>

@@ -151,8 +151,13 @@ export function PublicPlayerDetailPage() {
 
           <div className="flex-grow flex items-center justify-center py-stack-lg">
             <div className="w-48 h-48 bg-white p-2 rounded-lg flex items-center justify-center relative shadow-[0_0_30px_rgba(212,175,55,0.15)] select-none [-webkit-touch-callout:none]">
-              {player.qr_token ? (
-                <PlayerQrImage playerId={player.id} qrToken={player.qr_token} size="lg" className="!w-full !h-full" />
+              {player.qr_generated_at ? (
+                <PlayerQrImage
+                  playerId={player.id}
+                  cacheKey={player.qr_generated_at}
+                  size="lg"
+                  className="!w-full !h-full"
+                />
               ) : (
                 <MaterialIcon name="qr_code_2" className="text-gray-400" size={120} />
               )}

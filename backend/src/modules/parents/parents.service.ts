@@ -153,10 +153,16 @@ export class ParentsService {
       .select('id, first_name, last_name, category, slug, curp')
       .eq('curp', normalized)
       .is('deleted_at', null)
-      .maybeSingle();
+      .limit(2);
 
     if (error) throw new Error(error.message);
-    return data;
+    const rows = data ?? [];
+    if (rows.length > 1) {
+      throw new ConflictError(
+        'Hay más de un jugador con esa CURP en el sistema. Contacta al administrador para corregir el duplicado.',
+      );
+    }
+    return rows[0] ?? null;
   }
 
   private static mapLinkRow(row: Record<string, unknown>) {
@@ -196,9 +202,12 @@ export class ParentsService {
   static async getMyPlayers(userId: string) {
     const parent = await ParentsService.getParentByUserId(userId);
 
+    const playerCols =
+      'id, slug, first_name, last_name, category, avatar_url, jersey_number, position, dominant_foot, is_verified, qr_generated_at, qr_token';
+
     const { data: links, error } = await supabaseAdmin
       .from('parent_players')
-      .select('is_primary_contact, relationship, status, players(*)')
+      .select(`is_primary_contact, relationship, status, players(${playerCols})`)
       .eq('parent_id', parent.id)
       .eq('status', 'approved');
 
