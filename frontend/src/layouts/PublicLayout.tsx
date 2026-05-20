@@ -9,6 +9,7 @@ import { CLUB_LOGO_URL } from '@/config/club';
 import { useClubSettings } from '@/hooks/useClubSettings';
 import { getPanelNavIcon, getPanelShortLabel } from '@/config/panel-labels';
 import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
+import { ScrollToTop } from '@/components/ScrollToTop';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -38,6 +39,7 @@ export function PublicLayout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
+      <ScrollToTop />
       {/* ═══════════════════ TopNavBar ═══════════════════ */}
       <nav className="fixed top-0 w-full max-w-full z-50 flex justify-between items-center gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop h-16 sm:h-20 bg-surface/80 backdrop-blur-md bg-surface-container-lowest/40 border-b border-outline-variant/20 shadow-md min-w-0">
         {/* Logo */}

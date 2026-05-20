@@ -30,6 +30,10 @@ export function PublicPlayerDetailPage() {
   const highlights = usePlayerHighlights(player?.id, player?.slug);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
+  useEffect(() => {
     if (!player || !id) return;
     const slug = player.slug?.trim();
     if (slug && isPlayerUuid(id) && id !== slug) {

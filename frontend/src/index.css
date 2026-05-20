@@ -109,4 +109,24 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
+
+  .celebration-spark {
+    animation: celebration-spark 1.2s ease-out infinite;
+    box-shadow: 0 0 8px rgba(242, 202, 80, 0.9);
+  }
+}
+
+@keyframes celebration-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(8px);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.2) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-16px);
+  }
 }
