@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -8,7 +9,9 @@ import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
 import { getMvpOfWeekPublic } from '@/api/players';
 import { latestResultPublic } from '@/api/results';
 import { playerPublicPath } from '@/utils/player-path';
-import { listMatchesPublic } from '@/api/matches';
+import { listMatchesUpcoming } from '@/api/matches';
+import { fetchPlayersPublicByIds } from '@/api/players';
+import { displayPlayerShort, rosterRowToPitchPlayer } from '@/utils/lineup-players';
 import { listNoticesPublic } from '@/api/notices';
 import { useClubSettings } from '@/hooks/useClubSettings';
 import type { Result, Match, Notice } from '@/types';
@@ -27,13 +30,29 @@ export function HomePage() {
   // Fetch real data for highlights
   const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
   const mvpQ = useQuery({ queryKey: ['mvp-of-week-public'], queryFn: getMvpOfWeekPublic });
-  const matchesQ = useQuery({ queryKey: ['matches-public'], queryFn: () => listMatchesPublic() });
+  const matchesQ = useQuery({
+    queryKey: ['matches-upcoming-home'],
+    queryFn: () => listMatchesUpcoming({ limit: 1 }),
+  });
   const noticesQ = useQuery({ queryKey: ['notices-public'], queryFn: () => listNoticesPublic() });
 
   const latest = latestResult.data?.data as Result | undefined;
   const mvp = mvpQ.data?.data;
   const mvpPlayer = mvp?.player;
   const nextMatch = (matchesQ.data?.data as Match[] | undefined)?.[0];
+  const nextLineupIds = useMemo(() => {
+    const raw = nextMatch?.starting_lineup;
+    if (!Array.isArray(raw)) return [];
+    return raw.filter((x): x is string => typeof x === 'string');
+  }, [nextMatch?.starting_lineup]);
+  const nextLineupQ = useQuery({
+    queryKey: ['home-next-lineup', nextMatch?.id, nextLineupIds.join(',')],
+    queryFn: async () => {
+      const rows = await fetchPlayersPublicByIds(nextLineupIds);
+      return rows.map(rosterRowToPitchPlayer);
+    },
+    enabled: Boolean(nextMatch?.id) && nextLineupIds.length > 0,
+  });
   const urgentNotice = (noticesQ.data?.data as Notice[] | undefined)?.find((n) => n.type === 'urgent')
     ?? (noticesQ.data?.data as Notice[] | undefined)?.[0];
 
@@ -160,7 +179,10 @@ export function HomePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-gutter auto-rows-[200px] md:auto-rows-[250px]">
 
           {/* Next Match (2-col span) */}
-          <div className="md:col-span-2 glass-panel rounded-xl p-stack-md flex flex-col justify-between relative overflow-hidden group">
+          <Link
+            to={nextMatch ? `/partidos/${nextMatch.id}` : '/partidos'}
+            className="md:col-span-2 glass-panel rounded-xl p-stack-md flex flex-col justify-between relative overflow-hidden group hover:border-primary/30 transition-colors"
+          >
             <div className="absolute inset-0 bg-gradient-to-r from-background/90 to-transparent z-10" />
             <img
               src="https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=1200&q=80&auto=format&fit=crop"
@@ -199,7 +221,13 @@ export function HomePage() {
                 </span>
               </div>
             </div>
-          </div>
+            {nextLineupQ.data && nextLineupQ.data.length > 0 ? (
+              <p className="relative z-20 mt-3 text-[10px] text-on-surface-variant leading-relaxed">
+                <span className="text-primary font-label-caps">Titulares: </span>
+                {nextLineupQ.data.map((p) => displayPlayerShort(p)).join(' · ')}
+              </p>
+            ) : null}
+          </Link>
 
           {/* MVP Spotlight */}
           {mvpPlayer ? (

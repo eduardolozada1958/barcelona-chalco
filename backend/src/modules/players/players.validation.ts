@@ -23,6 +23,22 @@ export const playerPublicRefSchema = z.object({
     .refine((v) => isPlayerUuid(v) || isPlayerSlug(v), 'Referencia de jugador inválida'),
 });
 
+/** IDs de titulares para cancha pública (sin exigir verificación de perfil). */
+export const publicRosterQuerySchema = z.object({
+  ids: z
+    .string()
+    .min(36, 'Indica al menos un ID de jugador')
+    .transform((s) => [...new Set(s.split(',').map((x) => x.trim()).filter(Boolean))])
+    .pipe(
+      z
+        .array(z.string().uuid('ID de jugador inválido'))
+        .min(1)
+        .max(11, 'Máximo 11 jugadores'),
+    ),
+});
+
+export type PublicRosterQuery = z.infer<typeof publicRosterQuerySchema>;
+
 /** Altura: cm (175) o metros con decimal (1,75). Enteros 1–3 se interpretan como metros (2 → 200 cm). */
 function normalizeHeightCmInput(v: unknown): unknown {
   if (v === undefined || v === null || v === '') return undefined;

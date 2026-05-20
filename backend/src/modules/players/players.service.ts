@@ -267,6 +267,24 @@ export class PlayersService {
     return withNormalizedBirthDate(data as Record<string, unknown>);
   }
 
+  /**
+   * Datos mínimos para cuadro titular en partido público.
+   * No exige `is_verified` (el entrenador ya convocó al jugador).
+   */
+  static async listPublicRosterByIds(ids: string[]) {
+    const unique = [...new Set(ids.filter(Boolean))];
+    if (unique.length === 0) return [];
+
+    const { data, error } = await supabaseAdmin
+      .from('players')
+      .select('id, first_name, last_name, jersey_number')
+      .in('id', unique)
+      .is('deleted_at', null);
+
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
   static async getPublicProfile(ref: string) {
     /** En detalle público se expone el token solo para enlaces a credencial AR del propio jugador. */
     const detailColumns = `${PUBLIC_PLAYER_COLUMNS}, qr_token`;

@@ -13,6 +13,7 @@ import {
   playerIdSchema,
   playerPublicRefSchema,
   listPlayersQuerySchema,
+  publicRosterQuerySchema,
   setMvpOfWeekBodySchema,
 } from './players.validation';
 
@@ -31,6 +32,12 @@ playersRouter.get('/public/season-leaders', PlayersController.publicSeasonLeader
 
 // GET /api/v1/players/public/mvp-of-week — MVP visible en inicio
 playersRouter.get('/public/mvp-of-week', PlayersController.getMvpOfWeekPublic);
+
+// GET /api/v1/players/public/roster?ids=uuid,uuid — Titulares en partido (sin exigir verificación)
+playersRouter.get('/public/roster',
+  validateQuery(publicRosterQuerySchema),
+  PlayersController.listPublicRoster,
+);
 
 // GET /api/v1/players/public/:id - Perfil público de un jugador
 playersRouter.get('/public/:id',

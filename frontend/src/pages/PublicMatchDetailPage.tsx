@@ -8,6 +8,7 @@ import { MatchFormationPitch } from '@/components/MatchFormationPitch';
 import { MatchMapEmbed } from '@/components/MatchMapEmbed';
 import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { CLUB_DISPLAY_NAME } from '@/config/club';
+import { matchStatusLabel } from '@/config/labels';
 import { Spinner } from '@/components/Spinner';
 import { lineupIdsToSlots } from '@/config/formations';
 import {
@@ -104,7 +105,7 @@ export function PublicMatchDetailPage() {
       <dl className="mt-8 space-y-2 text-sm">
         <Row label="Fecha" value={matchDateStr} />
         <Row label="Lugar" value={String(m.location)} />
-        <Row label="Estado" value={String(m.status)} />
+        <Row label="Estado" value={matchStatusLabel(String(m.status))} />
       </dl>
 
       {hasLineup ? (
@@ -139,7 +140,7 @@ export function PublicMatchDetailPage() {
               </ul>
               {filledCount < rawLineup.length ? (
                 <p className="mt-2 text-[11px] text-on-surface-variant">
-                  Algunos jugadores no están disponibles en el listado público.
+                  Algunos titulares ya no están en la plantilla del club.
                 </p>
               ) : null}
             </>

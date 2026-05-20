@@ -89,6 +89,14 @@ export class PlayersController {
     } catch (e) { next(e); }
   }
 
+  static async listPublicRoster(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const q = req.validatedQuery as { ids: string[] };
+      const rows = await PlayersService.listPublicRosterByIds(q.ids);
+      sendSuccess(res, rows, 'Titulares del partido');
+    } catch (e) { next(e); }
+  }
+
   static async getPublicProfile(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const player = await PlayersService.getPublicProfile(routeParam(req, 'id'));

@@ -71,21 +71,14 @@ export async function setMvpOfWeek(body: { playerId: string | null; weekLabel?: 
   return data;
 }
 
-/** Carga jugadores del once titular por ID (endpoint público por jugador). */
+/** Titulares del partido (nombre y dorsal; no exige perfil verificado). */
 export async function fetchPlayersPublicByIds(ids: string[]): Promise<Record<string, unknown>[]> {
   const unique = [...new Set(ids.filter(Boolean))];
   if (unique.length === 0) return [];
-  const rows = await Promise.all(
-    unique.map(async (playerId) => {
-      try {
-        const res = await getPlayerPublic(playerId);
-        return res.data as Record<string, unknown>;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return rows.filter((r): r is Record<string, unknown> => r != null);
+  const { data } = await apiClient.get<ApiResponse<Record<string, unknown>[]>>('/players/public/roster', {
+    params: { ids: unique.join(',') },
+  });
+  return (data.data ?? []) as Record<string, unknown>[];
 }
 
 export interface CreatePlayerBody {

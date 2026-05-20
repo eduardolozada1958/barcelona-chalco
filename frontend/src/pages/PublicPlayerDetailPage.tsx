@@ -128,17 +128,17 @@ export function PublicPlayerDetailPage() {
 
           {/* Stats grid */}
           <div className="grid grid-cols-3 gap-base mb-stack-md">
-            <StatBox value={player.height_cm ?? '—'} label="HEIGHT (cm)" />
-            <StatBox value={player.weight_kg ?? '—'} label="WEIGHT (kg)" highlight />
-            <StatBox value={player.jersey_number ?? '—'} label="NUMBER" />
+            <StatBox value={player.height_cm ?? '—'} label="Estatura (cm)" />
+            <StatBox value={player.weight_kg ?? '—'} label="Peso (kg)" highlight />
+            <StatBox value={player.jersey_number ?? '—'} label="Número" />
           </div>
 
           {/* Personal info */}
           <div className="space-y-4 mb-stack-lg border-t border-b border-outline-variant/20 py-stack-md">
             {[
-              { label: 'DATE OF BIRTH', value: player.birth_date ? formatBirthDateEs(player.birth_date) : '—' },
-              { label: 'AGE', value: age },
-              { label: 'CLUB', value: 'Barcelona Cupido' },
+              { label: 'Fecha de nacimiento', value: player.birth_date ? formatBirthDateEs(player.birth_date) : '—' },
+              { label: 'Edad', value: age },
+              { label: 'Club', value: 'Barcelona Cupido' },
             ].map((row, i, arr) => (
               <div
                 key={row.label}
@@ -153,7 +153,7 @@ export function PublicPlayerDetailPage() {
           {/* Biography */}
           <div className="mb-stack-lg">
             <h3 className="font-label-caps text-label-caps text-primary mb-3 flex items-center gap-2">
-              <MaterialIcon name="notes" size={16} /> SPORTS DESCRIPTION
+              <MaterialIcon name="notes" size={16} /> Descripción deportiva
             </h3>
             <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
               {player.sport_description || 'Sin descripción deportiva disponible.'}
