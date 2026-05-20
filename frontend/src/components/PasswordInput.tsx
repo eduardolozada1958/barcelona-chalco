@@ -46,7 +46,7 @@ export function PasswordInput({
           aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           tabIndex={-1}
         >
-          <MaterialIcon name={visible ? 'visibility_off' : 'visibility'} size={22} />
+          <MaterialIcon name={visible ? 'visibility' : 'visibility_off'} size={22} />
         </button>
       </div>
       {hint ? <p className="mt-1.5 text-xs text-on-surface-variant">{hint}</p> : null}

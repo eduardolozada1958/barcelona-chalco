@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { PasswordInput } from '@/components/PasswordInput';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { getApiErrorMessage } from '@utils/api-error';
 import { warmApiBackend } from '@utils/api-warmup';
@@ -28,7 +29,6 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/dashboard';
   const [selectedRole, setSelectedRole] = useState<'parent' | 'admin' | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [totpStep, setTotpStep] = useState(false);
   const [pendingToken, setPendingToken] = useState('');
   const [totpCode, setTotpCode] = useState('');
@@ -222,30 +222,13 @@ export function LoginPage() {
                   {errors.email ? <p className="mt-2 text-sm text-error">{errors.email.message}</p> : null}
                 </div>
 
-                <div>
-                  <label htmlFor="password" className="font-label-caps text-label-caps text-on-surface-variant block mb-2">
-                    CONTRASEÑA
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="password"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      placeholder="••••••••"
-                      className="w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 pr-12 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40"
-                      {...register('password')}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary p-1"
-                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    >
-                      <MaterialIcon name={showPassword ? 'visibility_off' : 'visibility'} size={22} />
-                    </button>
-                  </div>
-                  {errors.password ? <p className="mt-2 text-sm text-error">{errors.password.message}</p> : null}
-                </div>
+                <PasswordInput
+                  id="password"
+                  label="CONTRASEÑA"
+                  autoComplete="current-password"
+                  registration={register('password')}
+                  error={errors.password?.message}
+                />
                 <p className="text-right -mt-2">
                   <Link to="/olvide-contraseña" className="text-sm text-primary hover:underline">
                     ¿Olvidaste tu contraseña?
