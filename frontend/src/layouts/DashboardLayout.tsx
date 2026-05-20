@@ -84,7 +84,7 @@ export function DashboardLayout() {
   );
 
   return (
-    <div className="bg-background text-on-background font-body-md min-h-screen flex">
+    <div className="bg-background text-on-background font-body-md min-h-screen flex overflow-x-hidden max-w-[100vw]">
       <nav className="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low border-r border-outline-variant/10 shadow-lg py-base z-40">
         {sidebar}
       </nav>
@@ -99,12 +99,12 @@ export function DashboardLayout() {
           </nav>
         </div>
       )}
-      <main className="w-full md:ml-64 flex-1 p-margin-mobile md:p-margin-desktop bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-surface-container/40 via-background to-background min-h-screen">
-        <div className="md:hidden flex items-center justify-between mb-stack-md pb-stack-sm border-b border-outline-variant/20">
-          <button type="button" onClick={() => setMobileOpen(true)} className="p-2"><MaterialIcon name="menu" className="text-primary" size={28} /></button>
-          <div className="flex items-center gap-2">
-            <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain" />
-            <span className="font-display-hero text-body-lg text-primary">Barcelona Cupido</span>
+      <main className="w-full min-w-0 max-w-full md:ml-64 flex-1 p-3 sm:p-margin-mobile md:p-margin-desktop bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-surface-container/40 via-background to-background min-h-screen overflow-x-hidden">
+        <div className="md:hidden flex items-center justify-between gap-2 mb-stack-md pb-stack-sm border-b border-outline-variant/20 min-w-0">
+          <button type="button" onClick={() => setMobileOpen(true)} className="p-2 shrink-0 touch-manipulation" aria-label="Menú"><MaterialIcon name="menu" className="text-primary" size={28} /></button>
+          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
+            <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain shrink-0" />
+            <span className="font-display-hero text-sm sm:text-body-lg text-primary truncate">Barcelona Cupido</span>
           </div>
           <NavLink
             to="/dashboard/cuenta"
@@ -118,7 +118,7 @@ export function DashboardLayout() {
             )}
           </NavLink>
         </div>
-        <div className="max-w-container-max mx-auto"><Outlet /></div>
+        <div className="max-w-container-max mx-auto w-full min-w-0"><Outlet /></div>
       </main>
     </div>
   );

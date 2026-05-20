@@ -415,7 +415,7 @@ export function DashboardMatchesPage() {
           return (
             <div
               key={String(m.id)}
-              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-colors group"
+              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-colors group min-w-0"
             >
               <div className="flex items-center gap-4 min-w-0">
                 <div className="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/10 group-hover:bg-primary/10 transition-colors shrink-0">
@@ -437,11 +437,11 @@ export function DashboardMatchesPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-auto justify-end">
+              <div className="flex flex-col min-[400px]:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 sm:justify-end">
                 <button
                   type="button"
                   onClick={() => openLineupModal(m)}
-                  className="px-3 py-1.5 rounded-lg border border-primary/40 text-primary font-label-caps text-[11px] hover:bg-primary/10"
+                  className="w-full sm:w-auto px-3 py-2 sm:py-1.5 rounded-lg border border-primary/40 text-primary font-label-caps text-[11px] hover:bg-primary/10 touch-manipulation text-center"
                 >
                   Plantilla
                 </button>

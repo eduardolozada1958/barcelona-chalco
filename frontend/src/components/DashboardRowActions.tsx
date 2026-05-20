@@ -23,12 +23,12 @@ export function DashboardRowActions({
   deletePending,
 }: DashboardRowActionsProps) {
   return (
-    <div className="flex items-center gap-1 shrink-0 flex-wrap justify-end">
+    <div className="flex flex-wrap items-stretch sm:items-center gap-1.5 w-full sm:w-auto sm:shrink-0 justify-stretch sm:justify-end">
       {onEdit && (
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 border border-primary/30"
+          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 border border-primary/30 touch-manipulation"
           title="Editar"
         >
           <MaterialIcon name="edit" size={14} /> {editLabel}
@@ -39,7 +39,7 @@ export function DashboardRowActions({
           type="button"
           onClick={onPublish}
           disabled={publishPending}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 disabled:opacity-50"
+          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 disabled:opacity-50 touch-manipulation"
         >
           <MaterialIcon name="public" size={14} /> Publicar
         </button>
@@ -49,7 +49,7 @@ export function DashboardRowActions({
           type="button"
           onClick={onDelete}
           disabled={deletePending}
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-label-caps text-error hover:bg-error/10 border border-error/30 disabled:opacity-50"
+          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-error hover:bg-error/10 border border-error/30 disabled:opacity-50 touch-manipulation"
           title="Eliminar"
         >
           <MaterialIcon name="delete" size={14} /> Eliminar

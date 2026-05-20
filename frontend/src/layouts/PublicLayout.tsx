@@ -37,16 +37,16 @@ export function PublicLayout() {
   const season = clubSettings.data?.season?.trim();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md">
+    <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
       {/* ═══════════════════ TopNavBar ═══════════════════ */}
-      <nav className="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface/80 backdrop-blur-md bg-surface-container-lowest/40 border-b border-outline-variant/20 shadow-md">
+      <nav className="fixed top-0 w-full max-w-full z-50 flex justify-between items-center gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop h-16 sm:h-20 bg-surface/80 backdrop-blur-md bg-surface-container-lowest/40 border-b border-outline-variant/20 shadow-md min-w-0">
         {/* Logo */}
         <NavLink
           to="/"
           className="flex items-center gap-3 shrink-0"
         >
-          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-12 w-12 object-contain drop-shadow-lg" />
-          <span className="font-display-hero text-headline-lg-mobile text-primary tracking-tighter hidden sm:inline">F.C. BARCELONA CUPIDO</span>
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-10 w-10 sm:h-12 sm:w-12 object-contain drop-shadow-lg shrink-0" />
+          <span className="font-display-hero text-sm sm:text-headline-lg-mobile text-primary tracking-tighter truncate max-w-[42vw] sm:max-w-none hidden min-[400px]:inline">F.C. BARCELONA CUPIDO</span>
         </NavLink>
 
         {/* Desktop navigation */}
@@ -103,7 +103,7 @@ export function PublicLayout() {
         {/* Mobile hamburger */}
         <button
           type="button"
-          className="md:hidden p-2"
+          className="md:hidden p-2 shrink-0 touch-manipulation"
           aria-label="Toggle menu"
           onClick={() => setMobileOpen((v) => !v)}
         >
@@ -170,8 +170,8 @@ export function PublicLayout() {
       )}
 
       {/* ═══════════════════ Main Content ═══════════════════ */}
-      <main className="flex-grow pt-20">
-        <div className="pt-4 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full">
+      <main className="flex-grow pt-16 sm:pt-20 min-w-0 overflow-x-hidden">
+        <div className="pt-4 px-3 sm:px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full min-w-0">
           <PushNotificationsPrompt />
           <LoggedInPublicBanner />
         </div>
@@ -180,9 +180,9 @@ export function PublicLayout() {
 
       {/* ═══════════════════ Footer ═══════════════════ */}
       <footer className="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
-        <div className="flex items-center gap-4 justify-center">
-          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-14 w-14 object-contain drop-shadow-lg" />
-          <span className="font-display-hero text-primary text-2xl">F.C. BARCELONA CUPIDO</span>
+        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center text-center px-2">
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-12 w-12 sm:h-14 sm:w-14 object-contain drop-shadow-lg shrink-0" />
+          <span className="font-display-hero text-primary text-lg sm:text-2xl leading-tight">F.C. BARCELONA CUPIDO</span>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
           {footerLinks.map((l) => (

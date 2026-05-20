@@ -13,7 +13,7 @@ interface DashboardModalProps {
 export function DashboardModal({ open, title, onClose, children, wide }: DashboardModalProps) {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-4">
       <button
         type="button"
         className="absolute inset-0 bg-black/65 backdrop-blur-sm"
@@ -24,7 +24,7 @@ export function DashboardModal({ open, title, onClose, children, wide }: Dashboa
         role="dialog"
         aria-modal="true"
         aria-labelledby="dashboard-modal-title"
-        className={`relative z-10 w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-2xl p-stack-md`}
+        className={`relative z-10 w-full max-w-[calc(100vw-1.5rem)] ${wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'} max-h-[min(90dvh,100%)] overflow-y-auto rounded-t-xl sm:rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-2xl p-4 sm:p-stack-md`}
       >
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 id="dashboard-modal-title" className="font-headline-lg text-headline-lg-mobile text-on-surface pr-2">
@@ -47,6 +47,6 @@ export function DashboardModal({ open, title, onClose, children, wide }: Dashboa
 
 export const formLabelClass = 'block font-label-caps text-label-caps text-on-surface-variant mb-1';
 export const formInputClass =
-  'w-full rounded-lg border border-outline-variant/40 bg-surface-container px-3 py-2 text-on-surface text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
+  'w-full rounded-lg border border-outline-variant/40 bg-surface-container px-3 py-2.5 text-on-surface text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40';
 export const formErrorClass = 'text-error text-xs mt-1';
 export const formActionsClass = 'flex flex-wrap justify-end gap-2 mt-6 pt-4 border-t border-outline-variant/20';
