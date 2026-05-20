@@ -2,29 +2,12 @@ import { useRef, useState } from 'react';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { CLUB_LOGO_URL } from '@/config/club';
+import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 
 /** Datos mínimos devueltos por `/qr/validate/:token` (snake_case). */
 export type CredentialViewerPlayer = Record<string, unknown>;
 
 const MAX_TILT_DEG = 18;
-
-function formatBirthEs(iso: unknown): string {
-  if (!iso || typeof iso !== 'string') return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
-}
-
-function calcAge(birthDate: unknown): number | null {
-  if (!birthDate || typeof birthDate !== 'string') return null;
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return null;
-  const now = new Date();
-  let age = now.getFullYear() - birth.getFullYear();
-  const m = now.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
-  return age;
-}
 
 function footLabel(raw: unknown): string {
   if (raw === 'right') return 'Diestro';
@@ -61,7 +44,7 @@ export function CredentialCard3D({ player, immersive = false, className = '' }: 
   const avatar = typeof player.avatar_url === 'string' ? player.avatar_url : '';
   const verified = Boolean(player.is_verified);
   const curpMasked = str(player.curp_masked) || 'No registrada';
-  const age = calcAge(player.birth_date);
+  const age = calcAgeFromBirthDate(player.birth_date);
 
   const moveTilt = (clientX: number, clientY: number) => {
     const el = wrapRef.current;
@@ -176,7 +159,7 @@ export function CredentialCard3D({ player, immersive = false, className = '' }: 
                     {first} <span className="text-primary">{last}</span>
                   </h2>
                   <p className="mt-1 text-sm text-on-surface-variant">
-                    {age !== null ? `${age} años` : '—'} · {formatBirthEs(player.birth_date)}
+                    {age !== null ? `${age} años` : '—'} · {formatBirthDateEs(player.birth_date)}
                   </p>
                 </div>
 

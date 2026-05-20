@@ -13,27 +13,16 @@ import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { CredentialCard3D } from '@/components/CredentialCard3D';
+import { calcAgeFromBirthDate } from '@/utils/birth-date';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
-
-/** Calculate age from birth date; invalid or missing returns null. */
-function calcAge(birthDate: string | undefined | null): number | null {
-  if (!birthDate) return null;
-  const birth = new Date(birthDate);
-  if (Number.isNaN(birth.getTime())) return null;
-  const now = new Date();
-  let age = now.getFullYear() - birth.getFullYear();
-  const m = now.getMonth() - birth.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
-  return age;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Credential Card Component                                        */
 /* ------------------------------------------------------------------ */
 
 function CredentialCard({ player }: { player: Player }) {
-  const age       = calcAge(player.birth_date);
+  const age       = calcAgeFromBirthDate(player.birth_date);
   const headerRef =
     player.jersey_number != null && !Number.isNaN(Number(player.jersey_number))
       ? `#${player.jersey_number}`

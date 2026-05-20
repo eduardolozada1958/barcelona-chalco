@@ -12,6 +12,7 @@ import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
 import { isPlayerUuid } from '@/utils/player-path';
+import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 
 /**
  * Player detail page – faithful translation of `perfiljugador.html` mockup.
@@ -56,7 +57,7 @@ export function PublicPlayerDetailPage() {
   }
 
   const fullName = `${player.first_name} ${player.last_name}`;
-  const age = player.birth_date ? calculateAge(player.birth_date) : '—';
+  const age = player.birth_date ? (calcAgeFromBirthDate(player.birth_date) ?? '—') : '—';
 
   return (
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
@@ -135,7 +136,7 @@ export function PublicPlayerDetailPage() {
           {/* Personal info */}
           <div className="space-y-4 mb-stack-lg border-t border-b border-outline-variant/20 py-stack-md">
             {[
-              { label: 'DATE OF BIRTH', value: player.birth_date ? new Date(player.birth_date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }).toUpperCase() : '—' },
+              { label: 'DATE OF BIRTH', value: player.birth_date ? formatBirthDateEs(player.birth_date) : '—' },
               { label: 'AGE', value: age },
               { label: 'CLUB', value: 'Barcelona Cupido' },
             ].map((row, i, arr) => (
@@ -229,14 +230,4 @@ export function PublicPlayerDetailPage() {
       </section>
     </div>
   );
-}
-
-/* ── Helper ── */
-function calculateAge(birthDate: string): number {
-  const today = new Date();
-  const bday = new Date(birthDate);
-  let age = today.getFullYear() - bday.getFullYear();
-  const m = today.getMonth() - bday.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < bday.getDate())) age--;
-  return age;
 }

@@ -22,6 +22,8 @@ import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
 import { MatchStatsQuickEdit } from '@/components/MatchStatsQuickEdit';
 import { MvpOfWeekPanel } from '@/components/MvpOfWeekPanel';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { useAuth } from '@/contexts/AuthContext';
+import { birthDateIsoFromCurp, birthDateToInputValue } from '@/utils/birth-date';
 
 /** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
 function parseHeightCmForBody(raw: string): number | undefined {
@@ -61,11 +63,14 @@ type PlayerForm = {
 type EditPlayerForm = {
   firstName: string;
   lastName: string;
+  birthDate: string;
+  curp: string;
   status: 'active' | 'inactive';
   isVerified: boolean;
 };
 
 export function DashboardPlayersPage() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [createOpen, setCreateOpen] = useState(false);
@@ -167,12 +172,16 @@ export function DashboardPlayersPage() {
     register: registerEdit,
     handleSubmit: handleSubmitEdit,
     reset: resetEdit,
+    setValue: setEditValue,
+    watch: watchEdit,
     control: editControl,
     formState: { errors: editErrors },
   } = useForm<EditPlayerForm>({
     defaultValues: {
       firstName: '',
       lastName: '',
+      birthDate: '',
+      curp: '',
       status: 'active',
       isVerified: false,
     },
@@ -183,6 +192,8 @@ export function DashboardPlayersPage() {
     resetEdit({
       firstName: String(p.first_name ?? ''),
       lastName: String(p.last_name ?? ''),
+      birthDate: birthDateToInputValue(p.birth_date),
+      curp: typeof p.curp === 'string' ? p.curp : '',
       status: p.status === 'inactive' ? 'inactive' : 'active',
       isVerified: Boolean(p.is_verified),
     });
@@ -191,15 +202,26 @@ export function DashboardPlayersPage() {
 
   const onEditSave = handleSubmitEdit((data) => {
     if (!editRow) return;
-    updateMut.mutate({
-      id: String(editRow.id),
-      body: {
-        firstName: data.firstName.trim(),
-        lastName: data.lastName.trim(),
-        status: data.status,
-        isVerified: data.isVerified,
-      },
-    });
+    if (!data.birthDate) {
+      toast.error('Indica la fecha de nacimiento');
+      return;
+    }
+    const body: UpdatePlayerBody = {
+      firstName: data.firstName.trim(),
+      lastName: data.lastName.trim(),
+      birthDate: data.birthDate,
+      status: data.status,
+      isVerified: data.isVerified,
+    };
+    if (user?.role === 'admin') {
+      const t = data.curp.trim().toUpperCase().replace(/[^A-Z0-9Ñ]/g, '');
+      if (t.length > 0 && t.length !== 18) {
+        toast.error('La CURP debe tener 18 caracteres o dejarse vacía');
+        return;
+      }
+      body.curp = t.length === 0 ? null : t;
+    }
+    updateMut.mutate({ id: String(editRow.id), body });
   });
 
   const onCreate = handleSubmit((data) => {
@@ -513,6 +535,35 @@ export function DashboardPlayersPage() {
               {editErrors.lastName && <p className={formErrorClass}>{editErrors.lastName.message}</p>}
             </div>
           </div>
+          <div>
+            <label className={formLabelClass}>Fecha de nacimiento</label>
+            <input type="date" className={formInputClass} {...registerEdit('birthDate', { required: 'Requerida' })} />
+            {editErrors.birthDate && <p className={formErrorClass}>{editErrors.birthDate.message}</p>}
+            <p className="text-[10px] text-on-surface-variant mt-1">
+              Si la credencial mostraba un día menos (ej. 29 en vez de 30), corrígela aquí.
+            </p>
+          </div>
+          {user?.role === 'admin' ? (
+            <div>
+              <label className={formLabelClass}>CURP</label>
+              <input className={formInputClass} maxLength={18} {...registerEdit('curp')} />
+              <button
+                type="button"
+                className="mt-2 text-[11px] font-label-caps text-primary hover:underline"
+                onClick={() => {
+                  const iso = birthDateIsoFromCurp(watchEdit('curp'));
+                  if (!iso) {
+                    toast.error('CURP incompleta (18 caracteres)');
+                    return;
+                  }
+                  setEditValue('birthDate', iso);
+                  toast.success(`Fecha según CURP: ${iso}`);
+                }}
+              >
+                Usar fecha de la CURP
+              </button>
+            </div>
+          ) : null}
           <div>
             <label className={formLabelClass}>Estado en plantilla</label>
             <select className={formInputClass} {...registerEdit('status', { required: true })}>

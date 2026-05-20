@@ -5,6 +5,7 @@ import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildPlayerNameIlikeFilter } from '@shared/utils/sanitize-search';
 import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
+import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { normalizeCurp } from '@shared/utils/curp';
 import { CURRENT_SEASON } from '@config/constants';
 import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
@@ -28,13 +29,19 @@ export interface PublicLeaderRow {
 const PUBLIC_PLAYER_COLUMNS =
   'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, qr_generated_at, qr_token, season, achievements, created_at, updated_at';
 
+function withNormalizedBirthDate(row: Record<string, unknown>): Record<string, unknown> {
+  if (row.birth_date == null) return row;
+  const normalized = normalizeBirthDateOutput(row.birth_date);
+  return normalized ? { ...row, birth_date: normalized } : row;
+}
+
 function mapPublicPlayerRow(
   row: Record<string, unknown>,
   opts?: { includeCredentialUrl?: boolean },
 ): Record<string, unknown> {
   const { qr_token: token, ...rest } = row;
   const out: Record<string, unknown> = {
-    ...rest,
+    ...withNormalizedBirthDate(rest),
     has_qr: Boolean(token),
   };
   if (opts?.includeCredentialUrl && token) {
@@ -89,7 +96,7 @@ export class PlayersService {
     if (error) throw new Error(error.message);
 
     return {
-      data,
+      data: (data ?? []).map((row) => withNormalizedBirthDate(row as Record<string, unknown>)),
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
   }
@@ -257,7 +264,7 @@ export class PlayersService {
       .single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
-    return data;
+    return withNormalizedBirthDate(data as Record<string, unknown>);
   }
 
   static async getPublicProfile(ref: string) {

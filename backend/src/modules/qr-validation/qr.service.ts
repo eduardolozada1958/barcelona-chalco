@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@config/database';
 import QRCode from 'qrcode';
 import { NotFoundError } from '@middlewares/error.middleware';
+import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { maskCurpFragment } from '@shared/utils/curp-mask';
 import { publicSiteBaseUrl } from '@shared/utils/public-site-url';
 
@@ -42,7 +43,9 @@ export class QrService {
       .maybeSingle();
 
     const merged: Record<string, unknown> = { ...(player ?? {}) };
-    if (sensitive?.birth_date) merged.birth_date = sensitive.birth_date;
+    if (sensitive?.birth_date) {
+      merged.birth_date = normalizeBirthDateOutput(sensitive.birth_date) ?? sensitive.birth_date;
+    }
     merged.curp_masked = maskCurpFragment(sensitive?.curp as string | null | undefined);
 
     return { isValid: true, player: merged };
