@@ -5,7 +5,9 @@ export const CLUB_DISPLAY_NAME = 'F.C. Barcelona Cupido';
 /** Mismo nombre en textos legales (plataforma web, no federación ni club profesional). */
 export const CLUB_LEGAL_NAME = 'F.C. Barcelona Cupido';
 /** Sitio público (sin barra final). Preferir VITE_PUBLIC_APP_URL en producción. */
-export { SITE_URL as CLUB_SITE_URL } from '@/config/seo';
+export const CLUB_SITE_URL = (
+  import.meta.env.VITE_PUBLIC_APP_URL || 'https://barcelona-chalco.pages.dev'
+).replace(/\/$/, '');
 
 /** Aclaración breve para páginas legales. */
 export const SITE_LEGAL_DISCLAIMER =

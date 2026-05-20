@@ -1,9 +1,7 @@
-import { CLUB_DISPLAY_NAME, CLUB_LOGO_URL } from '@/config/club';
+import { CLUB_DISPLAY_NAME, CLUB_LOGO_URL, CLUB_SITE_URL } from '@/config/club';
 
 /** URL canónica del sitio (sin barra final). */
-export const SITE_URL = (
-  import.meta.env.VITE_PUBLIC_APP_URL || 'https://barcelona-chalco.pages.dev'
-).replace(/\/$/, '');
+export const SITE_URL = CLUB_SITE_URL;
 
 export const SITE_NAME = CLUB_DISPLAY_NAME;
 export const SITE_LOCALE = 'es_MX';
