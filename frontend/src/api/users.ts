@@ -49,3 +49,9 @@ export function isUserLoginLocked(u: Record<string, unknown>): boolean {
   const attempts = typeof u.failed_login_attempts === 'number' ? u.failed_login_attempts : 0;
   return attempts >= 5;
 }
+
+/** Elimina cuenta (soft delete). No puede ser tu propio usuario. */
+export async function deleteUser(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<{ ok: boolean }>>(`/users/${id}`);
+  return data;
+}

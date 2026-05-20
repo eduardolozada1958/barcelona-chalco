@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 import {
   createUser,
+  deleteUser,
   isUserLoginLocked,
   listUsers,
   requestUserEmailChange,
@@ -12,6 +13,7 @@ import {
   updateUser,
   type CreateUserBody,
 } from '@/api/users';
+import { useAuth } from '@/contexts/AuthContext';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -30,6 +32,7 @@ const STATUS_OPTIONS = ['active', 'inactive', 'suspended', 'pending'] as const;
 type RoleFilter = 'all' | 'parent' | 'coach' | 'admin';
 
 export function DashboardUsersPage() {
+  const { user: sessionUser } = useAuth();
   const qc = useQueryClient();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [createOpen, setCreateOpen] = useState(false);
@@ -81,6 +84,16 @@ export function DashboardUsersPage() {
     onSuccess: (res) => {
       toast.success(res.message ?? 'Enlace enviado al nuevo correo');
       setManageNewEmail('');
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteUser(id),
+    onSuccess: () => {
+      toast.success('Usuario eliminado');
+      setManageUser(null);
+      void qc.invalidateQueries({ queryKey: ['users-admin'] });
     },
     onError: (e: Error) => toast.error(getApiErrorMessage(e)),
   });
@@ -329,6 +342,39 @@ export function DashboardUsersPage() {
               >
                 <MaterialIcon name="forward_to_inbox" size={14} />
                 Enviar enlace de confirmación
+              </button>
+            </div>
+
+            <div className="pt-4 border-t border-outline-variant/25">
+              <p className="text-xs text-on-surface-variant mb-3">
+                Eliminar la cuenta: no podrá iniciar sesión. Los datos históricos (cuotas, vínculos) se conservan en el
+                sistema.
+              </p>
+              <button
+                type="button"
+                disabled={
+                  deleteMut.isPending || String(manageUser.id) === sessionUser?.id
+                }
+                onClick={() => {
+                  const email = String(manageUser.email);
+                  const role = userRoleLabel(String(manageUser.role));
+                  if (
+                    !window.confirm(
+                      `¿Eliminar la cuenta ${email} (${role})?\n\nNo podrá volver a entrar al panel.`,
+                    )
+                  ) {
+                    return;
+                  }
+                  deleteMut.mutate(String(manageUser.id));
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-error/40 text-error text-[10px] font-label-caps hover:bg-error/10 disabled:opacity-50"
+              >
+                <MaterialIcon name="delete" size={14} />
+                {String(manageUser.id) === sessionUser?.id
+                  ? 'No puedes eliminar tu propia cuenta'
+                  : deleteMut.isPending
+                    ? 'Eliminando…'
+                    : 'Eliminar usuario'}
               </button>
             </div>
           </div>

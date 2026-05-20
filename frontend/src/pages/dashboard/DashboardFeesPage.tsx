@@ -4,8 +4,10 @@ import toast from 'react-hot-toast';
 
 import { getFeesMatrix, syncPaymentHolds, updatePlayerFees, type FeeMatrixRow } from '@/api/fees';
 import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
+import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { COACH_PHONE_DISPLAY, COACH_WHATSAPP_URL } from '@/config/coach';
+import { downloadFeesPdf } from '@/utils/fees-pdf';
 
 export function DashboardFeesPage() {
   const qc = useQueryClient();
@@ -100,6 +102,23 @@ export function DashboardFeesPage() {
         >
           WhatsApp Gabo
         </a>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/50 text-primary text-sm hover:bg-primary/10"
+          disabled={!payload || rows.length === 0}
+          onClick={() => {
+            if (!payload) return;
+            try {
+              downloadFeesPdf(payload, period);
+              toast.success('PDF descargado');
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'No se pudo generar el PDF');
+            }
+          }}
+        >
+          <MaterialIcon name="picture_as_pdf" size={18} />
+          Exportar PDF
+        </button>
       </div>
 
       <p className="text-xs text-on-surface-variant">

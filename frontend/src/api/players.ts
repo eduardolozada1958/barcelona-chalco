@@ -199,3 +199,9 @@ export async function generatePlayerQr(id: string) {
   const { data } = await apiClient.patch<ApiResponse<{ qrToken: string }>>(`/players/${id}/generate-qr`);
   return data;
 }
+
+/** Baja de plantilla (soft delete). */
+export async function deletePlayer(id: string) {
+  const { data } = await apiClient.delete<ApiResponse<{ ok: boolean }>>(`/players/${id}`);
+  return data;
+}

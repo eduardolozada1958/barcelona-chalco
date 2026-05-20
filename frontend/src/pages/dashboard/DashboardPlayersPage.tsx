@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 
 import {
   createPlayerWithDocuments,
+  deletePlayer,
   listPlayersAdmin,
   updatePlayer,
   uploadPlayerPhoto,
@@ -13,6 +14,7 @@ import {
   type CreatePlayerWithDocumentsData,
   type UpdatePlayerBody,
 } from '@/api/players';
+import { DashboardRowActions } from '@/components/DashboardRowActions';
 import type { ApiResponse } from '@/api/types';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -92,6 +94,15 @@ export function DashboardPlayersPage() {
   const q = useQuery({
     queryKey: ['players-admin'],
     queryFn: () => listPlayersAdmin({ page: 1, limit: 50 }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deletePlayer(id),
+    onSuccess: () => {
+      toast.success('Jugador eliminado de la plantilla');
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const createMut = useMutation({
@@ -354,6 +365,20 @@ export function DashboardPlayersPage() {
                     <Link to={`/dashboard/players/${p.id}`} className="text-primary hover:underline font-label-caps text-label-caps inline-flex items-center gap-1">
                       <MaterialIcon name="visibility" size={14} /> Ver
                     </Link>
+                    <DashboardRowActions
+                      onDelete={() => {
+                        const name = `${p.first_name} ${p.last_name}`.trim();
+                        if (
+                          !window.confirm(
+                            `¿Eliminar a ${name} de la plantilla?\n\nYa no aparecerá en listados, asistencia ni cuotas. Esta acción no se puede deshacer desde el panel.`,
+                          )
+                        ) {
+                          return;
+                        }
+                        deleteMut.mutate(String(p.id));
+                      }}
+                      deletePending={deleteMut.isPending}
+                    />
                   </div>
                 </td>
               </tr>
