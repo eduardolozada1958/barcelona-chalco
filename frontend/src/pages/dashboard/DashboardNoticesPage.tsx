@@ -25,6 +25,7 @@ type NoticeForm = {
   type: NonNullable<CreateNoticeBody['type']>;
   audience: NonNullable<CreateNoticeBody['audience']>;
   isPinned: boolean;
+  coverImageUrl: string;
 };
 
 function insertEmojiAtCursor(
@@ -124,6 +125,7 @@ export function DashboardNoticesPage() {
       type: 'general',
       audience: 'all',
       isPinned: false,
+      coverImageUrl: '',
     },
   });
 
@@ -141,6 +143,7 @@ export function DashboardNoticesPage() {
       type: 'general',
       audience: 'all',
       isPinned: false,
+      coverImageUrl: '',
     },
   });
 
@@ -152,6 +155,7 @@ export function DashboardNoticesPage() {
       type: (n.type as NoticeForm['type']) ?? 'general',
       audience: (n.audience as NoticeForm['audience']) ?? 'all',
       isPinned: Boolean(n.is_pinned),
+      coverImageUrl: String(n.cover_image_url ?? ''),
     });
   }
 
@@ -166,17 +170,20 @@ export function DashboardNoticesPage() {
   }
 
   const onCreate = handleSubmit((data) => {
+    const cover = data.coverImageUrl.trim();
     createMut.mutate({
       title:   data.title.trim(),
       content: data.content.trim(),
       type:    data.type,
       audience: data.audience,
       isPinned: data.isPinned,
+      coverImageUrl: cover || null,
     });
   });
 
   const onEdit = handleSubmitEdit((data) => {
     if (!editRow) return;
+    const cover = data.coverImageUrl.trim();
     updateMut.mutate({
       id: String(editRow.id),
       body: {
@@ -185,6 +192,7 @@ export function DashboardNoticesPage() {
         type:    data.type,
         audience: data.audience,
         isPinned: data.isPinned,
+        coverImageUrl: cover || null,
       },
     });
   });
@@ -303,6 +311,19 @@ export function DashboardNoticesPage() {
               También puedes pegar cualquier emoji desde el teclado o portapapeles (UTF-8).
             </p>
           </div>
+          <div>
+            <label className={formLabelClass}>Imagen del aviso (URL, opcional)</label>
+            <input
+              type="url"
+              className={formInputClass}
+              placeholder="https://… foto horizontal para popup urgente"
+              {...register('coverImageUrl')}
+            />
+            <p className="text-[11px] text-on-surface-variant mt-1">
+              Si el tipo es <strong>Urgente</strong> y publicas el aviso, al entrar al sitio se muestra un popup con esta
+              imagen (como banner). Pega un enlace público a JPG o PNG.
+            </p>
+          </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned-create" className="rounded border-outline-variant" {...register('isPinned')} />
             <label htmlFor="pinned-create" className="text-sm text-on-surface">Fijar en la parte superior</label>
@@ -375,6 +396,10 @@ export function DashboardNoticesPage() {
               label="Emojis para el contenido"
               onPick={(emoji) => insertEmojiAtCursor(editContentRef.current, emoji, getValuesEdit, setValueEdit, 'content')}
             />
+          </div>
+          <div>
+            <label className={formLabelClass}>Imagen del aviso (URL, opcional)</label>
+            <input type="url" className={formInputClass} placeholder="https://…" {...registerEdit('coverImageUrl')} />
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned-edit" className="rounded border-outline-variant" {...registerEdit('isPinned')} />

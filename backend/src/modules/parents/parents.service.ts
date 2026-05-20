@@ -490,8 +490,18 @@ export class ParentsService {
       });
     }
 
+    const paymentHold = Boolean(userRow?.payment_hold);
+    const paymentWarning =
+      !paymentHold &&
+      children.some(
+        (c) =>
+          (!c.registrationPaid && c.monthlyFeePaid) ||
+          (c.registrationPaid && !c.monthlyFeePaid),
+      );
+
     return {
-      paymentHold: Boolean(userRow?.payment_hold),
+      paymentHold,
+      paymentWarning,
       periodMonth,
       coach: {
         name:     COACH_DISPLAY_NAME,

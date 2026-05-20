@@ -30,8 +30,20 @@ export function ParentAccountStatus({ compact = false }: { compact?: boolean }) 
   if (!data) return null;
 
   const hasChildren = data.children.length > 0;
-  const anyUnpaid = data.children.some((c) => !c.allPaid);
   const wa = data.coach.whatsapp || COACH_WHATSAPP_URL;
+
+  const partialDebts = data.children
+    .filter(
+      (c) =>
+        (!c.registrationPaid && c.monthlyFeePaid) ||
+        (c.registrationPaid && !c.monthlyFeePaid),
+    )
+    .map((c) => {
+      const name = `${c.firstName} ${c.lastName}`.trim();
+      if (!c.registrationPaid && c.monthlyFeePaid) return `${name}: falta el pago de registro`;
+      if (c.registrationPaid && !c.monthlyFeePaid) return `${name}: falta la mensualidad del mes`;
+      return name;
+    });
 
   return (
     <section
@@ -59,8 +71,8 @@ export function ParentAccountStatus({ compact = false }: { compact?: boolean }) 
         <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm">
           <p className="text-on-surface font-medium">Acceso restringido por adeudo</p>
           <p className="text-on-surface-variant mt-1">
-            Hay registro o mensualidad pendiente. Para activar tu cuenta, contacta a{' '}
-            <strong>{data.coach.name}</strong> al {data.coach.phone}.
+            Tienes <strong>registro y mensualidad del mes</strong> pendientes en al menos un hijo. Para activar tu
+            cuenta, contacta a <strong>{data.coach.name}</strong> al {data.coach.phone}.
           </p>
           <a
             href={wa}
@@ -72,10 +84,31 @@ export function ParentAccountStatus({ compact = false }: { compact?: boolean }) 
             WhatsApp {data.coach.name}
           </a>
         </div>
-      ) : anyUnpaid ? (
-        <p className="text-sm text-amber-400/90">
-          Tienes pagos pendientes en el mes. Regulariza con {data.coach.name} para evitar bloqueo de acceso.
-        </p>
+      ) : data.paymentWarning && partialDebts.length > 0 ? (
+        <div className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm">
+          <p className="text-on-surface font-medium flex items-center gap-1.5">
+            <MaterialIcon name="warning" size={18} className="text-amber-400 shrink-0" />
+            Ponte al corriente
+          </p>
+          <p className="text-on-surface-variant mt-1">
+            Puedes entrar al panel, pero hay un pago pendiente. Si también falta el otro concepto (registro o
+            mensualidad), se bloqueará el acceso.
+          </p>
+          <ul className="mt-2 list-disc list-inside text-amber-200/90 text-xs space-y-0.5">
+            {partialDebts.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+          <a
+            href={wa}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 mt-2 text-primary font-label-caps text-[11px] hover:underline"
+          >
+            <MaterialIcon name="chat" size={14} />
+            Contactar a {data.coach.name}
+          </a>
+        </div>
       ) : hasChildren ? (
         <p className="text-sm text-primary">Tus cuotas del mes están al corriente.</p>
       ) : (

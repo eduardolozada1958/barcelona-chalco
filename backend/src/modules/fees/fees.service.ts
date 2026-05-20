@@ -223,11 +223,6 @@ export class FeesService {
       .is('deleted_at', null);
     if (pErr) throw new Error(pErr.message);
 
-    for (const p of players ?? []) {
-      const row = p as { id: string; registration_paid: boolean };
-      if (!row.registration_paid) return true;
-    }
-
     const { data: fees, error: fErr } = await supabaseAdmin
       .from('player_monthly_fees')
       .select('player_id, monthly_fee_paid')
@@ -235,14 +230,18 @@ export class FeesService {
       .in('player_id', playerIds);
     if (fErr) throw new Error(fErr.message);
 
-    const paidSet = new Set(
+    const monthlyPaidSet = new Set(
       (fees ?? [])
         .filter((f) => Boolean((f as { monthly_fee_paid: boolean }).monthly_fee_paid))
         .map((f) => String((f as { player_id: string }).player_id)),
     );
 
-    for (const pid of playerIds) {
-      if (!paidSet.has(pid)) return true;
+    /** Bloqueo solo si algún hijo debe registro y mensualidad a la vez. Una sola deuda = advertencia, no bloqueo. */
+    for (const p of players ?? []) {
+      const row = p as { id: string; registration_paid: boolean };
+      const regPaid = Boolean(row.registration_paid);
+      const monthPaid = monthlyPaidSet.has(String(row.id));
+      if (!regPaid && !monthPaid) return true;
     }
     return false;
   }

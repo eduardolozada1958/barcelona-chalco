@@ -5,4 +5,4 @@ export const COACH_PHONE_TEL = '+5215632332292';
 export const COACH_WHATSAPP_URL = 'https://wa.me/5215632332292';
 
 export const PARENT_PAYMENT_BLOCKED_MESSAGE =
-  `Acceso suspendido por falta de pago (registro o mensualidad del mes). Contacta a ${COACH_DISPLAY_NAME} al ${COACH_PHONE_DISPLAY} o por WhatsApp para activar tu cuenta.`;
+  `Acceso suspendido: tienes registro y mensualidad del mes pendientes. Contacta a ${COACH_DISPLAY_NAME} al ${COACH_PHONE_DISPLAY} o por WhatsApp para activar tu cuenta.`;

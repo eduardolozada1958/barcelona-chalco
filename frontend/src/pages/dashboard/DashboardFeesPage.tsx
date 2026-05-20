@@ -72,8 +72,9 @@ export function DashboardFeesPage() {
       </div>
 
       <AdminPrivateNotice>
-        Las cuotas y el estado de mora son confidenciales. No aparecen en partidos, jugadores públicos ni en el panel
-        del entrenador. El padre bloqueado ve al iniciar sesión que debe contactar a Gabo ({COACH_PHONE_DISPLAY}).
+        Las cuotas son confidenciales. El acceso se bloquea solo si falta <strong>registro y mensualidad</strong> a la
+        vez; si falta solo uno, el padre entra con advertencia. Tras cambiar pagos, usa <strong>Recalcular bloqueos</strong>.
+        Contacto mora: Gabo ({COACH_PHONE_DISPLAY}).
       </AdminPrivateNotice>
 
       <div className="flex flex-wrap items-end gap-3">
@@ -205,6 +206,8 @@ function FeeRow({
                 {p.email}
                 {p.payment_hold ? (
                   <span className="text-error ml-1">(bloqueado)</span>
+                ) : !row.registration_paid !== !row.monthly_fee_paid ? (
+                  <span className="text-amber-400 ml-1">(aviso)</span>
                 ) : (
                   <span className="text-primary ml-1">(activo)</span>
                 )}

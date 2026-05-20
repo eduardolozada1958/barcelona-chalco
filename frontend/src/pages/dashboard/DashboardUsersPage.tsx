@@ -288,8 +288,9 @@ export function DashboardUsersPage() {
               </button>
               {String(manageUser.role) === 'parent' ? (
                 <p className="mt-2 text-[11px] text-on-surface-variant">
-                  Para <strong>suspender</strong> un padre, elige <strong>Suspendido</strong> y guarda. Si solo debe cuotas,
-                  usa <strong>Cuotas</strong> en el menú (bloqueo automático hasta pagar registro o mensualidad).
+                  Para <strong>suspender</strong> un padre, elige <strong>Suspendido</strong> y guarda. Si debe cuotas,
+                  usa <strong>Cuotas</strong>: bloqueo automático solo si faltan <strong>registro y mensualidad</strong>;
+                  si falta solo uno, verá advertencia al entrar.
                 </p>
               ) : null}
               {Boolean(manageUser.payment_hold) && String(manageUser.role) === 'parent' ? (

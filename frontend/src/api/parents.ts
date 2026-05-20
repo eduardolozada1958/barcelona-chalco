@@ -47,6 +47,8 @@ export type ParentSummaryChild = {
 
 export type ParentAccountSummary = {
   paymentHold: boolean;
+  /** true si solo falta registro o solo mensualidad (puede entrar; mostrar advertencia). */
+  paymentWarning: boolean;
   periodMonth: string;
   coach: { name: string; phone: string; whatsapp: string };
   children: ParentSummaryChild[];

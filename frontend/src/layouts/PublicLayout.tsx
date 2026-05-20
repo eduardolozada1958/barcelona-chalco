@@ -11,6 +11,7 @@ import { getPanelNavIcon, getPanelShortLabel } from '@/config/panel-labels';
 import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
+import { UrgentNoticePopup } from '@/components/UrgentNoticePopup';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -51,6 +52,7 @@ export function PublicLayout() {
     <MobileMenuProvider open={mobileOpen}>
     <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
       <ScrollToTop />
+      <UrgentNoticePopup />
       {/* ═══════════════════ TopNavBar ═══════════════════ */}
       <nav className="fixed top-0 left-0 right-0 z-[90] flex justify-between items-end gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop pb-2 sm:pb-3 min-h-[var(--public-header-h)] pt-[env(safe-area-inset-top,0px)] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0">
         {/* Logo */}
@@ -137,8 +139,19 @@ export function PublicLayout() {
             aria-label="Cerrar menú"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative z-10 flex flex-col flex-1 min-h-0 pt-[var(--public-header-h)] overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="flex flex-col gap-2 px-4 sm:px-margin-mobile py-stack-md">
+          <div className="relative z-10 flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="flex items-center justify-between shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-outline-variant/20 bg-background">
+              <span className="font-label-caps text-label-caps text-primary">Menú</span>
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation"
+                aria-label="Cerrar menú"
+              >
+                <MaterialIcon name="close" size={28} />
+              </button>
+            </div>
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-margin-mobile py-stack-md pb-[max(1rem,env(safe-area-inset-bottom))]">
             {publicLinks.map((l) => {
               const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
               return (
@@ -186,7 +199,7 @@ export function PublicLayout() {
               )}
             </div>
           </div>
-        </div>
+          </div>
         </div>
       )}
 
