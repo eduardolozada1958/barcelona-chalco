@@ -7,13 +7,7 @@ import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { downloadAttendancePdf } from '@/utils/attendance-pdf';
-
-function formatDayHeader(date: string, type: string): string {
-  const d = new Date(date + 'T12:00:00');
-  const wd = d.toLocaleDateString('es-MX', { weekday: 'short' });
-  const day = d.getDate();
-  return `${wd} ${day}\n${type === 'match' ? 'Juego' : 'Entreno'}`;
-}
+import { formatSessionColumnHeader } from '@/utils/attendance-calendar';
 
 export function DashboardAttendancePage() {
   const qc = useQueryClient();
@@ -97,7 +91,7 @@ export function DashboardAttendancePage() {
       <div>
         <h1 className="font-headline-lg text-2xl text-on-surface">Registro de asistencia</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Marca asistencia por día. Los domingos no tienen sesión.
+          Las fechas del mes se calculan solas: partido lun, mié, vie y sáb; entreno mar y jue.
         </p>
         {legend}
       </div>
@@ -153,16 +147,24 @@ export function DashboardAttendancePage() {
               <th className="sticky left-0 z-20 bg-surface-container px-2 py-2 text-left font-label-caps min-w-[140px]">
                 Jugador
               </th>
-              {grid.sessionDates.map((sd) => (
-                <th
-                  key={sd.date}
-                  className={`px-1 py-2 text-center font-label-caps whitespace-pre leading-tight min-w-[52px] ${
-                    sd.type === 'match' ? 'bg-emerald-900/50 text-emerald-100' : 'bg-sky-900/50 text-sky-100'
-                  }`}
-                >
-                  {formatDayHeader(sd.date, sd.type)}
-                </th>
-              ))}
+              {grid.sessionDates.map((sd) => {
+                const h = formatSessionColumnHeader(sd.date, sd.type);
+                return (
+                  <th
+                    key={sd.date}
+                    title={h.title}
+                    className={`px-1 py-2 text-center text-[10px] leading-tight min-w-[72px] max-w-[88px] ${
+                      sd.type === 'match' ? 'bg-emerald-900/50 text-emerald-100' : 'bg-sky-900/50 text-sky-100'
+                    }`}
+                  >
+                    {h.lines.map((line, i) => (
+                      <span key={i} className={`block ${i === 0 ? 'font-semibold capitalize' : ''}`}>
+                        {line}
+                      </span>
+                    ))}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>

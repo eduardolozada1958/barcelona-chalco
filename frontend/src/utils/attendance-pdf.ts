@@ -2,17 +2,12 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 import type { AttendanceGrid } from '@/api/attendance';
+import { formatSessionColumnHeader } from '@/utils/attendance-calendar';
 
 function monthLabel(period: string): string {
   const [y, m] = period.split('-').map(Number);
   if (!y || !m) return period;
   return new Date(y, m - 1, 1).toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
-}
-
-function dayColumnTitle(date: string, type: string): string {
-  const d = new Date(date + 'T12:00:00');
-  const wd = d.toLocaleDateString('es-MX', { weekday: 'short' });
-  return `${wd} ${d.getDate()}\n${type === 'match' ? 'Juego' : 'Entreno'}`;
 }
 
 /** Genera PDF horizontal del registro de asistencia (uso interno). */
@@ -36,7 +31,7 @@ export function downloadAttendancePdf(
     [
       'Jugador',
       '#',
-      ...grid.sessionDates.map((sd) => dayColumnTitle(sd.date, sd.type)),
+      ...grid.sessionDates.map((sd) => formatSessionColumnHeader(sd.date, sd.type).lines.join('\n')),
     ],
   ];
 
