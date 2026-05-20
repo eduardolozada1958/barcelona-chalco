@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getPlayerPublic } from '@/api/players';
 import type { Player } from '@/types';
+import { PlayerHighlightBadge, PlayerProfileCelebration } from '@/components/PlayerProfileCelebration';
+import { usePlayerHighlights } from '@/hooks/usePlayerHighlights';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { StatBox } from '@/components/StatBox';
@@ -25,6 +27,7 @@ export function PublicPlayerDetailPage() {
   });
 
   const player = q.data?.data as Player | undefined;
+  const highlights = usePlayerHighlights(player?.id, player?.slug);
 
   useEffect(() => {
     if (!player || !id) return;
@@ -55,6 +58,18 @@ export function PublicPlayerDetailPage() {
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
       {/* ═══════ Hero Section ═══════ */}
       <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 grid grid-cols-1 md:grid-cols-[minmax(220px,280px)_1fr] gap-6 md:gap-8 p-4 md:p-6 md:items-start">
+        {!highlights.loading && highlights.kind ? (
+          <div className="md:col-span-2 relative min-h-0">
+            <PlayerProfileCelebration
+              playerId={player.id}
+              playerName={fullName}
+              kind={highlights.kind}
+              weekLabel={highlights.weekLabel}
+              goals={highlights.goals}
+              scorerRank={highlights.scorerRank}
+            />
+          </div>
+        ) : null}
         {/* Foto retrato 3:4 — altura acotada, no crece con el panel derecho */}
         <div className="flex justify-center md:justify-start">
           <div className="relative w-[min(100%,260px)] aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/25 shadow-md">
@@ -82,8 +97,13 @@ export function PublicPlayerDetailPage() {
         {/* Datos del jugador — min-w-0 evita que flex/grid colapse el texto */}
         <div className="relative min-w-0 flex flex-col md:border-l border-outline-variant/10 md:pl-6 pt-2 md:pt-0">
           {/* Name + Position + Badges */}
-          <div className="mb-stack-md flex justify-between items-start">
-            <div>
+          <div className="mb-stack-md flex justify-between items-start gap-3">
+            <div className="min-w-0">
+              {!highlights.loading && highlights.kind ? (
+                <div className="mb-2">
+                  <PlayerHighlightBadge kind={highlights.kind} />
+                </div>
+              ) : null}
               <h1 className="font-display-hero text-display-hero text-on-surface mb-2 tracking-tighter">
                 {player.first_name.toUpperCase()} <br />
                 <span className="text-primary">{player.last_name.toUpperCase()}</span>
