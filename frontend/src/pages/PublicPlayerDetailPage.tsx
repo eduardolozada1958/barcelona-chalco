@@ -11,7 +11,9 @@ import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
-import { isPlayerUuid } from '@/utils/player-path';
+import { PageSeo } from '@/components/PageSeo';
+import { absoluteUrl } from '@/config/seo';
+import { isPlayerUuid, playerPublicPath } from '@/utils/player-path';
 import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 
 /**
@@ -44,6 +46,24 @@ export function PublicPlayerDetailPage() {
 
   if (q.isLoading) return <Spinner />;
 
+  const playerSeo = player ? (
+    <PageSeo
+      title={`${player.first_name} ${player.last_name}`}
+      description={`Perfil de ${player.first_name} ${player.last_name} en F.C. Barcelona Cupido: posición ${player.position}, categoría ${player.category}, estadísticas y credencial digital.`}
+      path={playerPublicPath(player)}
+      image={player.avatar_url}
+      type="profile"
+      jsonLd={{
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name: `${player.first_name} ${player.last_name}`,
+        url: absoluteUrl(playerPublicPath(player)),
+        image: player.avatar_url ?? undefined,
+        memberOf: { '@type': 'SportsTeam', name: 'F.C. Barcelona Cupido' },
+      }}
+    />
+  ) : null;
+
   if (!player) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -61,6 +81,7 @@ export function PublicPlayerDetailPage() {
 
   return (
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
+      {playerSeo}
       {/* ═══════ Hero Section ═══════ */}
       <section className="relative w-full rounded-xl overflow-hidden mb-stack-lg bg-surface-container-low shadow-card-deep border border-outline-variant/30 grid grid-cols-1 md:grid-cols-[minmax(220px,280px)_1fr] gap-6 md:gap-8 p-4 md:p-6 md:items-start">
         {!highlights.loading && highlights.kind ? (

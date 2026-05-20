@@ -1,0 +1,20 @@
+# F.C. Barcelona Cupido — https://barcelona-chalco.pages.dev
+User-agent: *
+Allow: /
+Allow: /jugadores
+Allow: /partidos
+Allow: /resultados
+Allow: /avisos
+Allow: /galeria
+Allow: /contacto
+Allow: /credencial
+
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /olvide-contraseña
+Disallow: /restablecer-password
+Disallow: /verificar-email
+Disallow: /confirmar-email
+
+Sitemap: https://barcelona-chalco.pages.dev/sitemap.xml

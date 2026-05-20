@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 import { getGalleryPublic } from '@/api/gallery';
+import { PageSeo } from '@/components/PageSeo';
 import { Spinner } from '@/components/Spinner';
 import { CommentsSection } from '@/components/CommentsSection';
 
@@ -17,8 +18,17 @@ export function PublicGalleryDetailPage() {
   if (!post) return <p className="p-8 text-white">Publicación no encontrada.</p>;
   const media = (post.gallery_media as Record<string, unknown>[] | undefined) ?? [];
 
+  const firstImage = media.find((m) => m.type !== 'video')?.url;
+  const imgUrl = typeof firstImage === 'string' ? firstImage : null;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 text-white">
+      <PageSeo
+        title={String(post.title)}
+        description={post.caption ? String(post.caption).slice(0, 160) : `Galería — F.C. Barcelona Cupido`}
+        path={`/galeria/${id}`}
+        image={imgUrl}
+      />
       <Link to="/galeria" className="text-sm text-primary hover:underline">
         ← Galería
       </Link>

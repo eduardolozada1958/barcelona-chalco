@@ -7,6 +7,7 @@ import { fetchPlayersPublicByIds } from '@/api/players';
 import { MatchFormationPitch } from '@/components/MatchFormationPitch';
 import { MatchMapEmbed } from '@/components/MatchMapEmbed';
 import { MatchTeamCrest } from '@/components/MatchTeamCrest';
+import { PageSeo } from '@/components/PageSeo';
 import { CLUB_DISPLAY_NAME } from '@/config/club';
 import { matchStatusLabel } from '@/config/labels';
 import { Spinner } from '@/components/Spinner';
@@ -80,8 +81,17 @@ export function PublicMatchDetailPage() {
   const matchDateStr = formatMatchDate(m.match_date);
   const filledCount = pitchSlots?.filter(Boolean).length ?? 0;
 
+  const title = String(m.title ?? 'Partido');
+  const opponent = String(m.opponent_name ?? 'Rival');
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 text-white">
+      <PageSeo
+        title={title}
+        description={`${CLUB_DISPLAY_NAME} vs ${opponent} — ${matchDateStr}. Convocatoria, sede y detalles del partido.`}
+        path={`/partidos/${id}`}
+        type="article"
+      />
       <Link to="/partidos" className="text-sm text-primary hover:underline">
         ← Partidos
       </Link>

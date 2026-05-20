@@ -12,6 +12,7 @@ import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 import { UrgentNoticePopup } from '@/components/UrgentNoticePopup';
+import { PublicRouteSeo } from '@/components/PublicRouteSeo';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -52,6 +53,7 @@ export function PublicLayout() {
     <MobileMenuProvider open={mobileOpen}>
     <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
       <ScrollToTop />
+      <PublicRouteSeo />
       <UrgentNoticePopup />
       {/* ═══════════════════ TopNavBar ═══════════════════ */}
       <nav className="fixed top-0 left-0 right-0 z-[90] flex justify-between items-end gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop pb-2 sm:pb-3 min-h-[var(--public-header-h)] pt-[env(safe-area-inset-top,0px)] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0">
@@ -219,6 +221,12 @@ export function PublicLayout() {
           <span className="font-display-hero text-primary text-lg sm:text-2xl leading-tight">F.C. BARCELONA CUPIDO</span>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
+          <a
+            href="/sitemap.xml"
+            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100"
+          >
+            Mapa del sitio
+          </a>
           {footerLinks.map((l) => (
             <NavLink
               key={l.to}
