@@ -9,7 +9,7 @@ import { EmailChangeService } from '@modules/auth/email-change.service';
 import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
-  'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, failed_login_attempts, login_locked_at, created_at, updated_at';
+  'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, failed_login_attempts, login_locked_at, payment_hold, created_at, updated_at';
 
 export class UsersService {
   static async list(opts: ListUsersQuery) {

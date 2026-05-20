@@ -27,16 +27,24 @@ type CreateUserForm = {
 
 const STATUS_OPTIONS = ['active', 'inactive', 'suspended', 'pending'] as const;
 
+type RoleFilter = 'all' | 'parent' | 'coach' | 'admin';
+
 export function DashboardUsersPage() {
   const qc = useQueryClient();
+  const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [manageUser, setManageUser] = useState<Record<string, unknown> | null>(null);
   const [manageStatus, setManageStatus] = useState<string>('active');
   const [manageNewEmail, setManageNewEmail] = useState('');
 
   const q = useQuery({
-    queryKey: ['users-admin'],
-    queryFn: () => listUsers({ page: 1, limit: 50 }),
+    queryKey: ['users-admin', roleFilter],
+    queryFn: () =>
+      listUsers({
+        page:  1,
+        limit: 80,
+        ...(roleFilter !== 'all' ? { role: roleFilter } : {}),
+      }),
   });
 
   const createMut = useMutation({
@@ -103,7 +111,21 @@ export function DashboardUsersPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
         <h1 className="font-headline-lg text-headline-lg text-on-surface">👥 Usuarios</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {(['all', 'parent', 'coach', 'admin'] as const).map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => setRoleFilter(r)}
+              className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
+                roleFilter === r
+                  ? 'border-primary bg-primary/15 text-primary'
+                  : 'border-outline-variant/30 text-on-surface-variant'
+              }`}
+            >
+              {r === 'all' ? 'Todos' : userRoleLabel(r)}
+            </button>
+          ))}
           <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
             {rows.length} registrados
           </span>
@@ -159,6 +181,12 @@ export function DashboardUsersPage() {
                         <MaterialIcon name={u.status === 'active' ? 'check_circle' : 'block'} size={12} />
                         {userStatusLabel(status)}
                       </span>
+                      {Boolean(u.payment_hold) && role === 'parent' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps bg-error/15 text-error">
+                          <MaterialIcon name="payments" size={12} />
+                          Mora (cuotas)
+                        </span>
+                      ) : null}
                       {locked && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps bg-error/15 text-error">
                           <MaterialIcon name="lock" size={12} />
@@ -245,6 +273,17 @@ export function DashboardUsersPage() {
               >
                 Guardar estado
               </button>
+              {String(manageUser.role) === 'parent' ? (
+                <p className="mt-2 text-[11px] text-on-surface-variant">
+                  Para <strong>suspender</strong> un padre, elige <strong>Suspendido</strong> y guarda. Si solo debe cuotas,
+                  usa <strong>Cuotas</strong> en el menú (bloqueo automático hasta pagar registro o mensualidad).
+                </p>
+              ) : null}
+              {Boolean(manageUser.payment_hold) && String(manageUser.role) === 'parent' ? (
+                <p className="mt-2 text-[11px] text-error">
+                  Bloqueado por mora. Marca pagos en Cuotas o contacto con Gabo.
+                </p>
+              ) : null}
             </div>
 
             {isUserLoginLocked(manageUser) ? (

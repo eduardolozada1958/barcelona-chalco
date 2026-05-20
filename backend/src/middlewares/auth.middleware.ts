@@ -23,12 +23,13 @@ async function loadActiveUser(userId: string): Promise<AuthenticatedUser | null>
 
   const { data, error } = await supabaseAdmin
     .from('users')
-    .select('id, email, role, full_name, status, email_verified, deleted_at')
+    .select('id, email, role, full_name, status, email_verified, deleted_at, payment_hold')
     .eq('id', userId)
     .maybeSingle();
 
   if (error || !data || data.deleted_at) return null;
   if (data.status !== 'active') return null;
+  if (data.role === 'parent' && data.payment_hold) return null;
 
   const user: AuthenticatedUser = {
     id:       data.id as string,

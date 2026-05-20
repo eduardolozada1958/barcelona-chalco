@@ -42,6 +42,8 @@ import { DashboardUsersPage } from '@/pages/dashboard/DashboardUsersPage';
 import { DashboardSettingsPage } from '@/pages/dashboard/DashboardSettingsPage';
 import { DashboardAccountPage } from '@/pages/dashboard/DashboardAccountPage';
 import { DashboardGuidePage } from '@/pages/dashboard/DashboardGuidePage';
+import { DashboardAttendancePage } from '@/pages/dashboard/DashboardAttendancePage';
+import { DashboardFeesPage } from '@/pages/dashboard/DashboardFeesPage';
 
 export default function App() {
   return (
@@ -132,6 +134,22 @@ export default function App() {
           element={
             <ProtectedRoute roles={['admin', 'coach']}>
               <DashboardGalleryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="attendance"
+          element={
+            <ProtectedRoute roles={['admin', 'coach']}>
+              <DashboardAttendancePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="fees"
+          element={
+            <ProtectedRoute roles={['admin', 'coach']}>
+              <DashboardFeesPage />
             </ProtectedRoute>
           }
         />

@@ -21,6 +21,7 @@ import {
   lockedAccountMessage,
   recordFailedLogin,
 } from './login-lockout';
+import { PARENT_PAYMENT_BLOCKED_MESSAGE } from '@config/coach-contact';
 
 export type LoginResult =
   | {
@@ -65,13 +66,17 @@ export class AuthService {
   static async completeLoginById(userId: string) {
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('id, email, role, status, full_name, avatar_url, failed_login_attempts, login_locked_at')
+      .select('id, email, role, status, full_name, avatar_url, failed_login_attempts, login_locked_at, payment_hold')
       .eq('id', userId)
       .is('deleted_at', null)
       .single();
 
     if (error || !user || user.status !== 'active') {
       throw new UnauthorizedError('Usuario inactivo');
+    }
+
+    if (user.role === 'parent' && user.payment_hold) {
+      throw new UnauthorizedError(PARENT_PAYMENT_BLOCKED_MESSAGE);
     }
 
     if (isLoginLocked(user)) {
@@ -86,7 +91,7 @@ export class AuthService {
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select(
-        'id, email, password_hash, role, status, full_name, avatar_url, email_verified, totp_enabled, failed_login_attempts, login_locked_at',
+        'id, email, password_hash, role, status, full_name, avatar_url, email_verified, totp_enabled, failed_login_attempts, login_locked_at, payment_hold',
       )
       .eq('email', email)
       .is('deleted_at', null)
@@ -102,6 +107,10 @@ export class AuthService {
 
     if (user.status !== 'active') {
       throw new UnauthorizedError('Cuenta inactiva o suspendida. Contacta al administrador.');
+    }
+
+    if (user.role === 'parent' && user.payment_hold) {
+      throw new UnauthorizedError(PARENT_PAYMENT_BLOCKED_MESSAGE);
     }
 
     const passwordMatch = await bcrypt.compare(input.password, user.password_hash);
