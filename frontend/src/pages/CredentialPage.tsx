@@ -38,8 +38,8 @@ function CredentialCard({ player }: { player: Player }) {
     player.jersey_number != null && !Number.isNaN(Number(player.jersey_number))
       ? `#${player.jersey_number}`
       : `ID·${player.id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
-  const hasQr     = Boolean(player.qr_generated_at);
-  const qrCache   = player.qr_generated_at ?? player.id;
+  const hasQr   = Boolean(player.has_qr ?? player.qr_generated_at);
+  const qrCache = player.qr_generated_at ?? player.id;
 
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-outline-variant/20 bg-gradient-to-br from-surface-container via-surface-container to-surface-container-high shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.15)] transition-all duration-500">

@@ -213,12 +213,20 @@ export class ParentsService {
 
     if (error) throw new Error(error.message);
 
-    return (links ?? []).map((row: Record<string, unknown>) => ({
-      isPrimaryContact: row.is_primary_contact,
-      relationship:     row.relationship,
-      status:           row.status,
-      player:           row.players,
-    }));
+    return (links ?? []).map((row: Record<string, unknown>) => {
+      const raw = row.players as Record<string, unknown> | null;
+      let player: Record<string, unknown> | null = raw;
+      if (raw) {
+        const { qr_token: token, ...rest } = raw;
+        player = { ...rest, has_qr: Boolean(token), qr_token: token ?? null };
+      }
+      return {
+        isPrimaryContact: row.is_primary_contact,
+        relationship:     row.relationship,
+        status:           row.status,
+        player,
+      };
+    });
   }
 
   static async getMyLinkRequests(userId: string) {

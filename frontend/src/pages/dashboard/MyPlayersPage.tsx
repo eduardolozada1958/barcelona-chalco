@@ -150,6 +150,7 @@ export function MyPlayersPage() {
             const pl = row.player ?? {};
             const pid = String(pl.id ?? i);
             const primary = row.is_primary_contact ?? row.isPrimaryContact;
+            const hasQr = Boolean(pl.has_qr ?? pl.qr_generated_at);
             const qrAt = typeof pl.qr_generated_at === 'string' ? pl.qr_generated_at : null;
             const qrToken = typeof pl.qr_token === 'string' ? pl.qr_token : null;
             const avatarUrl = typeof pl.avatar_url === 'string' ? pl.avatar_url : null;
@@ -204,7 +205,7 @@ export function MyPlayersPage() {
                     </div>
                   </div>
                   </div>
-                  {qrAt ? (
+                  {hasQr && qrAt ? (
                     <div className="flex flex-col items-center shrink-0 sm:border-l sm:border-primary/15 sm:pl-4">
                       <PlayerQrImage playerId={pid} cacheKey={qrAt} size="md" />
                       <p className="text-[10px] text-on-surface-variant mt-2 text-center max-w-[8rem]">

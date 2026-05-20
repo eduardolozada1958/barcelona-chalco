@@ -1,4 +1,7 @@
+import { useState } from 'react';
+
 import { playerQrImageUrl } from '@/api/qr';
+import { MaterialIcon } from '@/components/MaterialIcon';
 
 /** Tamaños en pantalla: el PNG del servidor es alto; aquí marco blanco amplio ayuda al “quiet zone” al escanear. */
 const SIZE_CLASS = {
@@ -18,11 +21,23 @@ interface PlayerQrImageProps {
 }
 
 /**
- * QR único por jugador (generado en backend). Sin enlace táctil ni selección de texto.
+ * QR único por jugador (generado en backend). Misma URL /api/v1 (proxy en Pages).
  */
 export function PlayerQrImage({ playerId, cacheKey, size = 'md', className = '' }: PlayerQrImageProps) {
   const dim = SIZE_CLASS[size];
   const src = `${playerQrImageUrl(playerId)}?v=${encodeURIComponent(cacheKey)}`;
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div
+        className={`${dim} ${className} rounded-xl border-2 border-dashed border-outline-variant/40 bg-white flex flex-col items-center justify-center p-2 text-center`}
+      >
+        <MaterialIcon name="qr_code_2" size={28} className="text-on-surface-variant/50" />
+        <p className="text-[9px] text-on-surface-variant mt-1 leading-tight">QR no disponible</p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -32,13 +47,14 @@ export function PlayerQrImage({ playerId, cacheKey, size = 'md', className = '' 
     >
       <img
         src={src}
-        alt=""
-        role="presentation"
-        aria-hidden
+        alt="Código QR del jugador"
         draggable={false}
         decoding="async"
+        crossOrigin="anonymous"
+        referrerPolicy="no-referrer"
         className={`${dim} rounded-xl border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.06)] object-contain pointer-events-none bg-white p-2 sm:p-2.5 [image-rendering:crisp-edges]`}
         onContextMenu={(e) => e.preventDefault()}
+        onError={() => setFailed(true)}
       />
     </div>
   );

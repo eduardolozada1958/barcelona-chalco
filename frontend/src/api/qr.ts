@@ -1,8 +1,6 @@
 import { apiClient } from './client';
 import type { ApiResponse } from './types';
 
-const API_HOST_FALLBACK = 'https://barcelona-chalco.onrender.com';
-
 export async function validateQrToken(token: string): Promise<ApiResponse<{ isValid: boolean; player?: unknown }>> {
   const { data } = await apiClient.get<ApiResponse<{ isValid: boolean; player?: unknown }>>(
     `/qr/validate/${encodeURIComponent(token)}`
@@ -10,9 +8,10 @@ export async function validateQrToken(token: string): Promise<ApiResponse<{ isVa
   return data;
 }
 
+/**
+ * URL del PNG del QR. Siempre mismo origen (/api/v1 → proxy en Pages o Vite en dev).
+ * Evita imágenes rotas por cargar onrender.com en <img> desde pages.dev.
+ */
 export function playerQrImageUrl(playerId: string): string {
-  if (import.meta.env.DEV) return `/api/v1/qr/player/${playerId}/image`;
-  const fromEnv = String(import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
-  const host = fromEnv || API_HOST_FALLBACK;
-  return `${host}/api/v1/qr/player/${playerId}/image`;
+  return `/api/v1/qr/player/${encodeURIComponent(playerId)}/image`;
 }

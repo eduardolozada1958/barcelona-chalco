@@ -24,9 +24,17 @@ export interface PublicLeaderRow {
   red_cards:     number;
 }
 
-/** Columnas en APIs públicas (sin `curp` ni `qr_token`; sí `qr_generated_at` para mostrar el QR). */
+/** Columnas en APIs públicas (sin `curp`; `qr_token` solo para calcular has_qr). */
 const PUBLIC_PLAYER_COLUMNS =
-  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, qr_generated_at, season, achievements, created_at, updated_at';
+  'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, qr_generated_at, qr_token, season, achievements, created_at, updated_at';
+
+function mapPublicPlayerRow(row: Record<string, unknown>): Record<string, unknown> {
+  const { qr_token: token, ...rest } = row;
+  return {
+    ...rest,
+    has_qr: Boolean(token),
+  };
+}
 
 function extFromPhotoMime(mime: string): string {
   if (mime === 'image/png') return 'png';
@@ -102,7 +110,7 @@ export class PlayersService {
     if (error) throw new Error(error.message);
 
     return {
-      data: data ?? [],
+      data: (data ?? []).map((row) => mapPublicPlayerRow(row as Record<string, unknown>)),
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
   }
@@ -260,7 +268,7 @@ export class PlayersService {
     const { data, error } = await query.single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
-    return data;
+    return mapPublicPlayerRow(data as Record<string, unknown>);
   }
 
   static async create(input: CreatePlayerInput) {

@@ -1,1 +1,4 @@
+# Proxy API (mismo dominio): evita imágenes QR rotas al cargar desde onrender.com
+/api/v1/*  https://barcelona-chalco.onrender.com/api/v1/:splat  200
+
 /*    /index.html   200

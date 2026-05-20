@@ -82,6 +82,8 @@ export interface Player {
   verified_by:         string | null;
   qr_token:            string | null;
   qr_generated_at:     string | null;
+  /** Solo en respuestas públicas: indica si el PNG del QR existe (sin exponer el token). */
+  has_qr?:              boolean;
   /** Solo en respuestas admin; nunca en listados públicos. */
   curp:                string | null;
   season:              string;
