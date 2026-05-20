@@ -188,13 +188,19 @@ export function PublicPlayerDetailPage() {
               Este perfil digital está avalado oficialmente por la mesa directiva de Barcelona Cupido.
             </p>
           </div>
-          <Link
-            to={player.qr_token ? `/credencial-ar/${player.qr_token}` : '#'}
-            className="w-full md:w-auto bg-primary-container text-on-primary-container px-8 py-4 rounded font-label-caps text-label-caps flex items-center justify-center gap-2 hover:shadow-gold-lg hover:bg-primary transition-all duration-300"
-          >
-            <MaterialIcon name="qr_code_2" size={18} />
-            Validar mediante QR
-          </Link>
+          {player.credential_ar_url ? (
+            <Link
+              to={player.credential_ar_url}
+              className="w-full md:w-auto bg-primary-container text-on-primary-container px-8 py-4 rounded font-label-caps text-label-caps flex items-center justify-center gap-2 hover:shadow-gold-lg hover:bg-primary transition-all duration-300"
+            >
+              <MaterialIcon name="qr_code_2" size={18} />
+              Validar mediante QR
+            </Link>
+          ) : (
+            <p className="text-sm text-on-surface-variant">
+              Credencial 3D no disponible. Si acabas de dar de alta al jugador, pide al club que genere el QR en Plantilla.
+            </p>
+          )}
         </div>
       </section>
     </div>

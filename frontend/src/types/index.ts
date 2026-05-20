@@ -84,6 +84,8 @@ export interface Player {
   qr_generated_at:     string | null;
   /** Solo en respuestas públicas: indica si el PNG del QR existe (sin exponer el token). */
   has_qr?:              boolean;
+  /** Solo en detalle público: ruta interna a la credencial 3D (sin exponer el token en listados). */
+  credential_ar_url?:   string | null;
   /** Solo en respuestas admin; nunca en listados públicos. */
   curp:                string | null;
   season:              string;

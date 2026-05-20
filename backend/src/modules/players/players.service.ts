@@ -28,12 +28,19 @@ export interface PublicLeaderRow {
 const PUBLIC_PLAYER_COLUMNS =
   'id, slug, first_name, last_name, birth_date, nationality, position, secondary_position, jersey_number, dominant_foot, height_cm, weight_kg, category, sport_description, avatar_url, status, is_verified, qr_generated_at, qr_token, season, achievements, created_at, updated_at';
 
-function mapPublicPlayerRow(row: Record<string, unknown>): Record<string, unknown> {
+function mapPublicPlayerRow(
+  row: Record<string, unknown>,
+  opts?: { includeCredentialUrl?: boolean },
+): Record<string, unknown> {
   const { qr_token: token, ...rest } = row;
-  return {
+  const out: Record<string, unknown> = {
     ...rest,
     has_qr: Boolean(token),
   };
+  if (opts?.includeCredentialUrl && token) {
+    out.credential_ar_url = `/credencial-ar/${encodeURIComponent(String(token))}`;
+  }
+  return out;
 }
 
 function extFromPhotoMime(mime: string): string {
@@ -268,7 +275,7 @@ export class PlayersService {
     const { data, error } = await query.single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
-    return mapPublicPlayerRow(data as Record<string, unknown>);
+    return mapPublicPlayerRow(data as Record<string, unknown>, { includeCredentialUrl: true });
   }
 
   static async create(input: CreatePlayerInput) {

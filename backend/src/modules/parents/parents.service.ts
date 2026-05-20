@@ -218,7 +218,14 @@ export class ParentsService {
       let player: Record<string, unknown> | null = raw;
       if (raw) {
         const { qr_token: token, ...rest } = raw;
-        player = { ...rest, has_qr: Boolean(token), qr_token: token ?? null };
+        player = {
+          ...rest,
+          has_qr: Boolean(token),
+          qr_token: token ?? null,
+          ...(token
+            ? { credential_ar_url: `/credencial-ar/${encodeURIComponent(String(token))}` }
+            : {}),
+        };
       }
       return {
         isPrimaryContact: row.is_primary_contact,
