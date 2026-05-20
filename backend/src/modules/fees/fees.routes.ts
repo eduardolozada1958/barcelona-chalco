@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '@middlewares/auth.middleware';
-import { requireAdminOrCoach } from '@middlewares/role.middleware';
+import { requireAdmin } from '@middlewares/role.middleware';
 import { validateBody, validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { FeesController } from './fees.controller';
 import {
@@ -11,7 +11,7 @@ import {
 
 export const feesRouter = Router();
 
-feesRouter.use(authMiddleware, requireAdminOrCoach);
+feesRouter.use(authMiddleware, requireAdmin);
 
 feesRouter.get('/', validateQuery(feesPeriodQuerySchema), FeesController.listMatrix);
 feesRouter.post('/sync-holds', FeesController.syncAll);

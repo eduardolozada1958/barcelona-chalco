@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 import { getFeesMatrix, syncPaymentHolds, updatePlayerFees, type FeeMatrixRow } from '@/api/fees';
+import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
 import { Spinner } from '@/components/Spinner';
 import { COACH_PHONE_DISPLAY, COACH_WHATSAPP_URL } from '@/config/coach';
 
@@ -63,10 +64,15 @@ export function DashboardFeesPage() {
       <div>
         <h1 className="font-headline-lg text-2xl text-on-surface">Cuotas y acceso de padres</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          <strong>Registro</strong> (alta) y <strong>mensualidad</strong> del mes. Si falta alguno, el padre vinculado
-          no puede entrar hasta pagar. Aviso automático: contactar a Gabo ({COACH_PHONE_DISPLAY}).
+          <strong>Registro</strong> (alta) y <strong>mensualidad</strong> del mes, por jugador. Cada padre vinculado
+          se evalúa aparte: si su hijo debe, solo esa cuenta se bloquea.
         </p>
       </div>
+
+      <AdminPrivateNotice>
+        Las cuotas y el estado de mora son confidenciales. No aparecen en partidos, jugadores públicos ni en el panel
+        del entrenador. El padre bloqueado ve al iniciar sesión que debe contactar a Gabo ({COACH_PHONE_DISPLAY}).
+      </AdminPrivateNotice>
 
       <div className="flex flex-wrap items-end gap-3">
         <div>
@@ -97,8 +103,9 @@ export function DashboardFeesPage() {
       </div>
 
       <p className="text-xs text-on-surface-variant">
-        Jugadores con mora: {stats.mora} / {stats.total}. Para suspender manualmente (disciplina, etc.), usa{' '}
-        <strong>Usuarios</strong> → estado <strong>Suspendido</strong>.
+        Jugadores con mora este mes: {stats.mora} / {stats.total}. Los padres en la columna derecha muestran si su
+        acceso está bloqueado por pago. Suspensión manual (otro motivo): <strong>Usuarios</strong> →{' '}
+        <strong>Suspendido</strong>.
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-outline-variant/25">

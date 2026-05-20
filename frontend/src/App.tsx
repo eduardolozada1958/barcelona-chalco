@@ -140,7 +140,7 @@ export default function App() {
         <Route
           path="attendance"
           element={
-            <ProtectedRoute roles={['admin', 'coach']}>
+            <ProtectedRoute roles={['admin']}>
               <DashboardAttendancePage />
             </ProtectedRoute>
           }
@@ -148,7 +148,7 @@ export default function App() {
         <Route
           path="fees"
           element={
-            <ProtectedRoute roles={['admin', 'coach']}>
+            <ProtectedRoute roles={['admin']}>
               <DashboardFeesPage />
             </ProtectedRoute>
           }

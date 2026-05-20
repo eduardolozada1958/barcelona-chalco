@@ -3,7 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 import { getAttendanceGrid, saveAttendance, type AttendanceGrid } from '@/api/attendance';
+import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
+import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
+import { downloadAttendancePdf } from '@/utils/attendance-pdf';
 
 function formatDayHeader(date: string, type: string): string {
   const d = new Date(date + 'T12:00:00');
@@ -99,6 +102,11 @@ export function DashboardAttendancePage() {
         {legend}
       </div>
 
+      <AdminPrivateNotice>
+        El registro de asistencia no se publica en la web. Cada padre solo ve sus propios avisos en el panel;
+        aquí controlas la plantilla completa del club.
+      </AdminPrivateNotice>
+
       <div className="flex flex-wrap items-center gap-3">
         <div>
           <label className="font-label-caps text-[10px] text-on-surface-variant block mb-1">Mes</label>
@@ -116,6 +124,25 @@ export function DashboardAttendancePage() {
           className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-sm disabled:opacity-50"
         >
           {saveMut.isPending ? 'Guardando…' : 'Guardar asistencia'}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            if (dirty) {
+              toast.error('Guarda los cambios antes de exportar el PDF');
+              return;
+            }
+            try {
+              downloadAttendancePdf(grid, local, period);
+              toast.success('PDF descargado');
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'No se pudo generar el PDF');
+            }
+          }}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant/40 text-sm hover:border-primary"
+        >
+          <MaterialIcon name="picture_as_pdf" size={18} />
+          Exportar PDF
         </button>
       </div>
 
