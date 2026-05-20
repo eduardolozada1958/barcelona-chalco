@@ -10,6 +10,16 @@
     text-size-adjust: 100%;
   }
 
+  :root {
+    --public-header-h: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --public-header-h: calc(5rem + env(safe-area-inset-top, 0px));
+    }
+  }
+
   html, body, #root {
     min-height: 100dvh;
     max-width: 100%;
@@ -20,6 +30,12 @@
     min-width: 0;
     padding-left: env(safe-area-inset-left, 0);
     padding-right: env(safe-area-inset-right, 0);
+  }
+
+  body.mobile-menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 
   /* Scrollbar styling */

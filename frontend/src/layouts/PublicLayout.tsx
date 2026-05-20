@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import { useClubSettings } from '@/hooks/useClubSettings';
 import { getPanelNavIcon, getPanelShortLabel } from '@/config/panel-labels';
 import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
 import { ScrollToTop } from '@/components/ScrollToTop';
+import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -37,11 +38,21 @@ export function PublicLayout() {
   const clubSettings = useClubSettings();
   const season = clubSettings.data?.season?.trim();
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.classList.toggle('mobile-menu-open', mobileOpen);
+    return () => document.body.classList.remove('mobile-menu-open');
+  }, [mobileOpen]);
+
   return (
+    <MobileMenuProvider open={mobileOpen}>
     <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
       <ScrollToTop />
       {/* ═══════════════════ TopNavBar ═══════════════════ */}
-      <nav className="fixed top-0 w-full max-w-full z-50 flex justify-between items-center gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop h-16 sm:h-20 bg-surface/80 backdrop-blur-md bg-surface-container-lowest/40 border-b border-outline-variant/20 shadow-md min-w-0">
+      <nav className="fixed top-0 left-0 right-0 z-[90] flex justify-between items-end gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop pb-2 sm:pb-3 min-h-[var(--public-header-h)] pt-[env(safe-area-inset-top,0px)] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0">
         {/* Logo */}
         <NavLink
           to="/"
@@ -117,10 +128,17 @@ export function PublicLayout() {
         </button>
       </nav>
 
-      {/* Mobile menu overlay */}
+      {/* Menú móvil por encima de MVP / fuegos */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 pt-20 bg-background/95 backdrop-blur-lg md:hidden flex flex-col">
-          <div className="flex flex-col gap-2 px-margin-mobile py-stack-md">
+        <div className="fixed inset-0 z-[100] md:hidden flex flex-col bg-background">
+          <button
+            type="button"
+            className="absolute inset-0 z-0 cursor-default"
+            aria-label="Cerrar menú"
+            onClick={() => setMobileOpen(false)}
+          />
+          <div className="relative z-10 flex flex-col flex-1 min-h-0 pt-[var(--public-header-h)] overflow-y-auto overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="flex flex-col gap-2 px-4 sm:px-margin-mobile py-stack-md">
             {publicLinks.map((l) => {
               const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
               return (
@@ -169,10 +187,11 @@ export function PublicLayout() {
             </div>
           </div>
         </div>
+        </div>
       )}
 
       {/* ═══════════════════ Main Content ═══════════════════ */}
-      <main className="flex-grow pt-16 sm:pt-20 min-w-0 overflow-x-hidden">
+      <main className="flex-grow pt-[var(--public-header-h)] min-w-0 overflow-x-hidden">
         <div className="pt-4 px-3 sm:px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full min-w-0">
           <PushNotificationsPrompt />
           <LoggedInPublicBanner />
@@ -203,5 +222,6 @@ export function PublicLayout() {
         </div>
       </footer>
     </div>
+    </MobileMenuProvider>
   );
 }

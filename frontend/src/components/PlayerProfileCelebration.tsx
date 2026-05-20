@@ -8,6 +8,7 @@ import {
   pickStablePhrase,
 } from '@/config/celebration-phrases';
 import type { PlayerHighlightKind } from '@/hooks/usePlayerHighlights';
+import { useMobileMenuOpen } from '@/contexts/MobileMenuContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
 const FIREWORKS_GIF = '/images/celebration-fireworks.gif';
@@ -30,7 +31,7 @@ function FireworksOverlay({ active }: { active: boolean }) {
   if (reduced) {
     return (
       <motion.div
-        className="pointer-events-none fixed inset-0 z-[55] flex items-start justify-center pt-24 sm:pt-28"
+        className="pointer-events-none fixed inset-0 z-[30] flex items-start justify-center pt-24 sm:pt-28"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -45,7 +46,7 @@ function FireworksOverlay({ active }: { active: boolean }) {
 
   return (
     <motion.div
-      className="pointer-events-none fixed inset-0 z-[55] overflow-hidden"
+      className="pointer-events-none fixed inset-0 z-[30] overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -108,6 +109,7 @@ export function PlayerProfileCelebration({
   goals,
   scorerRank,
 }: PlayerProfileCelebrationProps) {
+  const menuOpen = useMobileMenuOpen();
   const [showFx, setShowFx] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -122,16 +124,16 @@ export function PlayerProfileCelebration({
   const heavyFx = kind === 'mvp' || kind === 'top_scorer';
 
   useEffect(() => {
-    if (!kind || !heavyFx) {
+    if (!kind || !heavyFx || menuOpen) {
       setShowFx(false);
       return;
     }
     setShowFx(true);
     const t = window.setTimeout(() => setShowFx(false), 6000);
     return () => window.clearTimeout(t);
-  }, [kind, heavyFx, playerId]);
+  }, [kind, heavyFx, playerId, menuOpen]);
 
-  if (!kind || dismissed) return null;
+  if (!kind || dismissed || menuOpen) return null;
 
   const title = titleForKind(kind, goals ?? null, scorerRank ?? null);
 
@@ -143,7 +145,7 @@ export function PlayerProfileCelebration({
         initial={{ opacity: 0, y: -12, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.45, ease: 'easeOut' }}
-        className="relative z-40 mb-stack-md overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/20 via-surface-container-high to-secondary/15 p-4 sm:p-5 shadow-[0_0_40px_rgba(242,202,80,0.15)]"
+        className="relative z-10 mb-stack-md overflow-hidden rounded-xl border border-primary/40 bg-gradient-to-r from-primary/20 via-surface-container-high to-secondary/15 p-4 sm:p-5 shadow-[0_0_40px_rgba(242,202,80,0.15)]"
       >
         {showFx ? (
           <motion.div

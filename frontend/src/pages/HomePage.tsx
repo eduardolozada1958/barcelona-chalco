@@ -40,7 +40,7 @@ export function HomePage() {
   return (
     <>
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="relative min-h-[90vh] flex items-center justify-center px-margin-mobile md:px-margin-desktop py-stack-lg overflow-hidden">
+      <section className="relative min-h-[calc(100dvh-var(--public-header-h)-2rem)] sm:min-h-[85vh] flex items-center justify-center px-4 sm:px-margin-mobile md:px-margin-desktop py-8 sm:py-stack-lg overflow-hidden">
         {/* Background image + overlay */}
         <div className="absolute inset-0 z-0">
           <img
@@ -52,12 +52,12 @@ export function HomePage() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-stack-md">
-          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-28 h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-2" />
-          <h1 className="font-display-hero text-display-hero text-primary tracking-tighter drop-shadow-2xl">
+        <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-4 sm:gap-stack-md px-1">
+          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-1 sm:mb-2" />
+          <h1 className="font-display-hero text-[clamp(1.35rem,6vw,3.5rem)] leading-[1.05] text-primary tracking-tighter drop-shadow-2xl px-1">
             F.C. BARCELONA CUPIDO
           </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+          <p className="font-body-md sm:font-body-lg text-sm sm:text-body-lg text-on-surface-variant max-w-2xl px-2">
             Plantilla, resultados, avisos y credencial digital del club, reunidos en un solo lugar para padres, jugadores y el cuerpo técnico.
           </p>
           {season ? (
@@ -65,10 +65,10 @@ export function HomePage() {
               Temporada {season}
             </p>
           ) : null}
-          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-8 w-full sm:w-auto px-4 sm:px-0">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 mt-6 sm:mt-8 w-full max-w-md sm:max-w-none sm:w-auto px-2 sm:px-0">
             <Link
               to="/jugadores"
-              className="bg-primary text-[#000000] font-label-caps text-label-caps px-8 py-4 rounded-full hover:shadow-gold transition-all shadow-lg text-center w-full sm:w-auto"
+              className="bg-primary text-[#000000] font-label-caps text-label-caps px-6 sm:px-8 py-3.5 sm:py-4 rounded-full hover:shadow-gold transition-all shadow-lg text-center w-full sm:w-auto touch-manipulation"
             >
               Ver Jugadores
             </Link>
