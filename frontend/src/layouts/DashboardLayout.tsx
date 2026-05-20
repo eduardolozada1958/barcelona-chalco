@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useAuth, type SessionRole } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { CLUB_LOGO_URL } from '@/config/club';
+import { getPanelTitle } from '@/config/panel-labels';
 
 interface NavItem {
   to: string;
@@ -15,6 +16,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { to: '/dashboard',               label: '🏠 Inicio',        icon: 'dashboard',       roles: ['admin','coach','parent'], end: true },
+  { to: '/dashboard/guia',          label: '📖 Guía de uso',   icon: 'menu_book',       roles: ['admin','coach','parent'] },
   { to: '/dashboard/cuenta',        label: '👤 Mi perfil',     icon: 'person',          roles: ['admin','coach','parent'] },
   { to: '/dashboard/mis-jugadores', label: '👨‍👩‍👦 Mis Jugadores', icon: 'family_restroom', roles: ['parent'] },
   { to: '/dashboard/players',       label: '⚽ Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
@@ -42,7 +44,9 @@ export function DashboardLayout() {
         <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-12 h-12 object-contain shrink-0 drop-shadow-lg" />
         <div className="min-w-0">
           <h1 className="font-display-hero text-body-lg text-primary tracking-tight truncate">Barcelona Cupido</h1>
-          <p className="font-label-caps text-label-caps text-on-surface-variant opacity-80">Gestión Élite</p>
+          <p className="font-label-caps text-label-caps text-on-surface-variant opacity-80 truncate" title={getPanelTitle(user?.role)}>
+            {getPanelTitle(user?.role)}
+          </p>
         </div>
       </div>
       <ul className="flex-1 space-y-1 px-2 overflow-y-auto">
@@ -60,8 +64,17 @@ export function DashboardLayout() {
         ))}
       </ul>
       <div className="px-4 mt-auto space-y-3 pb-stack-sm border-t border-outline-variant/10 pt-4">
-        <NavLink to="/" className="w-full bg-primary text-on-primary font-label-caps text-label-caps py-3 rounded hover:shadow-gold-glow transition-all flex items-center justify-center gap-2">
-          <MaterialIcon name="public" size={18} /> 🌐 Sitio Público
+        <NavLink
+          to="/"
+          title="Abre el sitio público; tu sesión sigue activa. Usa el aviso superior para volver al panel."
+          className="w-full bg-primary text-on-primary font-label-caps text-label-caps py-3 rounded hover:shadow-gold-glow transition-all flex flex-col items-center justify-center gap-1"
+        >
+          <span className="inline-flex items-center gap-2">
+            <MaterialIcon name="public" size={18} /> 🌐 Sitio Público
+          </span>
+          <span className="text-[9px] opacity-85 font-body-md normal-case tracking-normal text-center px-2 leading-tight">
+            Puedes navegar sin cerrar sesión
+          </span>
         </NavLink>
         <button type="button" onClick={() => void handleLogout()} className="w-full flex items-center gap-stack-sm px-4 py-2 text-on-surface-variant hover:text-error transition-colors rounded-lg font-label-caps text-label-caps">
           <MaterialIcon name="logout" size={20} /> Cerrar Sesión

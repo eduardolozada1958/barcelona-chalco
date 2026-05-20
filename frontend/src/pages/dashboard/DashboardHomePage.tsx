@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
+import { getPanelHomeSubtitle } from '@/config/panel-labels';
 import { getDashboardStats } from '@/api/dashboard';
 import { listMatchesAdmin } from '@/api/matches';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -68,19 +69,28 @@ export function DashboardHomePage() {
             Bienvenido{user?.fullName ? `, ${user.fullName}` : ''}
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            Resumen del estado actual y operaciones del club.
+            {getPanelHomeSubtitle(user?.role)}
           </p>
         </div>
-        {isCoachOrAdmin && (
-          <button
-            type="button"
-            onClick={() => setDayOpen(true)}
-            className="flex items-center gap-base text-primary font-label-caps text-label-caps bg-surface-container-low px-4 py-2 rounded-full border border-primary/20 hover:border-primary/50 transition-colors self-start md:self-auto"
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          <Link
+            to="/dashboard/guia"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/35 text-primary font-label-caps text-label-caps hover:bg-primary/10 transition-colors"
           >
-            <MaterialIcon name="calendar_month" size={18} />
-            <span>Resumen del Día</span>
-          </button>
-        )}
+            <MaterialIcon name="menu_book" size={18} />
+            Guía de uso
+          </Link>
+          {isCoachOrAdmin && (
+            <button
+              type="button"
+              onClick={() => setDayOpen(true)}
+              className="flex items-center gap-base text-primary font-label-caps text-label-caps bg-surface-container-low px-4 py-2 rounded-full border border-primary/20 hover:border-primary/50 transition-colors"
+            >
+              <MaterialIcon name="calendar_month" size={18} />
+              <span>Resumen del Día</span>
+            </button>
+          )}
+        </div>
       </header>
 
       {isCoachOrAdmin && (

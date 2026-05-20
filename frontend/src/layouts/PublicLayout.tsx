@@ -7,6 +7,8 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { PushNotificationsPrompt } from '@/components/PushNotificationsPrompt';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { useClubSettings } from '@/hooks/useClubSettings';
+import { getPanelNavIcon, getPanelShortLabel } from '@/config/panel-labels';
+import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
 
 /* ─── Navigation Links ─── */
 const publicLinks = [
@@ -72,12 +74,22 @@ export function PublicLayout() {
         {/* Auth button (desktop) */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <NavLink
-              to="/dashboard"
-              className="bg-primary-container text-on-primary-container px-6 py-2 rounded-full font-label-caps text-label-caps hover:shadow-gold-glow transition-all"
-            >
-              Dashboard
-            </NavLink>
+            <>
+              <NavLink
+                to="/dashboard/guia"
+                className="hidden lg:inline-flex items-center gap-1 text-primary/90 font-label-caps text-[10px] hover:underline"
+              >
+                <MaterialIcon name="menu_book" size={16} />
+                Guía
+              </NavLink>
+              <NavLink
+                to="/dashboard"
+                className="inline-flex items-center gap-1.5 bg-primary-container text-on-primary-container px-5 py-2 rounded-full font-label-caps text-label-caps hover:shadow-gold-glow transition-all"
+              >
+                <MaterialIcon name={getPanelNavIcon(user.role)} size={18} />
+                {getPanelShortLabel(user.role)}
+              </NavLink>
+            </>
           ) : (
             <NavLink
               to="/login"
@@ -126,13 +138,23 @@ export function PublicLayout() {
             })}
             <div className="mt-stack-md">
               {user ? (
-                <NavLink
-                  to="/dashboard"
-                  className="block w-full py-3 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-lg text-center"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Dashboard
-                </NavLink>
+                <>
+                  <NavLink
+                    to="/dashboard"
+                    className="block w-full py-3 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-lg text-center flex items-center justify-center gap-2"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <MaterialIcon name={getPanelNavIcon(user.role)} size={18} />
+                    {getPanelShortLabel(user.role)}
+                  </NavLink>
+                  <NavLink
+                    to="/dashboard/guia"
+                    className="block w-full py-2 mt-2 border border-primary/40 text-primary font-label-caps text-label-caps rounded-lg text-center"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Guía de uso
+                  </NavLink>
+                </>
               ) : (
                 <NavLink
                   to="/login"
@@ -151,6 +173,7 @@ export function PublicLayout() {
       <main className="flex-grow pt-20">
         <div className="pt-4 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full">
           <PushNotificationsPrompt />
+          <LoggedInPublicBanner />
         </div>
         <Outlet />
       </main>
