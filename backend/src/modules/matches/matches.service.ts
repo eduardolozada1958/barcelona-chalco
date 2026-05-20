@@ -5,6 +5,7 @@ import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
+import { throwStorageOrDbError } from '@shared/utils/storage-errors';
 
 function normalizeLineup(raw: unknown): string[] {
   if (!raw) return [];
@@ -38,9 +39,14 @@ function validateLineupConsistency(
 
 function extFromLogoMime(mime: string): string {
   if (mime === 'image/png') return 'png';
-  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/jpeg' || mime === 'image/jpg' || mime === 'image/pjpeg') return 'jpg';
   if (mime === 'image/webp') return 'webp';
   throw new BadRequestError('El logo debe ser PNG, JPEG o WebP');
+}
+
+function normalizeLogoMime(mime: string): string {
+  if (mime === 'image/jpg' || mime === 'image/pjpeg') return 'image/jpeg';
+  return mime;
 }
 
 async function assertLineupPlayersRegistered(playerIds: string[]): Promise<void> {
@@ -218,17 +224,18 @@ export class MatchesService {
     if (file.size > env.STORAGE_MAX_FILE_SIZE) {
       throw new BadRequestError('El logo supera el tamaño máximo permitido');
     }
-    const ext = extFromLogoMime(file.mimetype);
+    const contentType = normalizeLogoMime(file.mimetype);
+    const ext = extFromLogoMime(contentType);
     const objectPath = `${id}/${randomUUID()}.${ext}`;
     const bucket = env.STORAGE_BUCKET_MATCH_LOGOS;
 
     const { error: upErr } = await supabaseAdmin.storage
       .from(bucket)
       .upload(objectPath, file.buffer as Buffer, {
-        contentType: file.mimetype,
+        contentType,
         upsert: false,
       });
-    if (upErr) throw new Error(upErr.message);
+    if (upErr) throwStorageOrDbError(upErr, 'No se pudo subir el logo');
 
     const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
     const logoUrl = pub.publicUrl;
@@ -241,7 +248,7 @@ export class MatchesService {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) throwStorageOrDbError(error, 'No se pudo guardar la URL del logo');
     return data;
   }
 

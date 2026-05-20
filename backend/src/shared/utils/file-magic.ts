@@ -25,7 +25,7 @@ export function detectImageMime(buf: Buffer): DetectedImageMime | null {
   return null;
 }
 
-const ALLOWED_IMAGE_MIMES = new Set<string>(['image/png', 'image/jpeg', 'image/webp']);
+const ALLOWED_IMAGE_MIMES = new Set<string>(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/pjpeg']);
 
 export function assertPdfUpload(file: { buffer: Buffer; mimetype: string; originalname?: string }): void {
   if (file.mimetype !== 'application/pdf') {
@@ -44,7 +44,10 @@ export function assertImageUpload(file: { buffer: Buffer; mimetype: string }): v
   if (!detected) {
     throw new BadRequestError('El archivo no es una imagen válida');
   }
-  if (detected !== file.mimetype) {
+  const declared = file.mimetype === 'image/jpg' || file.mimetype === 'image/pjpeg'
+    ? 'image/jpeg'
+    : file.mimetype;
+  if (detected !== declared) {
     throw new BadRequestError('El tipo de imagen no coincide con el contenido del archivo');
   }
 }

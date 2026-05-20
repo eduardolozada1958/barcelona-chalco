@@ -109,7 +109,12 @@ export function DashboardMatchesPage() {
       const row = res.data as Record<string, unknown> | undefined;
       const matchId = row?.id != null ? String(row.id) : '';
       if (logoFile && matchId) {
-        await uploadOpponentLogo(matchId, logoFile);
+        try {
+          await uploadOpponentLogo(matchId, logoFile);
+        } catch (e) {
+          const detail = e instanceof Error ? e.message : 'Error al subir el logo';
+          throw new Error(`Partido creado, pero el logo no se guardó: ${detail}`);
+        }
       }
       return res;
     },
