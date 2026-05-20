@@ -50,8 +50,6 @@ export function PlayerQrImage({ playerId, cacheKey, size = 'md', className = '' 
         alt="Código QR del jugador"
         draggable={false}
         decoding="async"
-        crossOrigin="anonymous"
-        referrerPolicy="no-referrer"
         className={`${dim} rounded-xl border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,0.06)] object-contain pointer-events-none bg-white p-2 sm:p-2.5 [image-rendering:crisp-edges]`}
         onContextMenu={(e) => e.preventDefault()}
         onError={() => setFailed(true)}

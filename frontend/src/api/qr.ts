@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, resolveApiBaseUrl } from './client';
 import type { ApiResponse } from './types';
 
 export async function validateQrToken(token: string): Promise<ApiResponse<{ isValid: boolean; player?: unknown }>> {
@@ -8,10 +8,7 @@ export async function validateQrToken(token: string): Promise<ApiResponse<{ isVa
   return data;
 }
 
-/**
- * URL del PNG del QR. Siempre mismo origen (/api/v1 → proxy en Pages o Vite en dev).
- * Evita imágenes rotas por cargar onrender.com en <img> desde pages.dev.
- */
+/** PNG del QR (misma base que el resto del API en producción). */
 export function playerQrImageUrl(playerId: string): string {
-  return `/api/v1/qr/player/${encodeURIComponent(playerId)}/image`;
+  return `${resolveApiBaseUrl()}/qr/player/${encodeURIComponent(playerId)}/image`;
 }
