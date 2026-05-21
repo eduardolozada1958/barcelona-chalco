@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '@shared/utils/response';
+import { resetWhatsAppSession } from './whatsapp.client';
 import { WhatsAppService } from './whatsapp.service';
 
 export class WhatsAppController {
@@ -18,6 +19,15 @@ export class WhatsAppController {
     try {
       await WhatsAppService.reconnect();
       sendSuccess(res, WhatsAppService.getStatus(), 'Reconectando WhatsApp…');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async resetSession(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await resetWhatsAppSession();
+      sendSuccess(res, WhatsAppService.getStatus(), 'Sesión reiniciada. Escanea el QR si aparece.');
     } catch (e) {
       next(e);
     }

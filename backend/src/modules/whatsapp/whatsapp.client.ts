@@ -22,6 +22,17 @@ let lastQr: string | null = null;
 let connecting = false;
 let authDirPath: string | null = null;
 let persistTimer: ReturnType<typeof setInterval> | null = null;
+let persistDebounce: ReturnType<typeof setTimeout> | null = null;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let reconnectAttempts = 0;
+let openedAt: number | null = null;
+
+const MAX_RECONNECT_ATTEMPTS = 10;
+
+/** 440/515: otra conexión con la misma sesión (típico al reconectar muy rápido en Render). */
+function isSessionConflictCode(code: number | undefined): boolean {
+  return code === 440 || code === 515 || code === 428;
+}
 
 async function loadBaileys(): Promise<BaileysModule> {
   if (!baileysMod) {
@@ -30,8 +41,22 @@ async function loadBaileys(): Promise<BaileysModule> {
   return baileysMod;
 }
 
-async function resolveAuthDir(): Promise<string> {
-  if (authDirPath) return authDirPath;
+function clearReconnectTimer(): void {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+}
+
+function clearPersistDebounce(): void {
+  if (persistDebounce) {
+    clearTimeout(persistDebounce);
+    persistDebounce = null;
+  }
+}
+
+async function resolveAuthDir(forceReload = false): Promise<string> {
+  if (authDirPath && !forceReload) return authDirPath;
 
   if (env.WHATSAPP_AUTH_STORAGE === 'disk') {
     const dir = env.WHATSAPP_AUTH_DIR;
@@ -61,12 +86,21 @@ async function persistSession(): Promise<void> {
   }
 }
 
+function schedulePersistDebounced(): void {
+  if (env.WHATSAPP_AUTH_STORAGE !== 'supabase') return;
+  clearPersistDebounce();
+  persistDebounce = setTimeout(() => {
+    persistDebounce = null;
+    void persistSession();
+  }, 60_000);
+}
+
 function startPersistInterval(): void {
   stopPersistInterval();
   if (env.WHATSAPP_AUTH_STORAGE !== 'supabase') return;
   persistTimer = setInterval(() => {
     void persistSession();
-  }, 45_000);
+  }, 120_000);
 }
 
 function stopPersistInterval(): void {
@@ -74,6 +108,54 @@ function stopPersistInterval(): void {
     clearInterval(persistTimer);
     persistTimer = null;
   }
+  clearPersistDebounce();
+}
+
+function scheduleReconnect(code: number | undefined): void {
+  if (reconnectTimer) return;
+
+  reconnectAttempts += 1;
+  if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+    logger.error(
+      'WhatsApp: demasiados reintentos automáticos. En el panel pulsa «Reconectar» o borra sesión en Supabase (whatsapp_auth_files).',
+    );
+    connectionState = 'closed';
+    connecting = false;
+    return;
+  }
+
+  const delay = isSessionConflictCode(code)
+    ? Math.min(60_000 * reconnectAttempts, 180_000)
+    : Math.min(15_000 * reconnectAttempts, 90_000);
+
+  logger.warn('WhatsApp: reconexión programada', {
+    code,
+    attempt: reconnectAttempts,
+    delaySec: Math.round(delay / 1000),
+    hint: isSessionConflictCode(code)
+      ? 'Conflicto de sesión (440): no abras dos QR a la vez; espera antes de Reconectar.'
+      : undefined,
+  });
+
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    connecting = false;
+    void startSocket();
+  }, delay);
+}
+
+async function closeSocket(): Promise<void> {
+  if (!sock) return;
+  const s = sock;
+  sock = null;
+  try {
+    s.ev.removeAllListeners('connection.update');
+    s.ev.removeAllListeners('creds.update');
+    s.end(undefined);
+  } catch {
+    /* ignore */
+  }
+  await new Promise((r) => setTimeout(r, 2500));
 }
 
 export function getConnectedWhatsAppJid(): string | null {
@@ -85,45 +167,45 @@ export function getWhatsAppStatus(): {
   state: WhatsAppConnectionState;
   qr: string | null;
   authStorage: string;
+  reconnectAttempts: number;
 } {
   return {
     enabled: env.WHATSAPP_ENABLED,
     state: connectionState,
     qr: lastQr,
     authStorage: env.WHATSAPP_AUTH_STORAGE,
+    reconnectAttempts,
   };
 }
 
 async function startSocket(): Promise<void> {
-  if (!env.WHATSAPP_ENABLED || connecting) return;
+  if (!env.WHATSAPP_ENABLED) return;
+  if (connecting) return;
+
   connecting = true;
+  clearReconnectTimer();
   connectionState = 'connecting';
   lastQr = null;
 
   try {
+    await closeSocket();
+
     const baileys = await loadBaileys();
     const dir = await resolveAuthDir();
     const { state, saveCreds } = await baileys.useMultiFileAuthState(dir);
 
     const saveCredsAndPersist = async () => {
       await saveCreds();
-      await persistSession();
+      schedulePersistDebounced();
     };
-
-    if (sock) {
-      try {
-        sock.end(undefined);
-      } catch {
-        /* ignore */
-      }
-      sock = null;
-    }
 
     sock = baileys.default({
       auth: state,
       printQRInTerminal: false,
       logger: pino({ level: 'silent' }),
       browser: ['Barcelona Cupido', 'Chrome', '1.0.0'],
+      syncFullHistory: false,
+      markOnlineOnConnect: false,
     });
 
     sock.ev.on('creds.update', () => {
@@ -140,9 +222,12 @@ async function startSocket(): Promise<void> {
       if (connection === 'open') {
         lastQr = null;
         connectionState = 'open';
+        connecting = false;
+        reconnectAttempts = 0;
+        openedAt = Date.now();
         startPersistInterval();
         void persistSession();
-        logger.info('WhatsApp: sesión conectada');
+        logger.info('WhatsApp: sesión conectada', { user: sock?.user?.id });
       }
       if (connection === 'close') {
         connectionState = 'closed';
@@ -151,27 +236,25 @@ async function startSocket(): Promise<void> {
 
         const code = (lastDisconnect?.error as Boom | undefined)?.output?.statusCode;
         const loggedOut = code === baileys.DisconnectReason.loggedOut;
+
         if (loggedOut) {
-          logger.warn('WhatsApp: sesión cerrada (logout). Vuelve a escanear el QR.');
+          logger.warn('WhatsApp: sesión cerrada (logout). Escanea el QR de nuevo.');
           lastQr = null;
+          reconnectAttempts = 0;
           if (env.WHATSAPP_AUTH_STORAGE === 'supabase') {
             void clearAuthInSupabase().catch(() => undefined);
           }
           authDirPath = null;
+          connecting = false;
         } else {
-          logger.warn('WhatsApp: conexión cerrada, reintentando…', { code });
-          setTimeout(() => {
-            connecting = false;
-            void startSocket();
-          }, 5000);
+          scheduleReconnect(code);
         }
       }
     });
   } catch (e) {
     connectionState = 'closed';
-    logger.error('WhatsApp: error al iniciar', { err: e });
-  } finally {
     connecting = false;
+    logger.error('WhatsApp: error al iniciar', { err: e });
   }
 }
 
@@ -185,17 +268,27 @@ export async function initWhatsAppClient(): Promise<void> {
 
 export async function restartWhatsAppClient(): Promise<void> {
   if (!env.WHATSAPP_ENABLED) return;
-  connecting = false;
+  reconnectAttempts = 0;
+  clearReconnectTimer();
   stopPersistInterval();
-  if (sock) {
-    try {
-      sock.end(undefined);
-    } catch {
-      /* ignore */
-    }
-    sock = null;
+  await closeSocket();
+  authDirPath = null;
+  connecting = false;
+  await startSocket();
+}
+
+export async function resetWhatsAppSession(): Promise<void> {
+  reconnectAttempts = 0;
+  clearReconnectTimer();
+  stopPersistInterval();
+  await closeSocket();
+  if (env.WHATSAPP_AUTH_STORAGE === 'supabase') {
+    await clearAuthInSupabase();
   }
   authDirPath = null;
+  lastQr = null;
+  connectionState = 'connecting';
+  connecting = false;
   await startSocket();
 }
 
@@ -204,21 +297,21 @@ export async function sendWhatsAppText(jid: string, text: string): Promise<void>
     throw new Error('WhatsApp no está habilitado');
   }
   if (connectionState !== 'open' || !sock) {
-    throw new Error('WhatsApp no está conectado. Escanea el QR en el panel → WhatsApp.');
+    throw new Error('WhatsApp no está conectado. Espera «Conectado» estable o reconecta.');
+  }
+  const opened = openedAt ?? 0;
+  const waitMs = 3000 - (Date.now() - opened);
+  if (waitMs > 0) {
+    await new Promise((r) => setTimeout(r, waitMs));
   }
   await sock.sendMessage(jid, { text });
 }
 
 export async function shutdownWhatsAppClient(): Promise<void> {
+  clearReconnectTimer();
   stopPersistInterval();
   await persistSession();
-  if (sock) {
-    try {
-      sock.end(undefined);
-    } catch {
-      /* ignore */
-    }
-    sock = null;
-  }
+  await closeSocket();
   connectionState = env.WHATSAPP_ENABLED ? 'closed' : 'disabled';
+  connecting = false;
 }
