@@ -25,27 +25,16 @@ import { MatchStatsQuickEdit } from '@/components/MatchStatsQuickEdit';
 import { MvpOfWeekPanel } from '@/components/MvpOfWeekPanel';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { PlayerPhysiqueFields } from '@/components/PlayerPhysiqueFields';
 import { birthDateIsoFromCurp, birthDateToInputValue } from '@/utils/birth-date';
-
-/** Misma lógica que el backend: cm (175), metros con decimal (1,75), o entero 1–3 como metros (2 → 200). */
-function parseHeightCmForBody(raw: string): number | undefined {
-  const t = raw.trim().replace(',', '.');
-  if (!t) return undefined;
-  const n = parseFloat(t);
-  if (!Number.isFinite(n)) return undefined;
-  const hasDecimal = t.includes('.');
-  if (hasDecimal && n > 0 && n < 10) return Math.round(n * 100);
-  if (!hasDecimal && Number.isInteger(n) && n >= 1 && n <= 3) return n * 100;
-  return Math.round(n);
-}
-
-function parseWeightKgForBody(raw: string): number | undefined {
-  const t = raw.trim().replace(',', '.');
-  if (!t) return undefined;
-  const n = parseFloat(t);
-  if (!Number.isFinite(n)) return undefined;
-  return Math.round(n);
-}
+import {
+  defaultPhysiqueFormFields,
+  physiqueFieldsFromStored,
+  resolveHeightCmFromForm,
+  resolveWeightKgFromForm,
+  validatePhysiqueFields,
+  type PhysiqueFormFields,
+} from '@/utils/player-physique';
 
 type PlayerForm = {
   firstName: string;
@@ -56,11 +45,9 @@ type PlayerForm = {
   secondaryPosition: string;
   jerseyNumber: string;
   dominantFoot: 'right' | 'left' | 'both';
-  heightCm: string;
-  weightKg: string;
   sportDescription: string;
   curp: string;
-};
+} & PhysiqueFormFields;
 
 type EditPlayerForm = {
   firstName: string;
@@ -69,7 +56,7 @@ type EditPlayerForm = {
   curp: string;
   status: 'active' | 'inactive';
   isVerified: boolean;
-};
+} & PhysiqueFormFields;
 
 export function DashboardPlayersPage() {
   const { user } = useAuth();
@@ -161,6 +148,8 @@ export function DashboardPlayersPage() {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<PlayerForm>({
     defaultValues: {
@@ -172,10 +161,9 @@ export function DashboardPlayersPage() {
       position:      '',
       secondaryPosition: '',
       jerseyNumber:  '',
-      heightCm:      '',
-      weightKg:      '',
       sportDescription: '',
       curp: '',
+      ...defaultPhysiqueFormFields,
     },
   });
 
@@ -195,11 +183,14 @@ export function DashboardPlayersPage() {
       curp: '',
       status: 'active',
       isVerified: false,
+      ...defaultPhysiqueFormFields,
     },
   });
 
   const openEdit = (p: Record<string, unknown>) => {
     setEditRow(p);
+    const hStored = typeof p.height_cm === 'number' ? p.height_cm : null;
+    const wStored = typeof p.weight_kg === 'number' ? p.weight_kg : null;
     resetEdit({
       firstName: String(p.first_name ?? ''),
       lastName: String(p.last_name ?? ''),
@@ -207,6 +198,7 @@ export function DashboardPlayersPage() {
       curp: typeof p.curp === 'string' ? p.curp : '',
       status: p.status === 'inactive' ? 'inactive' : 'active',
       isVerified: Boolean(p.is_verified),
+      ...physiqueFieldsFromStored(hStored, wStored),
     });
     setEditOpen(true);
   };
@@ -232,6 +224,15 @@ export function DashboardPlayersPage() {
       }
       body.curp = t.length === 0 ? null : t;
     }
+    const physiqueErr = validatePhysiqueFields(data);
+    if (physiqueErr) {
+      toast.error(physiqueErr.message);
+      return;
+    }
+    const heightCm = resolveHeightCmFromForm(data);
+    const weightKg = resolveWeightKgFromForm(data);
+    if (heightCm !== undefined) body.heightCm = heightCm;
+    if (weightKg !== undefined) body.weightKg = weightKg;
     updateMut.mutate({ id: String(editRow.id), body });
   });
 
@@ -253,11 +254,14 @@ export function DashboardPlayersPage() {
         return;
       }
     }
+    const physiqueErr = validatePhysiqueFields(data);
+    if (physiqueErr) {
+      toast.error(physiqueErr.message);
+      return;
+    }
     const jersey = data.jerseyNumber.trim();
-    const h = data.heightCm.trim();
-    const w = data.weightKg.trim();
-    const heightCm = h ? parseHeightCmForBody(h) : undefined;
-    const weightKg = w ? parseWeightKgForBody(w) : undefined;
+    const heightCm = resolveHeightCmFromForm(data);
+    const weightKg = resolveWeightKgFromForm(data);
     const curpClean = data.curp.trim().toUpperCase().replace(/[^A-Z0-9Ñ]/g, '');
     const body: CreatePlayerBody = {
       firstName: data.firstName.trim(),
@@ -279,14 +283,6 @@ export function DashboardPlayersPage() {
     }
     if (body.jerseyNumber !== undefined && (Number.isNaN(body.jerseyNumber) || body.jerseyNumber < 1)) {
       toast.error('Número de camiseta inválido');
-      return;
-    }
-    if (h && (heightCm === undefined || heightCm < 80 || heightCm > 250)) {
-      toast.error('Altura: usa centímetros (ej. 175) o metros con coma/punto (1,75). Enteros 2 o 3 = 2 m / 3 m.');
-      return;
-    }
-    if (w && (weightKg === undefined || weightKg < 15 || weightKg > 150)) {
-      toast.error('Peso entre 15 y 150 kg (puedes usar decimales, ej. 70,5).');
       return;
     }
     createMut.mutate({ body, curpPdf, photo: photoFile || undefined });
@@ -490,30 +486,8 @@ export function DashboardPlayersPage() {
               <label className={formLabelClass}>Nº camiseta</label>
               <input type="number" min={1} max={99} className={formInputClass} {...register('jerseyNumber')} />
             </div>
-            <div>
-              <label className={formLabelClass}>Altura</label>
-              <input
-                type="text"
-                inputMode="decimal"
-                autoComplete="off"
-                placeholder="175 o 1,75 (metros)"
-                className={formInputClass}
-                {...register('heightCm')}
-              />
-              <p className="text-[10px] text-on-surface-variant mt-0.5">En centímetros (175) o en metros (1,75). 2 o 3 sin decimales = 2 m / 3 m.</p>
-            </div>
           </div>
-          <div>
-            <label className={formLabelClass}>Peso (kg)</label>
-            <input
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              placeholder="ej. 70 o 70,5"
-              className={formInputClass}
-              {...register('weightKg')}
-            />
-          </div>
+          <PlayerPhysiqueFields register={register} watch={watch} setValue={setValue} />
           <div>
             <label className={formLabelClass}>Descripción deportiva (opcional)</label>
             <textarea rows={3} className={formInputClass} {...register('sportDescription')} />
@@ -597,6 +571,7 @@ export function DashboardPlayersPage() {
             </select>
             <p className="text-[11px] text-on-surface-variant mt-1">Solo los activos y verificados suelen mostrarse en el sitio público.</p>
           </div>
+          <PlayerPhysiqueFields register={registerEdit} watch={watchEdit} setValue={setEditValue} />
           <div className="flex items-start gap-3 rounded-lg border border-outline-variant/30 bg-surface-container/40 px-3 py-3">
             <Controller
               name="isVerified"
