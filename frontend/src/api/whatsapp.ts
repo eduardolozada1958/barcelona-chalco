@@ -8,6 +8,7 @@ export type WhatsAppStatus = {
   qrDataUrl: string | null;
   eligibleRecipients: number;
   authStorage?: 'supabase' | 'disk';
+  reconnectAttempts?: number;
 };
 
 export async function getWhatsAppStatus() {
@@ -17,6 +18,11 @@ export async function getWhatsAppStatus() {
 
 export async function reconnectWhatsApp() {
   const { data } = await apiClient.post<ApiResponse<WhatsAppStatus>>('/whatsapp/reconnect');
+  return data;
+}
+
+export async function resetWhatsAppSession() {
+  const { data } = await apiClient.post<ApiResponse<WhatsAppStatus>>('/whatsapp/reset-session');
   return data;
 }
 

@@ -6,9 +6,10 @@ import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
 import { formatPhoneForDisplay } from './phone';
 import {
   getConnectedWhatsAppJid,
+  ensureWhatsAppClientRunning,
   getWhatsAppStatus,
   initWhatsAppClient,
-  restartWhatsAppClient,
+  resetWhatsAppSession,
   sendWhatsAppText,
 } from './whatsapp.client';
 import { listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
@@ -73,18 +74,23 @@ export class WhatsAppService {
     await shutdownWhatsAppClient();
   }
 
-  static getStatus() {
+  static async getStatus() {
+    await ensureWhatsAppClientRunning();
     return getWhatsAppStatus();
   }
 
   static async getQrDataUrl(): Promise<string | null> {
-    const { qr } = getWhatsAppStatus();
+    const { qr } = await WhatsAppService.getStatus();
     if (!qr) return null;
     return QRCode.toDataURL(qr, { margin: 1, width: 280 });
   }
 
   static async reconnect(): Promise<void> {
-    await restartWhatsAppClient();
+    await resetWhatsAppSession();
+  }
+
+  static async resetSession(): Promise<void> {
+    await resetWhatsAppSession();
   }
 
   static async countEligibleRecipients(): Promise<number> {

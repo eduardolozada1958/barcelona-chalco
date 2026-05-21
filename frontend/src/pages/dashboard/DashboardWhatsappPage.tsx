@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
-import { getWhatsAppStatus, reconnectWhatsApp, sendWhatsAppTest } from '@/api/whatsapp';
+import { getWhatsAppStatus, resetWhatsAppSession, sendWhatsAppTest } from '@/api/whatsapp';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 
@@ -34,10 +34,10 @@ export function DashboardWhatsappPage() {
     }
   }, [status?.state]);
 
-  const reconnectMut = useMutation({
-    mutationFn: reconnectWhatsApp,
+  const resetMut = useMutation({
+    mutationFn: resetWhatsAppSession,
     onSuccess: () => {
-      toast.success('Reconectando…');
+      toast.success('Sesión borrada. Espera el QR (10–30 s)…');
       setPoll(true);
       void qc.invalidateQueries({ queryKey: ['whatsapp-status'] });
     },
@@ -106,6 +106,31 @@ export function DashboardWhatsappPage() {
         </p>
       </div>
 
+      {status?.state === 'connecting' ? (
+        <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
+          <Spinner />
+          <p className="text-sm text-on-surface-variant text-center">
+            Generando QR… Si tardó más de 1 minuto, pulsa de nuevo «Nuevo QR».
+          </p>
+        </div>
+      ) : null}
+
+      {(status?.state === 'closed' && (status.reconnectAttempts ?? 0) >= 10) ? (
+        <div className="rounded-xl border border-error/40 bg-error-container/20 p-4 text-sm space-y-2">
+          <p>
+            El servidor dejó de reintentar solo. Pulsa <strong>Nuevo QR</strong> para borrar la sesión
+            antigua y volver a vincular.
+          </p>
+        </div>
+      ) : null}
+
+      {status?.state === 'closed' && status?.enabled ? (
+        <p className="text-sm text-on-surface-variant">
+          Si cerraste sesión en el teléfono del club, pulsa <strong>Nuevo QR</strong> (no solo «Actualizar»).
+          Escanea con el chip del club (3349420820).
+        </p>
+      ) : null}
+
       {status?.state === 'qr' && status.qrDataUrl ? (
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <p className="text-sm text-on-surface-variant text-center">
@@ -126,11 +151,11 @@ export function DashboardWhatsappPage() {
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          disabled={!status?.enabled || reconnectMut.isPending}
-          onClick={() => reconnectMut.mutate()}
+          disabled={!status?.enabled || resetMut.isPending}
+          onClick={() => resetMut.mutate()}
           className="px-4 py-2 rounded-lg border border-outline-variant/40 font-label-caps text-[11px] hover:border-primary/40 disabled:opacity-50"
         >
-          {reconnectMut.isPending ? 'Reconectando…' : 'Reconectar / nuevo QR'}
+          {resetMut.isPending ? 'Preparando QR…' : 'Nuevo QR / vincular de nuevo'}
         </button>
         <button
           type="button"

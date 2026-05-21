@@ -55,6 +55,19 @@ function clearPersistDebounce(): void {
   }
 }
 
+async function wipeLocalAuthDir(): Promise<void> {
+  const dir = authDirPath ?? path.join(os.tmpdir(), 'barcelona-whatsapp-auth');
+  if (!fs.existsSync(dir)) return;
+  for (const name of fs.readdirSync(dir)) {
+    const p = path.join(dir, name);
+    try {
+      if (fs.statSync(p).isFile()) fs.unlinkSync(p);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 async function resolveAuthDir(forceReload = false): Promise<string> {
   if (authDirPath && !forceReload) return authDirPath;
 
@@ -238,14 +251,23 @@ async function startSocket(): Promise<void> {
         const loggedOut = code === baileys.DisconnectReason.loggedOut;
 
         if (loggedOut) {
-          logger.warn('WhatsApp: sesión cerrada (logout). Escanea el QR de nuevo.');
+          logger.warn('WhatsApp: sesión cerrada (logout). Generando QR nuevo…');
           lastQr = null;
           reconnectAttempts = 0;
-          if (env.WHATSAPP_AUTH_STORAGE === 'supabase') {
-            void clearAuthInSupabase().catch(() => undefined);
-          }
-          authDirPath = null;
-          connecting = false;
+          clearReconnectTimer();
+          void (async () => {
+            try {
+              if (env.WHATSAPP_AUTH_STORAGE === 'supabase') {
+                await clearAuthInSupabase();
+              }
+              await wipeLocalAuthDir();
+            } catch (e) {
+              logger.warn('WhatsApp: no se pudo limpiar sesión tras logout', { err: e });
+            }
+            authDirPath = null;
+            connecting = false;
+            await startSocket();
+          })();
         } else {
           scheduleReconnect(code);
         }
@@ -285,11 +307,22 @@ export async function resetWhatsAppSession(): Promise<void> {
   if (env.WHATSAPP_AUTH_STORAGE === 'supabase') {
     await clearAuthInSupabase();
   }
+  await wipeLocalAuthDir();
   authDirPath = null;
   lastQr = null;
-  connectionState = 'connecting';
   connecting = false;
   await startSocket();
+}
+
+/** Arranca el cliente si quedó en «closed» sin reintentos pendientes (p. ej. tras dormir en Render). */
+export async function ensureWhatsAppClientRunning(): Promise<void> {
+  if (!env.WHATSAPP_ENABLED) return;
+  if (connecting || reconnectTimer) return;
+  if (connectionState === 'open' || connectionState === 'qr') return;
+  if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) return;
+  if (connectionState === 'closed') {
+    await startSocket();
+  }
 }
 
 export async function sendWhatsAppText(jid: string, text: string): Promise<void> {

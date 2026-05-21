@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '@shared/utils/response';
-import { resetWhatsAppSession } from './whatsapp.client';
 import { WhatsAppService } from './whatsapp.service';
 
 export class WhatsAppController {
   static async status(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const status = WhatsAppService.getStatus();
+      const status = await WhatsAppService.getStatus();
       const eligible = await WhatsAppService.countEligibleRecipients();
       const qrDataUrl = status.qr ? await WhatsAppService.getQrDataUrl() : null;
       sendSuccess(res, { ...status, qrDataUrl, eligibleRecipients: eligible });
@@ -18,7 +17,7 @@ export class WhatsAppController {
   static async reconnect(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await WhatsAppService.reconnect();
-      sendSuccess(res, WhatsAppService.getStatus(), 'Reconectando WhatsApp…');
+      sendSuccess(res, await WhatsAppService.getStatus(), 'Sesión reiniciada. Escanea el QR si aparece.');
     } catch (e) {
       next(e);
     }
@@ -26,8 +25,8 @@ export class WhatsAppController {
 
   static async resetSession(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await resetWhatsAppSession();
-      sendSuccess(res, WhatsAppService.getStatus(), 'Sesión reiniciada. Escanea el QR si aparece.');
+      await WhatsAppService.resetSession();
+      sendSuccess(res, await WhatsAppService.getStatus(), 'Sesión reiniciada. Escanea el QR si aparece.');
     } catch (e) {
       next(e);
     }
