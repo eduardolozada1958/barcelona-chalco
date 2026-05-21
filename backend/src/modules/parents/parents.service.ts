@@ -135,6 +135,14 @@ export class ParentsService {
 
     if (error) throw new Error(error.message);
 
+    if (input.phonePrimary !== undefined) {
+      await supabaseAdmin
+        .from('users')
+        .update({ phone: String(input.phonePrimary).trim() || null })
+        .eq('id', data.user_id)
+        .is('deleted_at', null);
+    }
+
     const { data: userRow } = await supabaseAdmin
       .from('users')
       .select('id, email, role, status, full_name, phone')

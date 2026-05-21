@@ -73,8 +73,9 @@ export async function listVerifiedParentWhatsAppRecipients(): Promise<WhatsAppRe
 
     const primary = String(r.phone_primary ?? '').trim();
     const fromUser = userPhoneById.get(r.user_id) ?? '';
-    const phoneRaw = primary || fromUser;
-    const phoneSource: WhatsAppRecipient['phoneSource'] = primary ? 'phone_primary' : 'user_phone';
+    // «Mi perfil» guarda en users.phone; phone_primary puede quedar del registro o del admin.
+    const phoneRaw = fromUser || primary;
+    const phoneSource: WhatsAppRecipient['phoneSource'] = fromUser ? 'user_phone' : 'phone_primary';
     const jid = phoneToWhatsAppJid(phoneRaw);
     if (!jid || seenJid.has(jid)) continue;
     seenJid.add(jid);

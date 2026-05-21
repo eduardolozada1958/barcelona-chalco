@@ -40,11 +40,19 @@ export class ProfileService {
     if (error) throw new Error(error.message);
 
     if (input.phone !== undefined && data?.role === 'parent') {
-      await supabaseAdmin
+      const { data: parentRows, error: pErr } = await supabaseAdmin
         .from('parents')
         .update({ phone_primary: input.phone?.trim() || '' })
         .eq('user_id', userId)
-        .is('deleted_at', null);
+        .is('deleted_at', null)
+        .select('id');
+
+      if (pErr) throw new Error(pErr.message);
+      if (!parentRows?.length) {
+        throw new BadRequestError(
+          'No se encontró tu ficha de padre/tutor. Contacta al club para vincular tu cuenta.',
+        );
+      }
     }
 
     return data;

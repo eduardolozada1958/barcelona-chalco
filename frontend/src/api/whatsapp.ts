@@ -12,6 +12,7 @@ export type WhatsAppStatus = {
   pairingWaitSec?: number;
   recovering?: boolean;
   linkingAfterQr?: boolean;
+  testRecipient?: { name: string; phone: string; phoneSource: string } | null;
 };
 
 export async function getWhatsAppStatus() {

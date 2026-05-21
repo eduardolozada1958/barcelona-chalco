@@ -106,6 +106,17 @@ export function DashboardWhatsappPage() {
           Padres con WhatsApp activo y elegibles:{' '}
           <strong className="text-on-surface">{status?.eligibleRecipients ?? 0}</strong>
         </p>
+        {status?.testRecipient ? (
+          <p className="text-xs text-on-surface-variant">
+            «Enviar prueba» va a:{' '}
+            <strong className="text-on-surface">
+              {status.testRecipient.name} ({status.testRecipient.phone})
+            </strong>
+            {status.testRecipient.phoneSource === 'user_phone'
+              ? ' — teléfono de Mi perfil'
+              : ' — teléfono del expediente en admin'}
+          </p>
+        ) : null}
       </div>
 
       {status?.linkingAfterQr ? (
