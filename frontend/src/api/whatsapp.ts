@@ -11,6 +11,7 @@ export type WhatsAppStatus = {
   reconnectAttempts?: number;
   pairingWaitSec?: number;
   recovering?: boolean;
+  linkingAfterQr?: boolean;
 };
 
 export async function getWhatsAppStatus() {

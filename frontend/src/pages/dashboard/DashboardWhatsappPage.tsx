@@ -108,12 +108,21 @@ export function DashboardWhatsappPage() {
         </p>
       </div>
 
-      {(status?.recovering || (status?.pairingWaitSec ?? 0) > 0) && status?.state !== 'qr' ? (
+      {status?.linkingAfterQr ? (
+        <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3 border border-primary/30">
+          <Spinner />
+          <p className="text-sm text-primary text-center font-medium">
+            QR escaneado. Vinculando… no cierres esta página ni pulses «Nuevo QR» (10–20 s).
+          </p>
+        </div>
+      ) : null}
+
+      {(status?.recovering || (status?.pairingWaitSec ?? 0) > 0) && status?.state !== 'qr' && !status?.linkingAfterQr ? (
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <Spinner />
           <p className="text-sm text-on-surface-variant text-center">
             {(status?.pairingWaitSec ?? 0) > 0
-              ? `Conflicto de sesión (515). Espera ${status?.pairingWaitSec ?? 0} s antes de escanear; se generará un QR nuevo.`
+              ? `Conflicto de sesión. Espera ${status?.pairingWaitSec ?? 0} s; luego aparecerá un QR nuevo.`
               : 'Preparando sesión… No escanees hasta que aparezca el QR.'}
           </p>
         </div>
@@ -168,7 +177,14 @@ export function DashboardWhatsappPage() {
       <div className="flex flex-wrap gap-3">
         <button
           type="button"
-          disabled={!status?.enabled || resetMut.isPending}
+          disabled={
+            !status?.enabled ||
+            resetMut.isPending ||
+            status?.state === 'qr' ||
+            status?.linkingAfterQr ||
+            status?.recovering ||
+            (status?.pairingWaitSec ?? 0) > 0
+          }
           onClick={() => resetMut.mutate()}
           className="px-4 py-2 rounded-lg border border-outline-variant/40 font-label-caps text-[11px] hover:border-primary/40 disabled:opacity-50"
         >

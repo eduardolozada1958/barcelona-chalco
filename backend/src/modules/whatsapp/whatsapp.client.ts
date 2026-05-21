@@ -31,6 +31,7 @@ let socketGeneration = 0;
 let sessionResetInProgress = false;
 let recoveryInProgress = false;
 let pairingBlockedUntil = 0;
+let linkingAfterQr = false;
 let startSocketChain: Promise<void> = Promise.resolve();
 
 const MAX_RECONNECT_ATTEMPTS = 10;
@@ -39,9 +40,15 @@ const PAIRING_RETRY_DELAY_MS = 30_000;
 const SOCKET_CLOSE_WAIT_MS = 5_000;
 const PAIRING_BLOCK_MS = 40_000;
 
-/** 440/515: otra conexión con la misma sesión (típico al reconectar muy rápido en Render). */
+/** 440/428: otra sesión activa. El 515 NO es conflicto: es «reinicio requerido» tras escanear el QR (flujo normal Baileys). */
 function isSessionConflictCode(code: number | undefined): boolean {
-  return code === 440 || code === 515 || code === 428;
+  return code === 440 || code === 428;
+}
+
+function getDisconnectStatusCode(lastDisconnect: unknown): number | undefined {
+  const wrapped = lastDisconnect as { error?: Boom } | Boom | undefined;
+  const err = wrapped && 'error' in wrapped && wrapped.error ? wrapped.error : (wrapped as Boom | undefined);
+  return err?.output?.statusCode;
 }
 
 async function loadBaileys(): Promise<BaileysModule> {
@@ -189,7 +196,7 @@ function scheduleReconnect(code: number | undefined): void {
     attempt: reconnectAttempts,
     delaySec: Math.round(delay / 1000),
     hint: isSessionConflictCode(code)
-      ? 'Conflicto de sesión: cierra otros dispositivos vinculados en el teléfono del club y espera antes de escanear.'
+      ? 'Conflicto de sesión (440): cierra otros dispositivos vinculados en el teléfono del club.'
       : undefined,
   });
 
@@ -277,6 +284,7 @@ export function getWhatsAppStatus(): {
   reconnectAttempts: number;
   pairingWaitSec: number;
   recovering: boolean;
+  linkingAfterQr: boolean;
 } {
   return {
     enabled: env.WHATSAPP_ENABLED,
@@ -286,6 +294,7 @@ export function getWhatsAppStatus(): {
     reconnectAttempts,
     pairingWaitSec: Math.max(0, Math.ceil((pairingBlockedUntil - Date.now()) / 1000)),
     recovering: recoveryInProgress || sessionResetInProgress,
+    linkingAfterQr,
   };
 }
 
@@ -342,6 +351,7 @@ async function startSocketInternal(fromRecovery = false): Promise<void> {
       }
       if (connection === 'open') {
         lastQr = null;
+        linkingAfterQr = false;
         connectionState = 'open';
         connecting = false;
         reconnectAttempts = 0;
@@ -352,13 +362,29 @@ async function startSocketInternal(fromRecovery = false): Promise<void> {
       }
       if (connection === 'close') {
         const wasOpen = connectionState === 'open';
+        const code = getDisconnectStatusCode(lastDisconnect);
+        const loggedOut = code === baileys.DisconnectReason.loggedOut;
+        const restartRequired = code === baileys.DisconnectReason.restartRequired;
+
+        if (restartRequired) {
+          logger.info(
+            'WhatsApp: QR escaneado correctamente; reconectando con credenciales (código 515, flujo normal)…',
+          );
+          linkingAfterQr = true;
+          lastQr = null;
+          connectionState = 'connecting';
+          connecting = false;
+          reconnectAttempts = 0;
+          clearReconnectTimer();
+          queueStartSocket(2_000, true);
+          return;
+        }
+
+        linkingAfterQr = false;
         connectionState = 'closed';
         connecting = false;
         stopPersistInterval();
         lastQr = null;
-
-        const code = (lastDisconnect?.error as Boom | undefined)?.output?.statusCode;
-        const loggedOut = code === baileys.DisconnectReason.loggedOut;
 
         logger.warn('WhatsApp: conexión cerrada', {
           code,
