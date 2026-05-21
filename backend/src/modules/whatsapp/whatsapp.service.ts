@@ -105,8 +105,8 @@ export class WhatsAppService {
     const botJid = getConnectedWhatsAppJid();
     if (botJid && r.jid === botJid) {
       throw new BadRequestError(
-        `El teléfono del padre (${formatPhoneForDisplay(r.phoneRaw)}) es el mismo del WhatsApp del club. ` +
-          'No puedes enviarte a ti mismo: en Mi perfil pon tu WhatsApp personal (ej. 33 4942 0820), no el 5519060013 del club.',
+        `El teléfono del padre (${formatPhoneForDisplay(r.phoneRaw)}) es el mismo con el que vinculaste el WhatsApp del club. ` +
+          'En Mi perfil pon el celular donde quieres recibir avisos; el QR del panel debe escanearse solo con el chip del club.',
       );
     }
 
