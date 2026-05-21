@@ -1,8 +1,11 @@
 import QRCode from 'qrcode';
 import { env } from '@config/env';
+import { BadRequestError } from '@middlewares/error.middleware';
 import { logger } from '@shared/utils/logger';
 import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
+import { formatPhoneForDisplay } from './phone';
 import {
+  getConnectedWhatsAppJid,
   getWhatsAppStatus,
   initWhatsAppClient,
   restartWhatsAppClient,
@@ -89,17 +92,37 @@ export class WhatsAppService {
     return list.length;
   }
 
-  static async sendTestMessage(): Promise<{ sent: number; failed: number }> {
+  static async sendTestMessage(): Promise<{
+    sent: number;
+    failed: number;
+    sentTo?: { name: string; phone: string; phoneSource: string };
+  }> {
     const recipients = await listVerifiedParentWhatsAppRecipients();
     if (recipients.length === 0) {
       throw new Error('No hay padres verificados con WhatsApp activado y teléfono válido.');
     }
     const r = recipients[0];
+    const botJid = getConnectedWhatsAppJid();
+    if (botJid && r.jid === botJid) {
+      throw new BadRequestError(
+        `El teléfono del padre (${formatPhoneForDisplay(r.phoneRaw)}) es el mismo del WhatsApp del club. ` +
+          'No puedes enviarte a ti mismo: en Mi perfil pon tu WhatsApp personal (ej. 33 4942 0820), no el 5519060013 del club.',
+      );
+    }
+
     await sendWhatsAppText(
       r.jid,
       '🏟️ *Barcelona Cupido*\n\nMensaje de prueba del sistema de avisos. Si lo recibiste, la conexión funciona.',
     );
-    return { sent: 1, failed: 0 };
+    return {
+      sent: 1,
+      failed: 0,
+      sentTo: {
+        name: r.label,
+        phone: formatPhoneForDisplay(r.phoneRaw),
+        phoneSource: r.phoneSource,
+      },
+    };
   }
 
   static async notifyNoticePublished(notice: {

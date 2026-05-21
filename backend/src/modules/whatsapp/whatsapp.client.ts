@@ -76,6 +76,10 @@ function stopPersistInterval(): void {
   }
 }
 
+export function getConnectedWhatsAppJid(): string | null {
+  return sock?.user?.id ?? null;
+}
+
 export function getWhatsAppStatus(): {
   enabled: boolean;
   state: WhatsAppConnectionState;

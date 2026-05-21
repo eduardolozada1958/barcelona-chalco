@@ -38,6 +38,15 @@ export class ProfileService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    if (input.phone !== undefined && data?.role === 'parent') {
+      await supabaseAdmin
+        .from('parents')
+        .update({ phone_primary: input.phone?.trim() || '' })
+        .eq('user_id', userId)
+        .is('deleted_at', null);
+    }
+
     return data;
   }
 

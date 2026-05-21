@@ -47,7 +47,12 @@ export function DashboardWhatsappPage() {
   const testMut = useMutation({
     mutationFn: sendWhatsAppTest,
     onSuccess: (res) => {
-      toast.success(res.message || 'Prueba enviada');
+      const to = (res.data as { sentTo?: { name: string; phone: string } } | undefined)?.sentTo;
+      toast.success(
+        to
+          ? `Enviado a ${to.name} (${to.phone})`
+          : (res.message || 'Prueba enviada'),
+      );
     },
     onError: (e: Error) => toast.error(e.message),
   });

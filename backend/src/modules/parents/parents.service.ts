@@ -442,9 +442,16 @@ export class ParentsService {
       .is('deleted_at', null)
       .single();
 
-    const phone = String(parentRow?.phone_primary ?? '').trim();
+    const { data: userPhoneRow } = await supabaseAdmin
+      .from('users')
+      .select('phone')
+      .eq('id', userId)
+      .single();
+
+    const phone = String(parentRow?.phone_primary ?? '').trim()
+      || String(userPhoneRow?.phone ?? '').trim();
     if (!phoneToWhatsAppJid(phone)) {
-      return { eligible: false, reason: 'Agrega un teléfono válido en tu perfil (10 dígitos, México)' };
+      return { eligible: false, reason: 'Agrega un teléfono válido en Mi perfil (10 dígitos, ej. 33 4942 0820)' };
     }
 
     const { count } = await supabaseAdmin

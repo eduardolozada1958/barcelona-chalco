@@ -5,6 +5,8 @@ export type WhatsAppRecipient = {
   parentId: string;
   jid: string;
   label: string;
+  phoneSource: 'phone_primary' | 'user_phone';
+  phoneRaw: string;
 };
 
 /** Padres verificados con opt-in, teléfono y al menos un hijo aprobado. */
@@ -21,7 +23,7 @@ export async function listVerifiedParentWhatsAppRecipients(): Promise<WhatsAppRe
   const userIds = [...new Set(parents.map((p) => String((p as { user_id: string }).user_id)))];
   const { data: users, error: uErr } = await supabaseAdmin
     .from('users')
-    .select('id, status, email_verified, role')
+    .select('id, status, email_verified, role, phone')
     .in('id', userIds)
     .is('deleted_at', null)
     .eq('role', 'parent')
@@ -29,7 +31,13 @@ export async function listVerifiedParentWhatsAppRecipients(): Promise<WhatsAppRe
     .eq('email_verified', true);
 
   if (uErr) throw new Error(uErr.message);
-  const validUserIds = new Set((users ?? []).map((u) => String((u as { id: string }).id)));
+  const userPhoneById = new Map<string, string>();
+  const validUserIds = new Set<string>();
+  for (const u of users ?? []) {
+    const row = u as { id: string; phone?: string | null };
+    validUserIds.add(String(row.id));
+    if (row.phone?.trim()) userPhoneById.set(String(row.id), row.phone.trim());
+  }
 
   const parentIds = parents
     .filter((p) => validUserIds.has(String((p as { user_id: string }).user_id)))
@@ -63,7 +71,11 @@ export async function listVerifiedParentWhatsAppRecipients(): Promise<WhatsAppRe
     if (!validUserIds.has(r.user_id)) continue;
     if (!withApprovedChild.has(r.id)) continue;
 
-    const jid = phoneToWhatsAppJid(String(r.phone_primary ?? '').trim());
+    const primary = String(r.phone_primary ?? '').trim();
+    const fromUser = userPhoneById.get(r.user_id) ?? '';
+    const phoneRaw = primary || fromUser;
+    const phoneSource: WhatsAppRecipient['phoneSource'] = primary ? 'phone_primary' : 'user_phone';
+    const jid = phoneToWhatsAppJid(phoneRaw);
     if (!jid || seenJid.has(jid)) continue;
     seenJid.add(jid);
 
@@ -71,6 +83,8 @@ export async function listVerifiedParentWhatsAppRecipients(): Promise<WhatsAppRe
       parentId: r.id,
       jid,
       label: `${r.first_name ?? ''} ${r.last_name ?? ''}`.trim(),
+      phoneSource,
+      phoneRaw,
     });
   }
 
