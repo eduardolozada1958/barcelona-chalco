@@ -5,6 +5,8 @@ import { WhatsAppService } from './whatsapp.service';
 export class WhatsAppController {
   static async status(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
       const status = await WhatsAppService.getStatus();
       const eligible = await WhatsAppService.countEligibleRecipients();
       const qrDataUrl = status.qr ? await WhatsAppService.getQrDataUrl() : null;

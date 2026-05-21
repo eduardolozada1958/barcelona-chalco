@@ -21,7 +21,9 @@ export function DashboardWhatsappPage() {
   const q = useQuery({
     queryKey: ['whatsapp-status'],
     queryFn: getWhatsAppStatus,
-    refetchInterval: poll ? 4000 : false,
+    refetchInterval: poll ? 3000 : false,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const status = q.data?.data;
@@ -134,10 +136,14 @@ export function DashboardWhatsappPage() {
       {status?.state === 'qr' && status.qrDataUrl ? (
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <p className="text-sm text-on-surface-variant text-center">
-            En el teléfono secundario: WhatsApp → Dispositivos vinculados → Vincular dispositivo → escanea:
+            En el teléfono del club (3349420820): WhatsApp → Dispositivos vinculados →{' '}
+            <strong>cierra sesiones viejas</strong> → Vincular dispositivo → escanea en menos de 20 s:
           </p>
           <img src={status.qrDataUrl} alt="QR WhatsApp" className="rounded-lg bg-white p-2 max-w-[280px]" />
-          <p className="text-[11px] text-on-surface-variant">El QR se actualiza solo cada pocos segundos.</p>
+          <p className="text-[11px] text-on-surface-variant text-center">
+            Si el celular dice «revisa tu internet», espera 1 minuto, pulsa Nuevo QR una sola vez y escanea el QR
+            nuevo de inmediato. No pulses el botón mientras escaneas.
+          </p>
         </div>
       ) : null}
 
