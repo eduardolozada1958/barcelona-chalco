@@ -7,6 +7,7 @@ export type WhatsAppStatus = {
   qr: string | null;
   qrDataUrl: string | null;
   eligibleRecipients: number;
+  authStorage?: 'supabase' | 'disk';
 };
 
 export async function getWhatsAppStatus() {

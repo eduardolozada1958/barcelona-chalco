@@ -71,11 +71,16 @@ export function DashboardWhatsappPage() {
 
       {!status?.enabled ? (
         <div className="rounded-xl border border-error/40 bg-error-container/20 p-4 text-sm">
-          WhatsApp no está activado en Render. Agrega{' '}
-          <code className="text-primary">WHATSAPP_ENABLED=true</code> y disco persistente en{' '}
-          <code className="text-primary">WHATSAPP_AUTH_DIR=/data/whatsapp-auth</code>.
+          WhatsApp no está activado en Render. Agrega <code className="text-primary">WHATSAPP_ENABLED=true</code>.
         </div>
-      ) : null}
+      ) : (
+        <p className="text-xs text-on-surface-variant">
+          Sesión guardada en:{' '}
+          <strong className="text-on-surface">
+            {status.authStorage === 'supabase' ? 'Supabase (compatible plan Free)' : 'Disco local'}
+          </strong>
+        </p>
+      )}
 
       <div className="glass-panel rounded-xl p-5 space-y-3">
         <div className="flex items-center justify-between gap-3">
