@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@config/database';
+import { CURRENT_SEASON } from '@config/constants';
 import { NotFoundError } from '@middlewares/error.middleware';
 import type { UpdateSettingsBody } from './settings.validation';
 
@@ -14,6 +15,18 @@ export class SettingsService {
     if (error) throw new Error(error.message);
     if (!data) throw new NotFoundError('Configuración del club no encontrada');
     return data;
+  }
+
+  /** Temporada activa del club (Ajustes → constante por defecto). */
+  static async getDisplaySeason(): Promise<string> {
+    try {
+      const row = await SettingsService.getActiveRow();
+      const s = typeof row.season === 'string' ? row.season.trim() : '';
+      if (s) return s;
+    } catch {
+      /* sin fila activa */
+    }
+    return CURRENT_SEASON;
   }
 
   static async getPublic() {

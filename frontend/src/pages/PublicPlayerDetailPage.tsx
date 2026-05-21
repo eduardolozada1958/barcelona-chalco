@@ -14,6 +14,7 @@ import { Spinner } from '@/components/Spinner';
 import { PageSeo } from '@/components/PageSeo';
 import { absoluteUrl } from '@/config/seo';
 import { isPlayerUuid, playerPublicPath } from '@/utils/player-path';
+import { useDisplaySeason } from '@/hooks/useClubSettings';
 import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 
 /**
@@ -23,6 +24,7 @@ import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 export function PublicPlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const displaySeason = useDisplaySeason();
   const q = useQuery({
     queryKey: ['player-public', id],
     queryFn: () => getPlayerPublic(id!),
@@ -142,7 +144,7 @@ export function PublicPlayerDetailPage() {
             <div className="flex flex-col items-end gap-2">
               {player.is_verified && <Badge variant="verified" />}
               <div className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">
-                Temporada {player.season || '2024-2025'}
+                Temporada {displaySeason}
               </div>
             </div>
           </div>

@@ -50,4 +50,4 @@ export const PAGINATION = {
 
 export const QR_TOKEN_BYTES = 32;
 
-export const CURRENT_SEASON = '2024-2025';
+export const CURRENT_SEASON = '2026';

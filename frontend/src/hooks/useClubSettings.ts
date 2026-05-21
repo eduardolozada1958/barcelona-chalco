@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { getSettingsPublic } from '@/api/settings';
+import { CURRENT_SEASON } from '@/config/club';
 
 export interface ClubSettingsPublic {
   clubName?:        string;
@@ -21,4 +22,11 @@ export function useClubSettings() {
     },
     staleTime: 5 * 60_000,
   });
+}
+
+/** Temporada visible en todo el sitio: Ajustes del club → constante por defecto. */
+export function useDisplaySeason(): string {
+  const q = useClubSettings();
+  const fromSettings = q.data?.season?.trim();
+  return fromSettings || CURRENT_SEASON;
 }

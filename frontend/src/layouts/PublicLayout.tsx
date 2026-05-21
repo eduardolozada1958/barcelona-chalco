@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PushNotificationsPrompt } from '@/components/PushNotificationsPrompt';
 import { CLUB_LOGO_URL } from '@/config/club';
-import { useClubSettings } from '@/hooks/useClubSettings';
+import { useDisplaySeason } from '@/hooks/useClubSettings';
 import { getPanelNavIcon, getPanelShortLabel } from '@/config/panel-labels';
 import { LoggedInPublicBanner } from '@/components/LoggedInPublicBanner';
 import { ScrollToTop } from '@/components/ScrollToTop';
@@ -37,8 +37,7 @@ export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
-  const clubSettings = useClubSettings();
-  const season = clubSettings.data?.season?.trim();
+  const season = useDisplaySeason();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -239,7 +238,7 @@ export function PublicLayout() {
         </div>
         <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">
           © {new Date().getFullYear()} F.C. BARCELONA CUPIDO
-          {season ? ` · Temporada ${season}` : ''}. Rendimiento Élite & Identidad Digital.
+          {` · Temporada ${season}`}. Rendimiento Élite & Identidad Digital.
         </div>
       </footer>
     </div>

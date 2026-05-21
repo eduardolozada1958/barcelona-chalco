@@ -1,4 +1,5 @@
 import type { Player } from '@/types';
+import { useDisplaySeason } from '@/hooks/useClubSettings';
 import { MaterialIcon } from './MaterialIcon';
 
 interface PlayerCardProps {
@@ -7,6 +8,7 @@ interface PlayerCardProps {
 
 /** Tarjeta pública: foto + nombre + descripción. La validación QR está en /credencial. */
 export function PlayerCard({ player }: PlayerCardProps) {
+  const displaySeason = useDisplaySeason();
   const fullName = `${player.first_name} ${player.last_name}`;
 
   return (
@@ -43,7 +45,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         </p>
         <p className="font-body-md text-body-md text-on-surface-variant line-clamp-3">
           {player.sport_description ||
-            `Jugador de la academia, temporada ${player.season || '2024-2025'}.`}
+            `Jugador de la academia, temporada ${displaySeason}.`}
         </p>
       </div>
     </article>

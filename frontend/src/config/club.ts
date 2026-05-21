@@ -1,3 +1,6 @@
+/** Temporada por defecto si Ajustes del club no define otra. */
+export const CURRENT_SEASON = '2026';
+
 /** Logo en rutas públicas (WebP, carpeta public/images). */
 export const CLUB_LOGO_URL = '/images/logo.webp';
 /** Nombre visible del sitio / proyecto. */

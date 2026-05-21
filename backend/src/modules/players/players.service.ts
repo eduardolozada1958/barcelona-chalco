@@ -8,6 +8,7 @@ import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slu
 import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { normalizeCurp } from '@shared/utils/curp';
 import { CURRENT_SEASON } from '@config/constants';
+import { SettingsService } from '@modules/settings/settings.service';
 import type { CreatePlayerInput, CreatePlayerMultipartInput, UpdatePlayerInput } from './players.validation';
 import type { UserRole } from '@shared/types';
 
@@ -37,13 +38,16 @@ function withNormalizedBirthDate(row: Record<string, unknown>): Record<string, u
 
 function mapPublicPlayerRow(
   row: Record<string, unknown>,
-  opts?: { includeCredentialUrl?: boolean },
+  opts?: { includeCredentialUrl?: boolean; displaySeason?: string },
 ): Record<string, unknown> {
   const { qr_token: token, ...rest } = row;
   const out: Record<string, unknown> = {
     ...withNormalizedBirthDate(rest),
     has_qr: Boolean(token),
   };
+  if (opts?.displaySeason) {
+    out.season = opts.displaySeason;
+  }
   if (opts?.includeCredentialUrl && token) {
     out.credential_ar_url = `/credencial-ar/${encodeURIComponent(String(token))}`;
   }
@@ -123,8 +127,12 @@ export class PlayersService {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
+    const displaySeason = await SettingsService.getDisplaySeason();
+
     return {
-      data: (data ?? []).map((row) => mapPublicPlayerRow(row as Record<string, unknown>)),
+      data: (data ?? []).map((row) =>
+        mapPublicPlayerRow(row as Record<string, unknown>, { displaySeason }),
+      ),
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
   }
@@ -300,7 +308,11 @@ export class PlayersService {
     const { data, error } = await query.single();
 
     if (error || !data) throw new NotFoundError('Jugador no encontrado');
-    return mapPublicPlayerRow(data as Record<string, unknown>, { includeCredentialUrl: true });
+    const displaySeason = await SettingsService.getDisplaySeason();
+    return mapPublicPlayerRow(data as Record<string, unknown>, {
+      includeCredentialUrl: true,
+      displaySeason,
+    });
   }
 
   static async create(input: CreatePlayerInput) {

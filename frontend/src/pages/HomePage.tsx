@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
@@ -13,7 +14,7 @@ import { listMatchesUpcoming } from '@/api/matches';
 import { fetchPlayersPublicByIds } from '@/api/players';
 import { displayPlayerShort, rosterRowToPitchPlayer } from '@/utils/lineup-players';
 import { listNoticesPublic } from '@/api/notices';
-import { useClubSettings } from '@/hooks/useClubSettings';
+import { useDisplaySeason } from '@/hooks/useClubSettings';
 import type { Result, Match, Notice } from '@/types';
 
 /* ─── Hero placeholder image (cinematic stadium) ─── */
@@ -24,8 +25,7 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018
  * Sections: Hero → "¿Para qué sirve Barcelona Cupido?" → Info Cards → Highlights Bento Grid → Footer.
  */
 export function HomePage() {
-  const clubSettings = useClubSettings();
-  const season = clubSettings.data?.season?.trim();
+  const season = useDisplaySeason();
 
   // Fetch real data for highlights
   const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
@@ -168,7 +168,7 @@ export function HomePage() {
         <SeasonLeadersTables
           variant="public"
           linkPlayerNames={false}
-          title={season ? `⚽ Tabla de goleo y tarjetas — Temporada ${season}` : undefined}
+          title={`⚽ Tabla de goleo y tarjetas — Temporada ${season}`}
           asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
         />
       </section>
@@ -213,9 +213,12 @@ export function HomePage() {
               </div>
               <span className="font-display-hero text-headline-lg-mobile text-on-surface-variant opacity-50">VS</span>
               <div className="flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center border border-outline-variant">
-                  <MaterialIcon name="shield" className="text-on-surface-variant" size={20} />
-                </div>
+                <MatchTeamCrest
+                  name={nextMatch?.opponent_name || 'Por definir'}
+                  logoUrl={nextMatch?.opponent_logo_url ?? null}
+                  variant="away"
+                  size="md"
+                />
                 <span className="font-label-caps text-label-caps mt-2 text-on-surface-variant">
                   {nextMatch?.opponent_name || 'Por definir'}
                 </span>

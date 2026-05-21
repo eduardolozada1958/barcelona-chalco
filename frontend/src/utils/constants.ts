@@ -105,5 +105,5 @@ export const HEADERS = {
 export const CLUB_INFO = {
   NAME:  'Academia FC Barcelona',
   CITY:  'Los Héroes Chalco, Edo. Méx.',
-  SEASON: '2024-2025',
+  SEASON: '2026',
 };
