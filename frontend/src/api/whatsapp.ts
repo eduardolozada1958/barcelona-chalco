@@ -9,6 +9,8 @@ export type WhatsAppStatus = {
   eligibleRecipients: number;
   authStorage?: 'supabase' | 'disk';
   reconnectAttempts?: number;
+  pairingWaitSec?: number;
+  recovering?: boolean;
 };
 
 export async function getWhatsAppStatus() {

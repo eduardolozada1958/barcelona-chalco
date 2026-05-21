@@ -29,12 +29,15 @@ let reconnectAttempts = 0;
 let openedAt: number | null = null;
 let socketGeneration = 0;
 let sessionResetInProgress = false;
+let recoveryInProgress = false;
+let pairingBlockedUntil = 0;
 let startSocketChain: Promise<void> = Promise.resolve();
 
 const MAX_RECONNECT_ATTEMPTS = 10;
-const LOGOUT_RECOVERY_DELAY_MS = 10_000;
-const PAIRING_RETRY_DELAY_MS = 15_000;
-const SOCKET_CLOSE_WAIT_MS = 4_000;
+const LOGOUT_RECOVERY_DELAY_MS = 12_000;
+const PAIRING_RETRY_DELAY_MS = 30_000;
+const SOCKET_CLOSE_WAIT_MS = 5_000;
+const PAIRING_BLOCK_MS = 40_000;
 
 /** 440/515: otra conexión con la misma sesión (típico al reconectar muy rápido en Render). */
 function isSessionConflictCode(code: number | undefined): boolean {
@@ -150,13 +153,13 @@ function stopPersistInterval(): void {
   clearPersistDebounce();
 }
 
-function queueStartSocket(delayMs = 0): void {
+function queueStartSocket(delayMs = 0, fromRecovery = false): void {
   startSocketChain = startSocketChain
     .then(async () => {
       if (delayMs > 0) {
         await new Promise((r) => setTimeout(r, delayMs));
       }
-      await startSocketInternal();
+      await startSocketInternal(fromRecovery);
     })
     .catch((e) => {
       logger.error('WhatsApp: error en cola de inicio', { err: e });
@@ -197,62 +200,55 @@ function scheduleReconnect(code: number | undefined): void {
   }, delay);
 }
 
-function scheduleLogoutRecovery(): void {
-  if (logoutRecoveryTimer || sessionResetInProgress) return;
-  clearReconnectTimer();
+async function runSessionRecovery(kind: 'logout' | 'pairing', code?: number): Promise<void> {
+  recoveryInProgress = true;
+  sessionResetInProgress = true;
+  pairingBlockedUntil = Date.now() + PAIRING_BLOCK_MS;
   lastQr = null;
-  reconnectAttempts = 0;
   connectionState = 'closed';
   connecting = false;
+  clearReconnectTimer();
 
+  try {
+    await closeSocket();
+    await clearStoredSession();
+    const waitMs = kind === 'logout' ? LOGOUT_RECOVERY_DELAY_MS : PAIRING_RETRY_DELAY_MS;
+    if (kind === 'pairing') {
+      logger.warn('WhatsApp: emparejamiento falló (conflicto de sesión). Nuevo QR en ~30 s…', {
+        code,
+        hint: 'Cierra TODOS los dispositivos vinculados en el teléfono del club antes de escanear otra vez.',
+      });
+    }
+    await new Promise((r) => setTimeout(r, waitMs));
+    reconnectAttempts = 0;
+    await startSocketInternal(true);
+  } catch (e) {
+    logger.warn('WhatsApp: recuperación de sesión falló', { kind, err: e });
+    connectionState = 'closed';
+    connecting = false;
+  } finally {
+    sessionResetInProgress = false;
+    recoveryInProgress = false;
+  }
+}
+
+function scheduleLogoutRecovery(): void {
+  if (logoutRecoveryTimer || recoveryInProgress) return;
   logger.warn(
-    'WhatsApp: sesión invalidada (logout). Limpieza en 10 s; luego un QR nuevo. Cierra dispositivos vinculados viejos en el teléfono.',
+    'WhatsApp: sesión invalidada (logout). Limpieza en breve; cierra dispositivos vinculados viejos en el teléfono.',
   );
-
   logoutRecoveryTimer = setTimeout(() => {
     logoutRecoveryTimer = null;
-    void (async () => {
-      sessionResetInProgress = true;
-      try {
-        await closeSocket();
-        await clearStoredSession();
-        await new Promise((r) => setTimeout(r, LOGOUT_RECOVERY_DELAY_MS));
-        queueStartSocket();
-      } catch (e) {
-        logger.warn('WhatsApp: recuperación tras logout falló', { err: e });
-        connectionState = 'closed';
-        connecting = false;
-      } finally {
-        sessionResetInProgress = false;
-      }
-    })();
+    void runSessionRecovery('logout');
   }, 2_000);
 }
 
 function scheduleFailedPairingRecovery(code: number | undefined): void {
-  if (reconnectTimer || sessionResetInProgress || logoutRecoveryTimer) return;
-  clearReconnectTimer();
-  lastQr = null;
-  connectionState = 'closed';
-  connecting = false;
-
-  logger.warn('WhatsApp: falló el emparejamiento (QR). Limpiando sesión parcial…', { code });
-
+  if (reconnectTimer || recoveryInProgress) return;
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
-    void (async () => {
-      sessionResetInProgress = true;
-      try {
-        await closeSocket();
-        await clearStoredSession();
-        await new Promise((r) => setTimeout(r, PAIRING_RETRY_DELAY_MS));
-        reconnectAttempts = 0;
-        queueStartSocket();
-      } finally {
-        sessionResetInProgress = false;
-      }
-    })();
-  }, 1_000);
+    void runSessionRecovery('pairing', code);
+  }, 2_000);
 }
 
 async function closeSocket(): Promise<void> {
@@ -279,6 +275,8 @@ export function getWhatsAppStatus(): {
   qr: string | null;
   authStorage: string;
   reconnectAttempts: number;
+  pairingWaitSec: number;
+  recovering: boolean;
 } {
   return {
     enabled: env.WHATSAPP_ENABLED,
@@ -286,12 +284,16 @@ export function getWhatsAppStatus(): {
     qr: lastQr,
     authStorage: env.WHATSAPP_AUTH_STORAGE,
     reconnectAttempts,
+    pairingWaitSec: Math.max(0, Math.ceil((pairingBlockedUntil - Date.now()) / 1000)),
+    recovering: recoveryInProgress || sessionResetInProgress,
   };
 }
 
-async function startSocketInternal(): Promise<void> {
+async function startSocketInternal(fromRecovery = false): Promise<void> {
   if (!env.WHATSAPP_ENABLED) return;
-  if (connecting || sessionResetInProgress) return;
+  if (connecting) return;
+  if (!fromRecovery && (sessionResetInProgress || recoveryInProgress)) return;
+  if (!fromRecovery && Date.now() < pairingBlockedUntil) return;
 
   connecting = true;
   clearReconnectTimer();
@@ -317,9 +319,10 @@ async function startSocketInternal(): Promise<void> {
       auth: state,
       printQRInTerminal: false,
       logger: pino({ level: 'silent' }),
-      browser: ['Barcelona Cupido', 'Chrome', '1.0.0'],
+      browser: ['Ubuntu', 'Chrome', '22.04.4'],
       syncFullHistory: false,
       markOnlineOnConnect: false,
+      connectTimeoutMs: 60_000,
     });
 
     sock.ev.on('creds.update', () => {
@@ -334,6 +337,7 @@ async function startSocketInternal(): Promise<void> {
         lastQr = qr;
         connectionState = 'qr';
         connecting = false;
+        pairingBlockedUntil = 0;
         logger.info('WhatsApp: escanea el QR en el panel de administración');
       }
       if (connection === 'open') {
@@ -355,6 +359,13 @@ async function startSocketInternal(): Promise<void> {
 
         const code = (lastDisconnect?.error as Boom | undefined)?.output?.statusCode;
         const loggedOut = code === baileys.DisconnectReason.loggedOut;
+
+        logger.warn('WhatsApp: conexión cerrada', {
+          code,
+          wasOpen,
+          loggedOut,
+          conflict: isSessionConflictCode(code),
+        });
 
         if (loggedOut) {
           scheduleLogoutRecovery();
@@ -389,8 +400,10 @@ export async function restartWhatsAppClient(): Promise<void> {
 
 export async function resetWhatsAppSession(): Promise<void> {
   reconnectAttempts = 0;
+  pairingBlockedUntil = 0;
   clearReconnectTimer();
   clearLogoutRecoveryTimer();
+  recoveryInProgress = false;
   sessionResetInProgress = true;
   socketGeneration += 1;
   stopPersistInterval();
@@ -399,19 +412,24 @@ export async function resetWhatsAppSession(): Promise<void> {
   lastQr = null;
   connecting = false;
   connectionState = 'connecting';
-  sessionResetInProgress = false;
-  queueStartSocket(3_000);
-  await startSocketChain;
+  try {
+    await new Promise((r) => setTimeout(r, 3_000));
+    await startSocketInternal(true);
+  } finally {
+    sessionResetInProgress = false;
+  }
 }
 
-/** Arranca el cliente si quedó en «closed» sin reintentos pendientes (p. ej. tras dormir en Render). */
+/** Solo al arranque del servidor; no llamar en cada GET /status (evita doble socket → error 515). */
 export async function ensureWhatsAppClientRunning(): Promise<void> {
   if (!env.WHATSAPP_ENABLED) return;
   if (
     connecting ||
     reconnectTimer ||
     logoutRecoveryTimer ||
-    sessionResetInProgress
+    sessionResetInProgress ||
+    recoveryInProgress ||
+    Date.now() < pairingBlockedUntil
   ) {
     return;
   }

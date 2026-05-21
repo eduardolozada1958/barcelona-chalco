@@ -6,7 +6,6 @@ import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
 import { formatPhoneForDisplay } from './phone';
 import {
   getConnectedWhatsAppJid,
-  ensureWhatsAppClientRunning,
   getWhatsAppStatus,
   initWhatsAppClient,
   resetWhatsAppSession,
@@ -74,13 +73,12 @@ export class WhatsAppService {
     await shutdownWhatsAppClient();
   }
 
-  static async getStatus() {
-    await ensureWhatsAppClientRunning();
+  static getStatus() {
     return getWhatsAppStatus();
   }
 
   static async getQrDataUrl(): Promise<string | null> {
-    const { qr } = await WhatsAppService.getStatus();
+    const { qr } = WhatsAppService.getStatus();
     if (!qr) return null;
     return QRCode.toDataURL(qr, { margin: 1, width: 280 });
   }

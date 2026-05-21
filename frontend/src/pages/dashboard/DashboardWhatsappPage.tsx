@@ -108,7 +108,18 @@ export function DashboardWhatsappPage() {
         </p>
       </div>
 
-      {status?.state === 'connecting' ? (
+      {(status?.recovering || (status?.pairingWaitSec ?? 0) > 0) && status?.state !== 'qr' ? (
+        <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
+          <Spinner />
+          <p className="text-sm text-on-surface-variant text-center">
+            {status.pairingWaitSec && status.pairingWaitSec > 0
+              ? `Conflicto de sesión (515). Espera ${status.pairingWaitSec} s antes de escanear; se generará un QR nuevo.`
+              : 'Preparando sesión… No escanees hasta que aparezca el QR.'}
+          </p>
+        </div>
+      ) : null}
+
+      {status?.state === 'connecting' && !status?.recovering && !(status?.pairingWaitSec ?? 0) ? (
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <Spinner />
           <p className="text-sm text-on-surface-variant text-center">
@@ -133,7 +144,7 @@ export function DashboardWhatsappPage() {
         </p>
       ) : null}
 
-      {status?.state === 'qr' && status.qrDataUrl ? (
+      {status?.state === 'qr' && status.qrDataUrl && !(status?.pairingWaitSec ?? 0) ? (
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <p className="text-sm text-on-surface-variant text-center">
             En el teléfono del club (3349420820): WhatsApp → Dispositivos vinculados →{' '}
