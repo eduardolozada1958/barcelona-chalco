@@ -112,8 +112,8 @@ export function DashboardWhatsappPage() {
         <div className="glass-panel rounded-xl p-5 flex flex-col items-center gap-3">
           <Spinner />
           <p className="text-sm text-on-surface-variant text-center">
-            {status.pairingWaitSec && status.pairingWaitSec > 0
-              ? `Conflicto de sesión (515). Espera ${status.pairingWaitSec} s antes de escanear; se generará un QR nuevo.`
+            {(status?.pairingWaitSec ?? 0) > 0
+              ? `Conflicto de sesión (515). Espera ${status?.pairingWaitSec ?? 0} s antes de escanear; se generará un QR nuevo.`
               : 'Preparando sesión… No escanees hasta que aparezca el QR.'}
           </p>
         </div>
