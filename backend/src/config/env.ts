@@ -130,7 +130,10 @@ const envSchema = z.object({
     .optional()
     .transform((v) => v === 'true' || v === '1'),
   /** `supabase` = sesión en tabla whatsapp_auth_files (Render Free). `disk` = carpeta local o disco Render. */
-  WHATSAPP_AUTH_STORAGE: z.enum(['supabase', 'disk']).default('supabase'),
+  WHATSAPP_AUTH_STORAGE: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.enum(['supabase', 'disk']).default('supabase'),
+  ),
   WHATSAPP_AUTH_DIR: z.string().default('./data/whatsapp-auth'),
   WHATSAPP_SEND_DELAY_MS: z.string().default('4000').transform(Number),
   WHATSAPP_MAX_PER_HOUR: z.string().default('40').transform(Number),
