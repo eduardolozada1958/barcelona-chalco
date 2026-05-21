@@ -6,6 +6,7 @@ import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
 import { throwStorageOrDbError } from '@shared/utils/storage-errors';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 
 function normalizeLineup(raw: unknown): string[] {
   if (!raw) return [];
@@ -154,6 +155,25 @@ export class MatchesService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    if (
+      env.WHATSAPP_ENABLED &&
+      env.WHATSAPP_NOTIFY_MATCHES &&
+      data.status === 'scheduled' &&
+      new Date(String(data.match_date)).getTime() > Date.now()
+    ) {
+      void WhatsAppService.notifyMatchScheduled({
+        id:            String(data.id),
+        title:         String(data.title),
+        opponent_name: String(data.opponent_name),
+        match_date:    String(data.match_date),
+        location:      String(data.location ?? ''),
+        category:      data.category ? String(data.category) : undefined,
+      }).catch(() => {
+        /* log en servicio */
+      });
+    }
+
     return data;
   }
 

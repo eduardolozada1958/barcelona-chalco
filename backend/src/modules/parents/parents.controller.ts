@@ -8,6 +8,7 @@ import type {
   ListLinkRequestsQuery,
   ListParentsQuery,
   RejectLinkRequestInput,
+  SetMyWhatsAppNotifyInput,
   UpdateParentBody,
 } from './parents.validation';
 
@@ -53,6 +54,16 @@ export class ParentsController {
     try {
       const data = await ParentsService.getMyAccountSummary(req.user!.id);
       sendSuccess(res, data, 'Estado de cuenta');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async setMyWhatsAppNotify(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = req.body as SetMyWhatsAppNotifyInput;
+      const data = await ParentsService.setMyWhatsAppNotify(req.user!.id, body.enabled);
+      sendSuccess(res, data, body.enabled ? 'Avisos por WhatsApp activados' : 'Avisos por WhatsApp desactivados');
     } catch (e) {
       next(e);
     }

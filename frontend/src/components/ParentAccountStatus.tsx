@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
-import { getMyAccountSummary, type ParentAccountSummary } from '@/api/parents';
+import { getMyAccountSummary, setMyWhatsAppNotify, type ParentAccountSummary } from '@/api/parents';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { COACH_WHATSAPP_URL } from '@/config/coach';
@@ -13,9 +14,19 @@ function monthLabel(iso: string): string {
 }
 
 export function ParentAccountStatus({ compact = false }: { compact?: boolean }) {
+  const qc = useQueryClient();
   const q = useQuery({
     queryKey: ['parent-account-summary'],
     queryFn: getMyAccountSummary,
+  });
+
+  const waMut = useMutation({
+    mutationFn: (enabled: boolean) => setMyWhatsAppNotify(enabled),
+    onSuccess: (res) => {
+      toast.success(res.message || 'Preferencia guardada');
+      void qc.invalidateQueries({ queryKey: ['parent-account-summary'] });
+    },
+    onError: (e: Error) => toast.error(e.message),
   });
 
   if (q.isLoading) {
@@ -144,6 +155,31 @@ export function ParentAccountStatus({ compact = false }: { compact?: boolean }) 
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {data.whatsapp ? (
+        <div className="rounded-lg border border-outline-variant/25 bg-surface-container/40 px-4 py-3">
+          <p className="font-label-caps text-[11px] text-primary mb-2">Avisos del club por WhatsApp</p>
+          {data.whatsapp.eligible ? (
+            <label className="flex items-start gap-3 cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-outline-variant text-primary"
+                checked={data.whatsapp.enabled}
+                disabled={waMut.isPending}
+                onChange={(e) => waMut.mutate(e.target.checked)}
+              />
+              <span className="text-on-surface-variant">
+                Recibir avisos urgentes, partidos y comunicados en mi WhatsApp ({data.coach.phone} es solo contacto
+                del entrenador; esto usa el número del club).
+              </span>
+            </label>
+          ) : (
+            <p className="text-xs text-on-surface-variant">
+              {data.whatsapp.eligibilityReason ?? 'Aún no puedes activar avisos por WhatsApp.'}
+            </p>
+          )}
+        </div>
       ) : null}
 
       {!compact ? (

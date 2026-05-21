@@ -51,8 +51,23 @@ export type ParentAccountSummary = {
   paymentWarning: boolean;
   periodMonth: string;
   coach: { name: string; phone: string; whatsapp: string };
+  whatsapp?: {
+    enabled: boolean;
+    eligible: boolean;
+    eligibilityReason: string | null;
+  };
   children: ParentSummaryChild[];
 };
+
+export async function setMyWhatsAppNotify(enabled: boolean) {
+  const { data } = await apiClient.patch<ApiResponse<{
+    enabled: boolean;
+    enabledAt: string | null;
+    eligible: boolean;
+    eligibilityReason: string | null;
+  }>>('/parents/me/whatsapp-notify', { enabled });
+  return data;
+}
 
 export async function getMyAccountSummary() {
   const { data } = await apiClient.get<ApiResponse<ParentAccountSummary>>('/parents/my-summary');

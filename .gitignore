@@ -25,3 +25,6 @@ desktop.ini
 
 # Build
 *.tsbuildinfo
+
+# WhatsApp Baileys sesión (Render: montar disco en esta ruta)
+data/whatsapp-auth/

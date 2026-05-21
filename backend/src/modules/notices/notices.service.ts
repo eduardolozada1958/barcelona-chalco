@@ -3,6 +3,7 @@ import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { logger } from '@shared/utils/logger';
 import { PushService } from '@modules/push/push.service';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './notices.validation';
 
 export class NoticesService {
@@ -151,6 +152,13 @@ export class NoticesService {
       content: data.content,
       type:    data.type,
     }).catch((e) => logger.warn('No se pudieron enviar notificaciones push del aviso', { err: e }));
+
+    void WhatsAppService.notifyNoticePublished({
+      id:      data.id,
+      title:   data.title,
+      content: data.content,
+      type:    data.type,
+    }).catch((e) => logger.warn('No se pudieron enviar avisos por WhatsApp', { err: e }));
 
     return data;
   }

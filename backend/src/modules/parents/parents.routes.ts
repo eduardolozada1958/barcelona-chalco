@@ -11,6 +11,7 @@ import {
   listParentsQuerySchema,
   parentIdParamSchema,
   rejectLinkRequestSchema,
+  setMyWhatsAppNotifySchema,
   updateParentBodySchema,
 } from './parents.validation';
 
@@ -21,6 +22,14 @@ parentsRouter.get(
   authMiddleware,
   requireParent,
   ParentsController.myAccountSummary,
+);
+
+parentsRouter.patch(
+  '/me/whatsapp-notify',
+  authMiddleware,
+  requireParent,
+  validateBody(setMyWhatsAppNotifySchema),
+  ParentsController.setMyWhatsAppNotify,
 );
 
 parentsRouter.get(

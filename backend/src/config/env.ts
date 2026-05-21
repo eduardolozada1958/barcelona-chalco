@@ -123,6 +123,19 @@ const envSchema = z.object({
 
   EMAIL_VERIFICATION_HOURS: z.string().default('24').transform(Number),
   PASSWORD_RESET_HOURS: z.string().default('1').transform(Number),
+
+  /** WhatsApp (Baileys) — número secundario del club en el mismo proceso Render. */
+  WHATSAPP_ENABLED: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true' || v === '1'),
+  WHATSAPP_AUTH_DIR: z.string().default('./data/whatsapp-auth'),
+  WHATSAPP_SEND_DELAY_MS: z.string().default('4000').transform(Number),
+  WHATSAPP_MAX_PER_HOUR: z.string().default('40').transform(Number),
+  WHATSAPP_NOTIFY_MATCHES: z
+    .string()
+    .optional()
+    .transform((v) => v !== 'false' && v !== '0'),
 });
 
 const parsed = envSchema.safeParse(process.env);

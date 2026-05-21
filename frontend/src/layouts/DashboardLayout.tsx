@@ -30,6 +30,7 @@ const NAV: NavItem[] = [
   { to: '/dashboard/comments',      label: '💬 Comentarios',     icon: 'forum',           roles: ['admin','coach'] },
   { to: '/dashboard/users',         label: '👥 Usuarios',      icon: 'manage_accounts', roles: ['admin'] },
   { to: '/dashboard/settings',      label: '⚙️ Ajustes',       icon: 'settings',        roles: ['admin'] },
+  { to: '/dashboard/whatsapp',      label: '💬 WhatsApp',      icon: 'chat',            roles: ['admin'] },
 ];
 
 export function DashboardLayout() {

@@ -44,6 +44,7 @@ import { DashboardAccountPage } from '@/pages/dashboard/DashboardAccountPage';
 import { DashboardGuidePage } from '@/pages/dashboard/DashboardGuidePage';
 import { DashboardAttendancePage } from '@/pages/dashboard/DashboardAttendancePage';
 import { DashboardFeesPage } from '@/pages/dashboard/DashboardFeesPage';
+import { DashboardWhatsappPage } from '@/pages/dashboard/DashboardWhatsappPage';
 
 export default function App() {
   return (
@@ -182,6 +183,14 @@ export default function App() {
           element={
             <ProtectedRoute roles={['admin']}>
               <DashboardSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="whatsapp"
+          element={
+            <ProtectedRoute roles={['admin']}>
+              <DashboardWhatsappPage />
             </ProtectedRoute>
           }
         />

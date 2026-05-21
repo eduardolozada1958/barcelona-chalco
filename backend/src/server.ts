@@ -7,6 +7,7 @@ import { createApp } from './app';
 import { env } from '@config/env';
 import { logger } from '@shared/utils/logger';
 import { verifyEmailOnStartup } from '@shared/services/email.service';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 
 const app = createApp();
 
@@ -15,14 +16,19 @@ const server = app.listen(env.PORT, () => {
   logger.info(`📡 Ambiente: ${env.NODE_ENV}`);
   logger.info(`🔗 Prefijo: ${env.API_PREFIX}`);
   verifyEmailOnStartup();
+  void WhatsAppService.startup().catch((e) => {
+    logger.warn('WhatsApp no inició al arranque', { err: e });
+  });
 });
 
 // Graceful shutdown
 const shutdown = (signal: string) => {
   logger.info(`${signal} recibido. Cerrando servidor...`);
-  server.close(() => {
-    logger.info('Servidor cerrado.');
-    process.exit(0);
+  void WhatsAppService.shutdown().finally(() => {
+    server.close(() => {
+      logger.info('Servidor cerrado.');
+      process.exit(0);
+    });
   });
 };
 

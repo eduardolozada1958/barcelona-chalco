@@ -60,7 +60,12 @@ export const rejectLinkRequestSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+export const setMyWhatsAppNotifySchema = z.object({
+  enabled: z.boolean(),
+});
+
 export type ListParentsQuery = z.infer<typeof listParentsQuerySchema>;
+export type SetMyWhatsAppNotifyInput = z.infer<typeof setMyWhatsAppNotifySchema>;
 export type UpdateParentBody = z.infer<typeof updateParentBodySchema>;
 export type CreateLinkRequestInput = z.infer<typeof createLinkRequestSchema>;
 export type ListLinkRequestsQuery = z.infer<typeof listLinkRequestsQuerySchema>;

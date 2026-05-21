@@ -17,6 +17,7 @@ import {
   parsePeriodMonth,
   sessionDatesInMonth,
 } from '@shared/utils/attendance-calendar';
+import { phoneToWhatsAppJid } from '@modules/whatsapp/phone';
 import type {
   CreateLinkRequestInput,
   ListLinkRequestsQuery,
@@ -416,9 +417,84 @@ export class ParentsService {
     return ParentsService.mapLinkRow(data as Record<string, unknown>);
   }
 
+  static async isParentEligibleForWhatsApp(parentId: string, userId: string): Promise<{
+    eligible: boolean;
+    reason?: string;
+  }> {
+    const { data: userRow, error: uErr } = await supabaseAdmin
+      .from('users')
+      .select('status, email_verified, role')
+      .eq('id', userId)
+      .is('deleted_at', null)
+      .single();
+    if (uErr || !userRow) return { eligible: false, reason: 'Usuario no encontrado' };
+    if (userRow.role !== 'parent' || userRow.status !== 'active') {
+      return { eligible: false, reason: 'Cuenta no activa como padre/tutor' };
+    }
+    if (!userRow.email_verified) {
+      return { eligible: false, reason: 'Verifica tu correo antes de activar WhatsApp' };
+    }
+
+    const { data: parentRow } = await supabaseAdmin
+      .from('parents')
+      .select('phone_primary')
+      .eq('id', parentId)
+      .is('deleted_at', null)
+      .single();
+
+    const phone = String(parentRow?.phone_primary ?? '').trim();
+    if (!phoneToWhatsAppJid(phone)) {
+      return { eligible: false, reason: 'Agrega un teléfono válido en tu perfil (10 dígitos, México)' };
+    }
+
+    const { count } = await supabaseAdmin
+      .from('parent_players')
+      .select('id', { count: 'exact', head: true })
+      .eq('parent_id', parentId)
+      .eq('status', 'approved');
+
+    if (!count || count < 1) {
+      return { eligible: false, reason: 'Necesitas al menos un hijo vinculado y aprobado' };
+    }
+
+    return { eligible: true };
+  }
+
+  static async setMyWhatsAppNotify(userId: string, enabled: boolean) {
+    const parent = await ParentsService.getParentByUserId(userId);
+    const check = await ParentsService.isParentEligibleForWhatsApp(parent.id, userId);
+    if (enabled && !check.eligible) {
+      throw new BadRequestError(check.reason ?? 'No puedes activar WhatsApp aún');
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('parents')
+      .update({
+        whatsapp_notify_enabled: enabled,
+        whatsapp_notify_at:      new Date().toISOString(),
+      })
+      .eq('id', parent.id)
+      .select('whatsapp_notify_enabled, whatsapp_notify_at')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return {
+      enabled: Boolean(data?.whatsapp_notify_enabled),
+      enabledAt: data?.whatsapp_notify_at ?? null,
+      eligible: check.eligible,
+      eligibilityReason: check.reason ?? null,
+    };
+  }
+
   /** Resumen privado para el padre: cuotas de sus hijos y asistencia del mes (sin datos de otros familias). */
   static async getMyAccountSummary(userId: string) {
     const parent = await ParentsService.getParentByUserId(userId);
+    const waCheck = await ParentsService.isParentEligibleForWhatsApp(parent.id, userId);
+    const { data: waRow } = await supabaseAdmin
+      .from('parents')
+      .select('whatsapp_notify_enabled')
+      .eq('id', parent.id)
+      .single();
     const periodMonth = currentPeriodMonthIso();
     const { year, month } = parsePeriodMonth(periodMonth);
     const sessionDates = sessionDatesInMonth(year, month);
@@ -507,6 +583,11 @@ export class ParentsService {
         name:     COACH_DISPLAY_NAME,
         phone:    COACH_PHONE_DISPLAY,
         whatsapp: COACH_WHATSAPP_URL,
+      },
+      whatsapp: {
+        enabled:           Boolean(waRow?.whatsapp_notify_enabled),
+        eligible:          waCheck.eligible,
+        eligibilityReason: waCheck.reason ?? null,
       },
       children,
     };
