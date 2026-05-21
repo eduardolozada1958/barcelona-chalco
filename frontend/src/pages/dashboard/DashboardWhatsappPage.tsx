@@ -172,8 +172,8 @@ export function DashboardWhatsappPage() {
           </p>
           <img src={status.qrDataUrl} alt="QR WhatsApp" className="rounded-lg bg-white p-2 max-w-[280px]" />
           <p className="text-[11px] text-on-surface-variant text-center">
-            Si el celular dice «revisa tu internet», espera 1 minuto, pulsa Nuevo QR una sola vez y escanea el QR
-            nuevo de inmediato. No pulses el botón mientras escaneas.
+            El mensaje llega al celular del padre (Mi perfil), no al chip del club. Revisa WhatsApp en ese número,
+            carpeta Solicitudes y chats archivados.
           </p>
         </div>
       ) : null}

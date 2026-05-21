@@ -456,8 +456,8 @@ export class ParentsService {
       .eq('id', userId)
       .single();
 
-    const phone = String(parentRow?.phone_primary ?? '').trim()
-      || String(userPhoneRow?.phone ?? '').trim();
+    const phone = String(userPhoneRow?.phone ?? '').trim()
+      || String(parentRow?.phone_primary ?? '').trim();
     if (!phoneToWhatsAppJid(phone)) {
       return { eligible: false, reason: 'Agrega un teléfono válido en Mi perfil (10 dígitos, ej. 33 4942 0820)' };
     }

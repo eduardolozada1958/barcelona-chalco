@@ -3,7 +3,7 @@ import { env } from '@config/env';
 import { BadRequestError } from '@middlewares/error.middleware';
 import { logger } from '@shared/utils/logger';
 import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
-import { formatPhoneForDisplay } from './phone';
+import { formatPhoneForDisplay, normalizePhoneDigits } from './phone';
 import {
   getConnectedWhatsAppJid,
   getWhatsAppStatus,
@@ -11,6 +11,7 @@ import {
   resetWhatsAppSession,
   sendWhatsAppText,
 } from './whatsapp.client';
+import { jidToPhoneDigits } from './whatsapp-delivery';
 import { listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
 
 function publicAppOrigin(): string {
@@ -50,7 +51,7 @@ async function broadcastToParents(message: string): Promise<{ sent: number; fail
       break;
     }
     try {
-      await sendWhatsAppText(r.jid, message);
+      await sendWhatsAppText(r.jid, message, r.phoneRaw);
       sent += 1;
       sendsThisHour += 1;
       await delay(env.WHATSAPP_SEND_DELAY_MS);
@@ -99,7 +100,13 @@ export class WhatsAppService {
   static async sendTestMessage(): Promise<{
     sent: number;
     failed: number;
-    sentTo?: { name: string; phone: string; phoneSource: string };
+    sentTo?: {
+      name: string;
+      phone: string;
+      phoneSource: string;
+      deliveredJid?: string;
+      messageId?: string;
+    };
   }> {
     const recipients = await listVerifiedParentWhatsAppRecipients();
     if (recipients.length === 0) {
@@ -107,16 +114,19 @@ export class WhatsAppService {
     }
     const r = recipients[0];
     const botJid = getConnectedWhatsAppJid();
-    if (botJid && r.jid === botJid) {
+    const botDigits = jidToPhoneDigits(botJid);
+    const destDigits = normalizePhoneDigits(r.phoneRaw);
+    if (botDigits && destDigits && botDigits === destDigits) {
       throw new BadRequestError(
         `El teléfono del padre (${formatPhoneForDisplay(r.phoneRaw)}) es el mismo con el que vinculaste el WhatsApp del club. ` +
           'En Mi perfil pon el celular donde quieres recibir avisos; el QR del panel debe escanearse solo con el chip del club.',
       );
     }
 
-    await sendWhatsAppText(
+    const { jid: deliveredJid, messageId } = await sendWhatsAppText(
       r.jid,
       '🏟️ *Barcelona Cupido*\n\nMensaje de prueba del sistema de avisos. Si lo recibiste, la conexión funciona.',
+      r.phoneRaw,
     );
     return {
       sent: 1,
@@ -125,6 +135,8 @@ export class WhatsAppService {
         name: r.label,
         phone: formatPhoneForDisplay(r.phoneRaw),
         phoneSource: r.phoneSource,
+        deliveredJid,
+        messageId,
       },
     };
   }

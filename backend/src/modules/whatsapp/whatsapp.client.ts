@@ -10,6 +10,7 @@ import {
   hydrateAuthDirFromSupabase,
   persistAuthDirToSupabase,
 } from './whatsapp-auth-store';
+import { resolveWhatsAppDeliveryJid } from './whatsapp-delivery';
 
 export type WhatsAppConnectionState = 'disabled' | 'connecting' | 'qr' | 'open' | 'closed';
 
@@ -467,7 +468,11 @@ export async function ensureWhatsAppClientRunning(): Promise<void> {
   }
 }
 
-export async function sendWhatsAppText(jid: string, text: string): Promise<void> {
+export async function sendWhatsAppText(
+  jidOrPhone: string,
+  text: string,
+  phoneRawForResolve?: string,
+): Promise<{ jid: string; messageId?: string }> {
   if (!env.WHATSAPP_ENABLED) {
     throw new Error('WhatsApp no está habilitado');
   }
@@ -479,7 +484,15 @@ export async function sendWhatsAppText(jid: string, text: string): Promise<void>
   if (waitMs > 0) {
     await new Promise((r) => setTimeout(r, waitMs));
   }
-  await sock.sendMessage(jid, { text });
+
+  const phoneRaw = phoneRawForResolve ?? jidOrPhone.replace(/@.*/, '');
+  const jid = await resolveWhatsAppDeliveryJid(sock, phoneRaw);
+  const result = await sock.sendMessage(jid, { text });
+  const messageId = result?.key?.id;
+
+  logger.info('WhatsApp: mensaje enviado a WA', { jid, messageId: messageId ?? null });
+
+  return { jid, messageId: messageId ?? undefined };
 }
 
 export async function shutdownWhatsAppClient(): Promise<void> {
