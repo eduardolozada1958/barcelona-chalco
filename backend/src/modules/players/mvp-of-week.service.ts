@@ -1,6 +1,7 @@
 import { env } from '@config/env';
 import { supabaseAdmin } from '@config/database';
 import { BadRequestError, NotFoundError } from '@middlewares/error.middleware';
+import { logger } from '@shared/utils/logger';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 
 const MVP_PLAYER_COLUMNS =
@@ -113,14 +114,20 @@ export class MvpOfWeekService {
     if (error) throw new Error(error.message);
 
     const payload = await MvpOfWeekService.getPublic();
-    if (env.WHATSAPP_ENABLED && env.WHATSAPP_NOTIFY_MVP && playerId && payload.player) {
-      const p = payload.player as Record<string, unknown>;
-      const name = `${String(p.first_name ?? '')} ${String(p.last_name ?? '')}`.trim();
-      if (name) {
+    if (env.WHATSAPP_ENABLED && env.WHATSAPP_NOTIFY_MVP && playerId) {
+      const p = payload.player as Record<string, unknown> | null;
+      const name = p
+        ? `${String(p.firstName ?? p.first_name ?? '')} ${String(p.lastName ?? p.last_name ?? '')}`.trim()
+        : '';
+      if (!p) {
+        logger.warn('WhatsApp MVP: jugador no visible (¿activo y verificado?)', { playerId });
+      } else if (!name) {
+        logger.warn('WhatsApp MVP: nombre vacío en payload', { playerId });
+      } else {
         void WhatsAppService.notifyMvpSet({
           playerName: name,
           weekLabel:  payload.weekLabel,
-        }).catch(() => {});
+        }).catch((e) => logger.warn('WhatsApp MVP: error al enviar', { err: e }));
       }
     }
 
