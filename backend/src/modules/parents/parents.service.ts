@@ -245,6 +245,7 @@ export class ParentsService {
       parent: parents
         ? {
             id:           parents.id,
+            userId:       parents.user_id,
             firstName:    parents.first_name,
             lastName:     parents.last_name,
             relationship: parents.relationship,
@@ -487,6 +488,36 @@ export class ParentsService {
         reviewed_at:   now,
         reviewed_by:   reviewerUserId,
         reject_reason: input.reason?.trim() || null,
+      })
+      .eq('id', linkId)
+      .select(LINK_SELECT)
+      .single();
+
+    if (error) throw new Error(error.message);
+    return ParentsService.mapLinkRow(data as Record<string, unknown>);
+  }
+
+  /** Revoca un vínculo ya aprobado (el padre deja de ver al jugador). */
+  static async revokeLinkRequest(
+    linkId: string,
+    reviewerUserId: string,
+    input: RejectLinkRequestInput = {},
+  ) {
+    const row = await ParentsService.getLinkRequestById(linkId);
+    const status = row.status as LinkStatus;
+
+    if (status !== 'approved') {
+      throw new BadRequestError('Solo se pueden revocar vínculos aprobados.');
+    }
+
+    const now = new Date().toISOString();
+    const { data, error } = await supabaseAdmin
+      .from('parent_players')
+      .update({
+        status:        'rejected',
+        reviewed_at:   now,
+        reviewed_by:   reviewerUserId,
+        reject_reason: input.reason?.trim() || 'Vínculo revocado por administración',
       })
       .eq('id', linkId)
       .select(LINK_SELECT)

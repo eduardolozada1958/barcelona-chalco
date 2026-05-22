@@ -129,4 +129,17 @@ export class ParentsController {
       next(e);
     }
   }
+
+  static async revokeLinkRequest(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await ParentsService.revokeLinkRequest(
+        routeParam(req, 'id'),
+        req.user!.id,
+        req.body as RejectLinkRequestInput,
+      );
+      sendSuccess(res, result, 'Vínculo revocado. El padre ya no verá a este jugador.');
+    } catch (e) {
+      next(e);
+    }
+  }
 }

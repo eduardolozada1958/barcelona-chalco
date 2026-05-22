@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -36,6 +37,7 @@ type RoleFilter = 'all' | 'parent' | 'coach' | 'admin';
 export function DashboardUsersPage() {
   const { user: sessionUser } = useAuth();
   const qc = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [manageUser, setManageUser] = useState<Record<string, unknown> | null>(null);
@@ -135,8 +137,20 @@ export function DashboardUsersPage() {
     setManageVerifyCode('');
   };
 
-  if (q.isLoading) return <Spinner />;
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
+  const deepLinkUserId = searchParams.get('userId');
+
+  useEffect(() => {
+    if (q.isLoading || !deepLinkUserId || rows.length === 0) return;
+    const u = rows.find((r) => String(r.id) === deepLinkUserId);
+    if (u) {
+      if (String(u.role) === 'parent') setRoleFilter('parent');
+      openManage(u);
+      setSearchParams({}, { replace: true });
+    }
+  }, [deepLinkUserId, q.isLoading, rows, setSearchParams]);
+
+  if (q.isLoading) return <Spinner />;
 
   return (
     <div>

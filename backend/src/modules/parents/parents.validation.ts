@@ -60,6 +60,8 @@ export const rejectLinkRequestSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+export const revokeLinkRequestSchema = rejectLinkRequestSchema;
+
 export const setMyWhatsAppNotifySchema = z.object({
   enabled: z.boolean(),
 });

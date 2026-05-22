@@ -11,6 +11,7 @@ import {
   listParentsQuerySchema,
   parentIdParamSchema,
   rejectLinkRequestSchema,
+  revokeLinkRequestSchema,
   setMyWhatsAppNotifySchema,
   updateParentBodySchema,
 } from './parents.validation';
@@ -78,6 +79,15 @@ parentsRouter.post(
   validateParams(linkRequestIdParamSchema),
   validateBody(rejectLinkRequestSchema),
   ParentsController.rejectLinkRequest,
+);
+
+parentsRouter.post(
+  '/link-requests/:id/revoke',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(linkRequestIdParamSchema),
+  validateBody(revokeLinkRequestSchema),
+  ParentsController.revokeLinkRequest,
 );
 
 parentsRouter.get(

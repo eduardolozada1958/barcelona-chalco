@@ -22,6 +22,7 @@ export interface ParentLinkRequest {
   } | null;
   parent?: {
     id:           string;
+    userId?:      string;
     firstName:    string;
     lastName:     string;
     relationship?: string;
@@ -102,6 +103,14 @@ export async function approveLinkRequest(id: string) {
 export async function rejectLinkRequest(id: string, reason?: string) {
   const { data } = await apiClient.post<ApiResponse<ParentLinkRequest>>(
     `/parents/link-requests/${id}/reject`,
+    { reason },
+  );
+  return data;
+}
+
+export async function revokeLinkRequest(id: string, reason?: string) {
+  const { data } = await apiClient.post<ApiResponse<ParentLinkRequest>>(
+    `/parents/link-requests/${id}/revoke`,
     { reason },
   );
   return data;
