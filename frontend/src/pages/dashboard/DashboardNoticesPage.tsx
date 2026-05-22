@@ -384,9 +384,9 @@ export function DashboardNoticesPage() {
           return (
             <div
               key={String(n.id)}
-              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-colors"
+              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between hover:border-primary/30 transition-colors min-w-0"
             >
-              <div className="flex items-center gap-4 min-w-0">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
                 <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/10 shrink-0">
                   <MaterialIcon name="campaign" className="text-primary" size={20} />
                 </div>
@@ -403,17 +403,20 @@ export function DashboardNoticesPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0 justify-end">
-                {badges.map((b) => (
-                  <span
-                    key={b.key}
-                    className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-label-caps ${b.className}`}
-                  >
-                    <MaterialIcon name={b.icon} size={12} />
-                    {b.label}
-                  </span>
-                ))}
+              <div className="flex flex-col gap-2 w-full lg:w-auto min-w-0 shrink-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  {badges.map((b) => (
+                    <span
+                      key={b.key}
+                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-label-caps ${b.className}`}
+                    >
+                      <MaterialIcon name={b.icon} size={12} />
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
                 <DashboardRowActions
+                  layout="grid"
                   onEdit={() => openEdit(n)}
                   onDelete={() => confirmDelete(String(n.id), String(n.title))}
                   onPublish={() => publishMut.mutate(String(n.id))}

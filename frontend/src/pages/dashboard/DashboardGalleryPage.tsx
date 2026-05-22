@@ -361,17 +361,17 @@ export function DashboardGalleryPage() {
         {rows.map((post) => {
           const img = firstMediaUrl(post) ?? (typeof post.image_url === 'string' ? post.image_url : null);
           return (
-            <div key={String(post.id)} className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl overflow-hidden hover:border-primary/30 transition-colors group">
-              <div className="aspect-video bg-surface-container-high flex items-center justify-center">
+            <div key={String(post.id)} className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl hover:border-primary/30 transition-colors group flex flex-col min-w-0">
+              <div className="aspect-video overflow-hidden bg-surface-container-high flex items-center justify-center rounded-t-xl">
                 {img ? (
                   <img src={img} alt={String(post.title)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 ) : (
                   <MaterialIcon name="image" className="text-on-surface-variant/30" size={48} />
                 )}
               </div>
-              <div className="p-4 flex items-start justify-between gap-2">
+              <div className="p-4 flex flex-col gap-3 min-w-0">
                 <div className="min-w-0">
-                  <h3 className="font-medium text-on-surface truncate">{String(post.title)}</h3>
+                  <h3 className="font-medium text-on-surface line-clamp-2">{String(post.title)}</h3>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     <span className="text-xs text-on-surface-variant">{galleryTypeLabel(String(post.type ?? 'general'))}</span>
                     {post.is_archived ? (
@@ -397,6 +397,7 @@ export function DashboardGalleryPage() {
                   ) : null}
                 </div>
                 <DashboardRowActions
+                  layout="grid"
                   onEdit={() => openEdit(post)}
                   onDelete={() => confirmDelete(String(post.id), String(post.title))}
                   onPublish={() => publishMut.mutate(String(post.id))}

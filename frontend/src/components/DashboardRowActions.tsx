@@ -13,7 +13,15 @@ interface DashboardRowActionsProps {
   publishPending?: boolean;
   deletePending?: boolean;
   archivePending?: boolean;
+  /**
+   * wrap: filas de lista (avisos, partidos).
+   * grid: tarjetas estrechas (galería) — botones en rejilla 2 columnas, ancho completo.
+   */
+  layout?: 'wrap' | 'grid';
 }
+
+const btnBase =
+  'inline-flex items-center justify-center gap-1 rounded-lg text-[11px] font-label-caps touch-manipulation min-h-[36px]';
 
 export function DashboardRowActions({
   onEdit,
@@ -27,14 +35,26 @@ export function DashboardRowActions({
   publishPending,
   deletePending,
   archivePending,
+  layout = 'wrap',
 }: DashboardRowActionsProps) {
+  const isGrid = layout === 'grid';
+
+  const containerClass = isGrid
+    ? 'grid grid-cols-2 gap-1.5 w-full min-w-0 sm:grid-cols-2 lg:flex lg:flex-wrap lg:justify-end'
+    : 'flex flex-wrap items-center gap-1.5 w-full min-w-0 max-w-full justify-start sm:justify-end';
+
+  const btnClass = (extra: string) =>
+    isGrid
+      ? `${btnBase} w-full px-2 py-2 lg:w-auto lg:px-2.5 lg:py-1.5 ${extra}`
+      : `${btnBase} shrink-0 px-2.5 py-2 sm:py-1.5 ${extra}`;
+
   return (
-    <div className="flex flex-wrap items-stretch sm:items-center gap-1.5 w-full sm:w-auto sm:shrink-0 justify-stretch sm:justify-end">
+    <div className={containerClass}>
       {onEdit && (
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 border border-primary/30 touch-manipulation"
+          className={btnClass('text-primary hover:bg-primary/10 border border-primary/30')}
           title="Editar"
         >
           <MaterialIcon name="edit" size={14} /> {editLabel}
@@ -45,7 +65,7 @@ export function DashboardRowActions({
           type="button"
           onClick={onPublish}
           disabled={publishPending}
-          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-primary hover:bg-primary/10 disabled:opacity-50 touch-manipulation"
+          className={btnClass('text-primary hover:bg-primary/10 border border-primary/30 disabled:opacity-50')}
         >
           <MaterialIcon name="public" size={14} /> Publicar
         </button>
@@ -55,7 +75,9 @@ export function DashboardRowActions({
           type="button"
           onClick={onArchive}
           disabled={archivePending}
-          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/40 disabled:opacity-50 touch-manipulation"
+          className={btnClass(
+            'text-on-surface-variant hover:bg-surface-container-high border border-outline-variant/40 disabled:opacity-50',
+          )}
           title={isArchived ? 'Restaurar' : 'Archivar'}
         >
           <MaterialIcon name={isArchived ? 'unarchive' : 'inventory_2'} size={14} />
@@ -67,7 +89,7 @@ export function DashboardRowActions({
           type="button"
           onClick={onDelete}
           disabled={deletePending}
-          className="inline-flex flex-1 sm:flex-initial items-center justify-center gap-1 px-2.5 py-2 sm:py-1.5 rounded-lg text-[11px] font-label-caps text-error hover:bg-error/10 border border-error/30 disabled:opacity-50 touch-manipulation"
+          className={btnClass('text-error hover:bg-error/10 border border-error/30 disabled:opacity-50')}
           title="Eliminar"
         >
           <MaterialIcon name="delete" size={14} /> Eliminar
@@ -76,4 +98,3 @@ export function DashboardRowActions({
     </div>
   );
 }
-
