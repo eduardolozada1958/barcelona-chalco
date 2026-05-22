@@ -220,12 +220,6 @@ export function PublicLayout() {
           <span className="font-display-hero text-primary text-lg sm:text-2xl leading-tight">F.C. BARCELONA CUPIDO</span>
         </div>
         <div className="flex flex-wrap justify-center gap-6">
-          <a
-            href="/sitemap.xml"
-            className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100"
-          >
-            Mapa del sitio
-          </a>
           {footerLinks.map((l) => (
             <NavLink
               key={l.to}
