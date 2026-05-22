@@ -7,6 +7,11 @@ import { CLUB_DISPLAY_NAME } from '@/config/club';
 const COACH_PHONE_DISPLAY = '+52 1 56 3233 2292';
 const COACH_PHONE_TEL = '+5215632332292';
 
+const TECH_SUPPORT_NAME = 'Ing. Eduardo Lozada Quiroz';
+const TECH_SUPPORT_PHONE_DISPLAY = '+52 55 1906 0013';
+const TECH_SUPPORT_TEL = '+5215519060013';
+const TECH_SUPPORT_WHATSAPP = 'https://wa.me/5215519060013';
+
 export function SupportPage() {
   return (
     <LegalPageShell title="Soporte">
@@ -39,6 +44,35 @@ export function SupportPage() {
         </Link>
       </section>
 
+      <section className="rounded-xl border border-outline-variant/40 bg-surface-container-low p-5 space-y-3">
+        <h2 className="!mt-0 flex items-center gap-2">
+          <MaterialIcon name="support_agent" size={22} className="text-primary" />
+          Soporte técnico del sitio web
+        </h2>
+        <p>
+          Si no puedes entrar, falla el panel, las notificaciones o WhatsApp del club, escríbenos por WhatsApp:
+        </p>
+        <p className="font-semibold text-on-surface">{TECH_SUPPORT_NAME}</p>
+        <div className="flex flex-wrap gap-3">
+          <a
+            href={TECH_SUPPORT_WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-white font-label-caps text-[11px] hover:opacity-90"
+          >
+            <MaterialIcon name="chat" size={18} />
+            WhatsApp {TECH_SUPPORT_PHONE_DISPLAY}
+          </a>
+          <a
+            href={`tel:${TECH_SUPPORT_TEL}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-primary/40 px-4 py-2.5 text-primary font-label-caps text-[11px] hover:bg-primary/10"
+          >
+            <MaterialIcon name="call" size={18} />
+            Llamar
+          </a>
+        </div>
+      </section>
+
       <section>
         <h2>Problemas con el sitio web</h2>
         <ul>
@@ -49,8 +83,11 @@ export function SupportPage() {
           <li>Credenciales QR: usa «Validar jugador» en el menú.</li>
         </ul>
         <p className="text-sm opacity-90">
-          Si el fallo continúa, describe el problema (pantalla, navegador y hora) al contactar por los medios
-          anteriores.
+          Si el fallo continúa, describe el problema (pantalla, navegador y hora) por WhatsApp a{' '}
+          <a href={TECH_SUPPORT_WHATSAPP} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            {TECH_SUPPORT_NAME}
+          </a>
+          .
         </p>
       </section>
 
