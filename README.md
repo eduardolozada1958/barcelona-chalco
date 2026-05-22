@@ -56,3 +56,12 @@ npm run dev
 ## Documentación
 
 Ver [ARCHITECTURE.md](./ARCHITECTURE.md) para documentación completa del sistema.
+
+### Tutoriales para usuarios (exportar a PDF / WhatsApp)
+
+Guías en Markdown en [docs/tutoriales/](docs/tutoriales/README.md):
+
+- [Instalar la app — Android, iPhone, computadora](docs/tutoriales/INSTALAR_APP.md)
+- [Padres y tutores](docs/tutoriales/TUTORIAL_PADRES.md)
+- [Administradores](docs/tutoriales/TUTORIAL_ADMIN.md)
+- [Entrenadores](docs/tutoriales/TUTORIAL_ENTRENADOR.md)
