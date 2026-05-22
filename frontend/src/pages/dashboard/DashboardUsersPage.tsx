@@ -299,6 +299,15 @@ export function DashboardUsersPage() {
       >
         {manageUser ? (
           <div className="space-y-6">
+            <p className="text-xs text-on-surface-variant rounded-lg border border-outline-variant/25 bg-surface-container/40 px-3 py-2.5 leading-relaxed">
+              Estás gestionando la cuenta de{' '}
+              <strong className="text-on-surface">{String(manageUser.email)}</strong>.
+              Suspender o activar no pide código. Solo <strong>eliminar</strong> o{' '}
+              <strong>cambiar su correo de acceso</strong> piden que <strong>tú (admin)</strong> confirmes con un
+              código enviado a <strong className="text-primary">{sessionUser?.email}</strong> — no al correo del
+              usuario de arriba.
+            </p>
+
             <div>
               <label className={formLabelClass}>Estado de la cuenta</label>
               <select
@@ -351,12 +360,17 @@ export function DashboardUsersPage() {
               </div>
             ) : null}
 
-            <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-on-surface-variant space-y-2">
-              <p>
-                <strong className="text-primary">Seguridad:</strong> acciones sensibles requieren un código de 6 dígitos
-                enviado a <strong className="text-on-surface">{sessionUser?.email}</strong>. Activa 2FA en Mi perfil.
+            <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-3 text-xs text-on-surface-variant space-y-2">
+              <p className="font-label-caps text-[10px] text-primary tracking-wide">
+                Tu confirmación como administrador
               </p>
-              <label className={formLabelClass}>Código de verificación (6 dígitos)</label>
+              <p>
+                El código de 6 dígitos llega a <strong className="text-on-surface">{sessionUser?.email}</strong>{' '}
+                (tu sesión), para autorizar borrar o cambiar el correo de{' '}
+                <strong className="text-on-surface">{String(manageUser.email)}</strong>. No uses la contraseña ni el
+                correo del padre/tutor.
+              </p>
+              <label className={formLabelClass}>Código enviado a tu correo (6 dígitos)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -369,9 +383,11 @@ export function DashboardUsersPage() {
             </div>
 
             <div>
-              <label className={formLabelClass}>Cambiar correo de acceso</label>
+              <label className={formLabelClass}>Cambiar correo de acceso de este usuario</label>
               <p className="text-xs text-on-surface-variant mb-2">
-                Solicita código, ingrésalo arriba y luego el nuevo correo. El usuario debe confirmar el enlace.
+                1) <strong>Enviar código</strong> → llega a tu correo de admin. 2) Ingrésalo arriba. 3) Escribe el
+                nuevo correo y confirma. Después, <strong>{String(manageUser.email)}</strong> (o el nuevo correo)
+                recibirá un enlace para aceptar el cambio.
               </p>
               <input
                 type="email"
@@ -409,7 +425,9 @@ export function DashboardUsersPage() {
 
             <div className="pt-4 border-t border-outline-variant/25">
               <p className="text-xs text-on-surface-variant mb-3">
-                Eliminar cuenta: no podrá iniciar sesión. Si es padre, sus vínculos con jugadores se revocan automáticamente.
+                <strong>Eliminar</strong> la cuenta de <strong>{String(manageUser.email)}</strong>: no podrá iniciar
+                sesión. Si es padre, sus vínculos con jugadores se revocan. Pide el código a tu correo de admin (arriba),
+                no al del usuario.
               </p>
               <div className="flex flex-wrap gap-2">
                 <button
