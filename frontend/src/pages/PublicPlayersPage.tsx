@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -10,6 +10,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { playerPublicPath } from '@/utils/player-path';
+import { playerMatchesSearch } from '@/utils/search-text';
 
 const filterOptions = [
   { key: 'all',      label: 'Todos' },
@@ -23,20 +24,23 @@ const filterOptions = [
 export function PublicPlayersPage() {
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
 
   const q = useQuery({
-    queryKey: ['players-public', filter, search],
-    queryFn: () => listPlayersPublic({ search: search || undefined }),
+    queryKey: ['players-public-all'],
+    queryFn: () => listPlayersPublic({ limit: 300, page: 1 }),
+    staleTime: 60_000,
   });
 
   const allPlayers = (q.data?.data ?? []) as Player[];
 
-  // Client-side filter on top of API results
-  const players = allPlayers.filter((p) => {
-    if (filter === 'active') return p.status === 'active';
-    if (filter === 'verified') return p.is_verified;
-    return true;
-  });
+  const players = useMemo(() => {
+    return allPlayers.filter((p) => {
+      if (filter === 'active' && p.status !== 'active') return false;
+      if (filter === 'verified' && !p.is_verified) return false;
+      return playerMatchesSearch(p, deferredSearch);
+    });
+  }, [allPlayers, filter, deferredSearch]);
 
   return (
     <div className="pt-12 pb-stack-lg px-margin-mobile md:px-margin-desktop w-full max-w-[1280px] mx-auto">
@@ -57,7 +61,7 @@ export function PublicPlayersPage() {
             />
             <input
               type="text"
-              placeholder="Buscar jugador..."
+              placeholder="Buscar (ej. matias, dyl, mateo)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-surface-container border-b-2 border-outline-variant focus:border-primary text-on-surface font-body-md py-3 pl-10 pr-4 outline-none transition-colors duration-300 placeholder:text-on-surface-variant/50"

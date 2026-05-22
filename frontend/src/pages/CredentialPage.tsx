@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -14,6 +14,7 @@ import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { CredentialCard3D } from '@/components/CredentialCard3D';
 import { calcAgeFromBirthDate } from '@/utils/birth-date';
+import { playerMatchesSearch } from '@/utils/search-text';
 
 type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
 
@@ -124,13 +125,19 @@ function CredentialCard({ player }: { player: Player }) {
 
 function CredentialsGallery() {
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
 
   const q = useQuery({
-    queryKey: ['players-credentials', search],
-    queryFn: () => listPlayersPublic({ search: search || undefined }),
+    queryKey: ['players-credentials-all'],
+    queryFn: () => listPlayersPublic({ limit: 300, page: 1 }),
+    staleTime: 60_000,
   });
 
-  const allPlayers = ((q.data?.data ?? []) as Player[]).filter(p => p.is_verified);
+  const allPlayers = useMemo(() => {
+    return ((q.data?.data ?? []) as Player[])
+      .filter((p) => p.is_verified)
+      .filter((p) => playerMatchesSearch(p, deferredSearch));
+  }, [q.data?.data, deferredSearch]);
 
   return (
     <div className="min-h-screen bg-background">
