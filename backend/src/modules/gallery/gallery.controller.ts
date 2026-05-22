@@ -62,7 +62,17 @@ export class GalleryController {
       }
 
       const row = await GalleryService.createWithUpload(parsed.data, files, req.user!.id);
-      sendSuccess(res, row, parsed.data.publish ? 'Publicación publicada' : 'Publicación creada', HTTP_STATUS.CREATED);
+      const scheduled = parsed.data.scheduledPublishAt;
+      const isScheduled =
+        scheduled &&
+        !Number.isNaN(new Date(scheduled).getTime()) &&
+        new Date(scheduled).getTime() > Date.now();
+      const message = isScheduled
+        ? 'Publicación programada'
+        : parsed.data.publish
+          ? 'Publicación publicada'
+          : 'Publicación creada';
+      sendSuccess(res, row, message, HTTP_STATUS.CREATED);
     } catch (e) {
       next(e);
     }
@@ -103,6 +113,26 @@ export class GalleryController {
     try {
       const row = await GalleryService.publish(routeParam(req, 'id'));
       sendSuccess(res, row, 'Publicación publicada');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async setArchived(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { archived } = req.body as { archived: boolean };
+      const row = await GalleryService.setArchived(routeParam(req, 'id'), archived);
+      sendSuccess(res, row, archived ? 'Publicación archivada' : 'Publicación restaurada');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async schedulePublish(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { scheduledPublishAt } = req.body as { scheduledPublishAt: string };
+      const row = await GalleryService.schedulePublish(routeParam(req, 'id'), scheduledPublishAt);
+      sendSuccess(res, row, 'Publicación programada');
     } catch (e) {
       next(e);
     }

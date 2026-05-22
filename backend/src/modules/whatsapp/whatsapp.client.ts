@@ -472,6 +472,7 @@ export async function sendWhatsAppText(
   jidOrPhone: string,
   text: string,
   phoneRawForResolve?: string,
+  opts?: { lenientVerify?: boolean },
 ): Promise<{ jid: string; messageId?: string }> {
   if (!env.WHATSAPP_ENABLED) {
     throw new Error('WhatsApp no está habilitado');
@@ -486,7 +487,9 @@ export async function sendWhatsAppText(
   }
 
   const phoneRaw = phoneRawForResolve ?? jidOrPhone.replace(/@.*/, '');
-  const jid = await resolveWhatsAppDeliveryJid(sock, phoneRaw);
+  const jid = await resolveWhatsAppDeliveryJid(sock, phoneRaw, {
+    lenient: opts?.lenientVerify,
+  });
   const result = await sock.sendMessage(jid, { text });
   const messageId = result?.key?.id;
 

@@ -106,6 +106,11 @@ export function DashboardWhatsappPage() {
           Padres con WhatsApp activo y elegibles:{' '}
           <strong className="text-on-surface">{status?.eligibleRecipients ?? 0}</strong>
         </p>
+        <p className="text-xs text-on-surface-variant">
+          Al publicar avisos, galería, MVP, resultados o partidos, el mensaje se envía a{' '}
+          <strong className="text-on-surface">todos</strong> esos padres (uno por uno, con pausa entre envíos).
+          «Enviar prueba» solo manda a <strong className="text-on-surface">uno</strong> para comprobar la conexión.
+        </p>
         {status?.testRecipient ? (
           <p className="text-xs text-on-surface-variant">
             «Enviar prueba» va a:{' '}

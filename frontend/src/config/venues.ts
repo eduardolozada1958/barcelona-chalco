@@ -37,7 +37,7 @@ export const CANCHAS_PRESETS: readonly VenuePreset[] = [
   },
   {
     id: 'atlas',
-    label: 'Cancha Atlas (La Selva)',
+    label: 'Cancha Atlas',
     locationLabel: 'Cancha Atlas',
     embedMapUrl: envStr('VITE_VENUE_ATLAS_MAP_EMBED_URL') || EMBED_DEFAULTS.atlas,
   },

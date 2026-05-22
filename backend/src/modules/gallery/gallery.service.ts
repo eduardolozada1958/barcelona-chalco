@@ -18,6 +18,18 @@ function extFromImageMime(mime: string): string {
   throw new BadRequestError('La imagen debe ser PNG, JPEG o WebP');
 }
 
+function normalizeScheduledAt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) throw new BadRequestError('Fecha de publicación programada inválida');
+  return d.toISOString();
+}
+
+function isFutureSchedule(iso: string | null): boolean {
+  if (!iso) return false;
+  return new Date(iso).getTime() > Date.now();
+}
+
 function storageObjectPathFromGalleryPublicUrl(publicUrl: string): string | null {
   const bucket = env.STORAGE_BUCKET_GALLERY;
   const needle = `/object/public/${bucket}/`;
@@ -36,6 +48,7 @@ export class GalleryService {
       .from('gallery_posts')
       .select('*, gallery_media(*)', { count: 'exact' })
       .eq('is_published', true)
+      .eq('is_archived', false)
       .is('deleted_at', null)
       .order('published_at', { ascending: false })
       .range(
@@ -57,6 +70,7 @@ export class GalleryService {
       .select('*, gallery_media(*)')
       .eq('id', id)
       .eq('is_published', true)
+      .eq('is_archived', false)
       .is('deleted_at', null)
       .single();
 
@@ -73,7 +87,13 @@ export class GalleryService {
       .from('gallery_posts')
       .select('*, gallery_media(*)', { count: 'exact' })
       .is('deleted_at', null)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (!opts.includeArchived) {
+      query = query.eq('is_archived', false);
+    }
+
+    query = query
       .range(
         getPaginationOffset(opts.page, opts.limit),
         getPaginationOffset(opts.page, opts.limit) + opts.limit - 1
@@ -195,7 +215,18 @@ export class GalleryService {
     const { error: mErr } = await supabaseAdmin.from('gallery_media').insert(mediaRows);
     if (mErr) throw new Error(mErr.message);
 
-    if (input.publish) {
+    const scheduledAt = normalizeScheduledAt(input.scheduledPublishAt ?? null);
+    if (scheduledAt) {
+      await supabaseAdmin
+        .from('gallery_posts')
+        .update({ scheduled_publish_at: scheduledAt })
+        .eq('id', post.id);
+    }
+
+    const shouldPublishNow =
+      input.publish && (!scheduledAt || !isFutureSchedule(scheduledAt));
+
+    if (shouldPublishNow) {
       return GalleryService.publish(String(post.id));
     }
 
@@ -301,6 +332,9 @@ export class GalleryService {
     if (input.relatedPlayerId !== undefined)  u.related_player_id   = input.relatedPlayerId;
     if (input.isFeatured !== undefined)       u.is_featured         = input.isFeatured;
     if (input.season !== undefined)           u.season              = input.season;
+    if (input.scheduledPublishAt !== undefined) {
+      u.scheduled_publish_at = normalizeScheduledAt(input.scheduledPublishAt);
+    }
 
     if (Object.keys(u).length > 0) {
       const { error: upErr } = await supabaseAdmin.from('gallery_posts').update(u).eq('id', id);
@@ -332,13 +366,26 @@ export class GalleryService {
   }
 
   static async publish(id: string) {
-    await GalleryService.getById(id);
+    const cur = await GalleryService.getById(id);
+    if (cur.is_archived) {
+      throw new BadRequestError('No se puede publicar una publicación archivada. Desarchívala primero.');
+    }
+    if (cur.is_published) return cur;
+
+    const { count } = await supabaseAdmin
+      .from('gallery_media')
+      .select('id', { count: 'exact', head: true })
+      .eq('post_id', id);
+    if ((count ?? 0) === 0) {
+      throw new BadRequestError('Agrega al menos una imagen antes de publicar');
+    }
 
     const { data, error } = await supabaseAdmin
       .from('gallery_posts')
       .update({
         is_published: true,
         published_at: new Date().toISOString(),
+        scheduled_publish_at: null,
       })
       .eq('id', id)
       .select('*, gallery_media(*)')
@@ -354,6 +401,45 @@ export class GalleryService {
       }).catch(() => {});
     }
 
+    return data;
+  }
+
+  static async setArchived(id: string, archived: boolean) {
+    await GalleryService.getById(id);
+    const { data, error } = await supabaseAdmin
+      .from('gallery_posts')
+      .update({ is_archived: archived })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select('*, gallery_media(*)')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  static async schedulePublish(id: string, scheduledPublishAt: string) {
+    const at = normalizeScheduledAt(scheduledPublishAt);
+    if (!at) throw new BadRequestError('Indica fecha y hora de publicación');
+
+    if (!isFutureSchedule(at)) {
+      return GalleryService.publish(id);
+    }
+
+    const cur = await GalleryService.getById(id);
+    if (cur.is_published) {
+      throw new BadRequestError('La publicación ya está visible en la galería');
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('gallery_posts')
+      .update({ scheduled_publish_at: at })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select('*, gallery_media(*)')
+      .single();
+
+    if (error) throw new Error(error.message);
     return data;
   }
 

@@ -20,6 +20,7 @@ export interface CreateNoticeBody {
   isPinned?:      boolean;
   coverImageUrl?: string | null;
   expiresAt?:     string | null;
+  scheduledPublishAt?: string | null;
 }
 
 export async function listNoticesAdmin(params?: Record<string, string | number | undefined>) {
@@ -46,5 +47,34 @@ export async function deleteNotice(id: string) {
 
 export async function publishNotice(id: string) {
   const { data } = await apiClient.patch<ApiResponse<unknown>>(`/notices/${id}/publish`);
+  return data;
+}
+
+export async function archiveNotice(id: string, archived: boolean) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/notices/${id}/archive`, { archived });
+  return data;
+}
+
+export async function scheduleNotice(id: string, scheduledPublishAt: string) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/notices/${id}/schedule`, {
+    scheduledPublishAt,
+  });
+  return data;
+}
+
+export async function uploadNoticeCover(id: string, file: File) {
+  const fd = new FormData();
+  fd.append('cover', file);
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/notices/${id}/cover`, fd, {
+    timeout: 60_000,
+    transformRequest: [
+      (body, headers) => {
+        if (headers && typeof headers === 'object') {
+          delete (headers as Record<string, unknown>)['Content-Type'];
+        }
+        return body as FormData;
+      },
+    ],
+  });
   return data;
 }

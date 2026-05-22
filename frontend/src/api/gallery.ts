@@ -38,6 +38,7 @@ export interface CreateGalleryWithMediaInput {
   type: CreateGalleryPostBody['type'];
   publish?: boolean;
   isFeatured?: boolean;
+  scheduledPublishAt?: string | null;
   images: File[];
 }
 
@@ -48,6 +49,9 @@ export async function createGalleryPostWithMedia(input: CreateGalleryWithMediaIn
   fd.append('type', input.type ?? 'general');
   fd.append('publish', input.publish ? 'true' : 'false');
   fd.append('isFeatured', input.isFeatured ? 'true' : 'false');
+  if (input.scheduledPublishAt) {
+    fd.append('scheduledPublishAt', input.scheduledPublishAt);
+  }
   input.images.forEach((file) => fd.append('images', file));
 
   const { data } = await apiClient.post<ApiResponse<unknown>>('/gallery/with-media', fd, {
@@ -69,6 +73,7 @@ export interface UpdateGalleryPostBody {
   caption?: string | null;
   type?: CreateGalleryPostBody['type'];
   isFeatured?: boolean;
+  scheduledPublishAt?: string | null;
 }
 
 export async function updateGalleryPost(id: string, body: UpdateGalleryPostBody) {
@@ -83,6 +88,18 @@ export async function deleteGalleryPost(id: string) {
 
 export async function publishGalleryPost(id: string) {
   const { data } = await apiClient.patch<ApiResponse<unknown>>(`/gallery/${id}/publish`);
+  return data;
+}
+
+export async function archiveGalleryPost(id: string, archived: boolean) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/gallery/${id}/archive`, { archived });
+  return data;
+}
+
+export async function scheduleGalleryPost(id: string, scheduledPublishAt: string) {
+  const { data } = await apiClient.patch<ApiResponse<unknown>>(`/gallery/${id}/schedule`, {
+    scheduledPublishAt,
+  });
   return data;
 }
 

@@ -41,11 +41,17 @@ function resetHourlyCapIfNeeded(): void {
   }
 }
 
-async function broadcastToParents(message: string): Promise<{ sent: number; failed: number }> {
+async function broadcastToParents(message: string): Promise<{ sent: number; failed: number; total: number }> {
   resetHourlyCapIfNeeded();
   const recipients = await listVerifiedParentWhatsAppRecipients();
+  const total = recipients.length;
   let sent = 0;
   let failed = 0;
+
+  if (total === 0) {
+    logger.warn('WhatsApp: broadcast sin padres elegibles (opt-in + hijo aprobado + teléfono)');
+    return { sent: 0, failed: 0, total: 0 };
+  }
 
   for (const r of recipients) {
     if (sendsThisHour >= env.WHATSAPP_MAX_PER_HOUR) {
@@ -53,7 +59,7 @@ async function broadcastToParents(message: string): Promise<{ sent: number; fail
       break;
     }
     try {
-      await sendWhatsAppText(r.jid, message, r.phoneRaw);
+      await sendWhatsAppText(r.jid, message, r.phoneRaw, { lenientVerify: true });
       sent += 1;
       sendsThisHour += 1;
       await delay(env.WHATSAPP_SEND_DELAY_MS);
@@ -63,7 +69,8 @@ async function broadcastToParents(message: string): Promise<{ sent: number; fail
     }
   }
 
-  return { sent, failed };
+  logger.info('WhatsApp: broadcast a todos los elegibles', { sent, failed, total });
+  return { sent, failed, total };
 }
 
 export class WhatsAppService {
@@ -262,8 +269,8 @@ export class WhatsAppService {
       `⭐ *${payload.playerName}*${semana}\n\n` +
       url;
 
-    const { sent, failed } = await broadcastToParents(message);
-    logger.info('WhatsApp MVP', { sent, failed });
+    const { sent, failed, total } = await broadcastToParents(message);
+    logger.info('WhatsApp MVP', { sent, failed, total });
   }
 
   static async notifyGalleryPublished(post: {

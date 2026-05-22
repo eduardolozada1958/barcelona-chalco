@@ -16,6 +16,19 @@ export const listNoticesQuerySchema = z.object({
   ...pagination,
   type:     z.enum(['general', 'urgent', 'event', 'training', 'match', 'administrative']).optional(),
   audience: z.enum(['all', 'parents', 'players', 'coaches', 'specific_category']).optional(),
+  /** Admin: incluir archivados (por defecto solo activos). */
+  includeArchived: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true' || v === '1'),
+});
+
+export const setNoticeArchivedBodySchema = z.object({
+  archived: z.boolean(),
+});
+
+export const scheduleNoticeBodySchema = z.object({
+  scheduledPublishAt: z.string().datetime({ offset: true }),
 });
 
 export const createNoticeBodySchema = z.object({
@@ -25,8 +38,9 @@ export const createNoticeBodySchema = z.object({
   audience:        z.enum(['all', 'parents', 'players', 'coaches', 'specific_category']).default('all'),
   targetCategory:  z.string().max(50).nullable().optional(),
   isPinned:        z.boolean().default(false),
-  coverImageUrl:   z.string().url().nullable().optional(),
-  expiresAt:       z.string().datetime({ offset: true }).nullable().optional(),
+  coverImageUrl:        z.string().url().nullable().optional(),
+  expiresAt:            z.string().datetime({ offset: true }).nullable().optional(),
+  scheduledPublishAt:   z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 export const updateNoticeBodySchema = createNoticeBodySchema.partial();

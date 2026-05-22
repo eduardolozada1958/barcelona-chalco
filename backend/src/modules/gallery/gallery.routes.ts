@@ -10,6 +10,8 @@ import {
   galleryMediaRouteParamSchema,
   createGalleryPostBodySchema,
   updateGalleryPostBodySchema,
+  setGalleryArchivedBodySchema,
+  scheduleGalleryBodySchema,
 } from './gallery.validation';
 
 export const galleryRouter = Router();
@@ -82,6 +84,24 @@ galleryRouter.patch(
   requireAdminOrCoach,
   validateParams(galleryPostIdParamSchema),
   GalleryController.publish
+);
+
+galleryRouter.patch(
+  '/:id/archive',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(galleryPostIdParamSchema),
+  validateBody(setGalleryArchivedBodySchema),
+  GalleryController.setArchived
+);
+
+galleryRouter.patch(
+  '/:id/schedule',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(galleryPostIdParamSchema),
+  validateBody(scheduleGalleryBodySchema),
+  GalleryController.schedulePublish
 );
 
 galleryRouter.delete(

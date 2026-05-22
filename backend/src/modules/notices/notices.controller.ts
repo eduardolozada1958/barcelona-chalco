@@ -62,6 +62,39 @@ export class NoticesController {
     }
   }
 
+  static async uploadCover(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.file) {
+        res.status(400).json({ success: false, message: 'Adjunta una imagen (campo cover)' });
+        return;
+      }
+      const row = await NoticesService.uploadCover(routeParam(req, 'id'), req.file);
+      sendSuccess(res, row, 'Imagen del aviso actualizada');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async setArchived(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { archived } = req.body as { archived: boolean };
+      const row = await NoticesService.setArchived(routeParam(req, 'id'), archived);
+      sendSuccess(res, row, archived ? 'Aviso archivado' : 'Aviso restaurado');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async schedulePublish(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { scheduledPublishAt } = req.body as { scheduledPublishAt: string };
+      const row = await NoticesService.schedulePublish(routeParam(req, 'id'), scheduledPublishAt);
+      sendSuccess(res, row, 'Publicación programada');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async softDelete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       await NoticesService.softDelete(routeParam(req, 'id'));

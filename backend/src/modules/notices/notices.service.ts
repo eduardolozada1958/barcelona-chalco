@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { env } from '@config/env';
 import { supabaseAdmin } from '@config/database';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
@@ -9,12 +11,32 @@ import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './not
 const NOTICE_PUBLIC_LIST_COLUMNS =
   'id, title, content, type, audience, cover_image_url, is_pinned, published_at, expires_at, created_at';
 
+function extFromImageMime(mime: string): string {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/webp') return 'webp';
+  throw new BadRequestError('La imagen debe ser PNG, JPEG o WebP');
+}
+
+function normalizeScheduledAt(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) throw new BadRequestError('Fecha de publicación programada inválida');
+  return d.toISOString();
+}
+
+function isFutureSchedule(iso: string | null): boolean {
+  if (!iso) return false;
+  return new Date(iso).getTime() > Date.now();
+}
+
 export class NoticesService {
   static async listPublic(opts: ListNoticesQuery) {
     let query = supabaseAdmin
       .from('notices')
       .select(NOTICE_PUBLIC_LIST_COLUMNS, { count: 'exact' })
       .eq('is_published', true)
+      .eq('is_archived', false)
       .is('deleted_at', null)
       .order('is_pinned', { ascending: false })
       .order('published_at', { ascending: false })
@@ -37,6 +59,7 @@ export class NoticesService {
       .select('*')
       .eq('id', id)
       .eq('is_published', true)
+      .eq('is_archived', false)
       .is('deleted_at', null)
       .single();
 
@@ -49,7 +72,13 @@ export class NoticesService {
       .from('notices')
       .select('*', { count: 'exact' })
       .is('deleted_at', null)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (!opts.includeArchived) {
+      query = query.eq('is_archived', false);
+    }
+
+    query = query
       .range(
         getPaginationOffset(opts.page, opts.limit),
         getPaginationOffset(opts.page, opts.limit) + opts.limit - 1
@@ -80,18 +109,21 @@ export class NoticesService {
       throw new BadRequestError('targetCategory es obligatorio para audiencia specific_category');
     }
 
+    const scheduledAt = normalizeScheduledAt(input.scheduledPublishAt ?? null);
+
     const { data, error } = await supabaseAdmin
       .from('notices')
       .insert({
-        title:            input.title,
-        content:          input.content,
-        type:             input.type,
-        audience:         input.audience,
-        target_category:  input.targetCategory ?? null,
-        is_pinned:        input.isPinned,
-        cover_image_url:  input.coverImageUrl ?? null,
-        expires_at:       input.expiresAt ?? null,
-        created_by:       createdBy,
+        title:                 input.title,
+        content:               input.content,
+        type:                  input.type,
+        audience:              input.audience,
+        target_category:       input.targetCategory ?? null,
+        is_pinned:             input.isPinned,
+        cover_image_url:       input.coverImageUrl ?? null,
+        expires_at:            input.expiresAt ?? null,
+        scheduled_publish_at:  scheduledAt,
+        created_by:            createdBy,
       })
       .select()
       .single();
@@ -117,8 +149,11 @@ export class NoticesService {
     if (input.audience !== undefined)        u.audience         = input.audience;
     if (input.targetCategory !== undefined)  u.target_category  = input.targetCategory;
     if (input.isPinned !== undefined)        u.is_pinned        = input.isPinned;
-    if (input.coverImageUrl !== undefined)   u.cover_image_url  = input.coverImageUrl;
-    if (input.expiresAt !== undefined)       u.expires_at       = input.expiresAt;
+    if (input.coverImageUrl !== undefined)      u.cover_image_url         = input.coverImageUrl;
+    if (input.expiresAt !== undefined)          u.expires_at              = input.expiresAt;
+    if (input.scheduledPublishAt !== undefined) {
+      u.scheduled_publish_at = normalizeScheduledAt(input.scheduledPublishAt);
+    }
 
     if (Object.keys(u).length === 0) return NoticesService.getById(id);
 
@@ -135,13 +170,18 @@ export class NoticesService {
   }
 
   static async publish(id: string) {
-    await NoticesService.getById(id);
+    const cur = await NoticesService.getById(id);
+    if (cur.is_archived) {
+      throw new BadRequestError('No se puede publicar un aviso archivado. Desarchívalo primero.');
+    }
+    if (cur.is_published) return cur;
 
     const { data, error } = await supabaseAdmin
       .from('notices')
       .update({
         is_published: true,
         published_at: new Date().toISOString(),
+        scheduled_publish_at: null,
       })
       .eq('id', id)
       .select()
@@ -163,6 +203,73 @@ export class NoticesService {
       type:    data.type,
     }).catch((e) => logger.warn('No se pudieron enviar avisos por WhatsApp', { err: e }));
 
+    return data;
+  }
+
+  static async uploadCover(id: string, file: Express.Multer.File) {
+    await NoticesService.getById(id);
+    const ext = extFromImageMime(file.mimetype);
+    const bucket = env.STORAGE_BUCKET_NOTICES;
+    const objectPath = `${id}/${randomUUID()}.${ext}`;
+
+    const { error: upErr } = await supabaseAdmin.storage
+      .from(bucket)
+      .upload(objectPath, file.buffer as Buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
+    if (upErr) throw new Error(upErr.message);
+
+    const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
+    const { data, error } = await supabaseAdmin
+      .from('notices')
+      .update({ cover_image_url: pub.publicUrl })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  static async setArchived(id: string, archived: boolean) {
+    await NoticesService.getById(id);
+    const { data, error } = await supabaseAdmin
+      .from('notices')
+      .update({ is_archived: archived })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  /** Programa publicación futura (borrador). Si la fecha ya pasó, publica de inmediato. */
+  static async schedulePublish(id: string, scheduledPublishAt: string) {
+    const at = normalizeScheduledAt(scheduledPublishAt);
+    if (!at) throw new BadRequestError('Indica fecha y hora de publicación');
+
+    if (!isFutureSchedule(at)) {
+      return NoticesService.publish(id);
+    }
+
+    const cur = await NoticesService.getById(id);
+    if (cur.is_published) {
+      throw new BadRequestError('El aviso ya está publicado');
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('notices')
+      .update({ scheduled_publish_at: at })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
     return data;
   }
 

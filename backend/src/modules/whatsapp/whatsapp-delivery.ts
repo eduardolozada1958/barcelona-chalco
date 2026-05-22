@@ -13,6 +13,7 @@ export function jidToPhoneDigits(jid: string | null | undefined): string | null 
 export async function resolveWhatsAppDeliveryJid(
   sock: { onWhatsApp?: (...phoneNumber: string[]) => Promise<unknown> },
   phoneRaw: string,
+  opts?: { lenient?: boolean },
 ): Promise<string> {
   const constructed = phoneToWhatsAppJid(phoneRaw);
   const digits = normalizePhoneDigits(phoneRaw);
@@ -33,6 +34,14 @@ export async function resolveWhatsAppDeliveryJid(
       | undefined;
     const hit = rows?.find((r) => r?.exists);
     if (!hit?.jid) {
+      if (opts?.lenient) {
+        logger.warn('WhatsApp: onWhatsApp sin coincidencia; se intentará con JID construido', {
+          input: phoneRaw,
+          digits,
+          constructed,
+        });
+        return constructed;
+      }
       throw new BadRequestError(
         `El número ${formatPhoneForDisplay(phoneRaw)} no tiene WhatsApp activo o no es válido. ` +
           'Confirma el celular en Mi perfil (el que usas en WhatsApp).',

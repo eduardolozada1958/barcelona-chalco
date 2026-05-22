@@ -24,6 +24,18 @@ export const listGalleryQuerySchema = z.object({
     .enum(['match_day', 'result', 'featured_player', 'training', 'convocatory', 'general', 'achievement'])
     .optional(),
   season: z.string().optional(),
+  includeArchived: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true' || v === '1'),
+});
+
+export const setGalleryArchivedBodySchema = z.object({
+  archived: z.boolean(),
+});
+
+export const scheduleGalleryBodySchema = z.object({
+  scheduledPublishAt: z.string().datetime({ offset: true }),
 });
 
 const galleryMediaInput = z.object({
@@ -55,6 +67,7 @@ export const updateGalleryPostBodySchema = createGalleryPostBodySchema
   .partial()
   .extend({
     media: z.array(galleryMediaInput).max(20).optional(),
+    scheduledPublishAt: z.string().datetime({ offset: true }).nullable().optional(),
   });
 
 const galleryTypeEnum = z.enum([
@@ -82,6 +95,11 @@ export const createGalleryUploadFieldsSchema = z.object({
   isFeatured: z.preprocess(fieldToBool, z.boolean()).optional().default(false),
   publish:    z.preprocess(fieldToBool, z.boolean()).optional().default(false),
   season:     z.string().max(20).default(CURRENT_SEASON),
+  scheduledPublishAt: z
+    .string()
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : null))
+    .refine((v) => v === null || !Number.isNaN(new Date(v).getTime()), 'Fecha programada inválida'),
 });
 
 export type ListGalleryQuery = z.infer<typeof listGalleryQuerySchema>;
