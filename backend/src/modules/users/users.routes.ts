@@ -8,7 +8,8 @@ import {
   userIdParamSchema,
   createUserBodySchema,
   updateUserBodySchema,
-  adminRequestEmailChangeSchema,
+  adminSensitiveEmailChangeSchema,
+  deleteUserBodySchema,
 } from './users.validation';
 
 export const usersRouter = Router();
@@ -47,11 +48,27 @@ usersRouter.patch(
 );
 
 usersRouter.post(
+  '/:id/send-delete-code',
+  authMiddleware,
+  requireAdmin,
+  validateParams(userIdParamSchema),
+  UsersController.sendDeleteVerificationCode,
+);
+
+usersRouter.post(
+  '/:id/send-email-change-code',
+  authMiddleware,
+  requireAdmin,
+  validateParams(userIdParamSchema),
+  UsersController.sendEmailChangeVerificationCode,
+);
+
+usersRouter.post(
   '/:id/request-email-change',
   authMiddleware,
   requireAdmin,
   validateParams(userIdParamSchema),
-  validateBody(adminRequestEmailChangeSchema),
+  validateBody(adminSensitiveEmailChangeSchema),
   UsersController.requestEmailChange,
 );
 
@@ -68,5 +85,6 @@ usersRouter.delete(
   authMiddleware,
   requireAdmin,
   validateParams(userIdParamSchema),
+  validateBody(deleteUserBodySchema),
   UsersController.softDelete
 );

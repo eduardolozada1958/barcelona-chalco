@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@config/database';
+import { maskEmail } from '@shared/utils/mask-contact';
 import { PARENT_PAYMENT_BLOCKED_MESSAGE } from '@config/coach-contact';
 import { NotFoundError, UnauthorizedError } from '@middlewares/error.middleware';
 import { parsePeriodMonth, currentPeriodMonthIso } from '@shared/utils/attendance-calendar';
@@ -93,11 +94,15 @@ export class FeesService {
       const { data: users, error: uErr } = await supabaseAdmin
         .from('users')
         .select('id, email, payment_hold')
-        .in('id', userIds);
+        .in('id', userIds)
+        .is('deleted_at', null);
       if (uErr) throw new Error(uErr.message);
       for (const u of users ?? []) {
         const row = u as { id: string; email: string; payment_hold: boolean };
-        userById.set(String(row.id), { email: row.email, payment_hold: Boolean(row.payment_hold) });
+        userById.set(String(row.id), {
+          email:         maskEmail(row.email),
+          payment_hold:  Boolean(row.payment_hold),
+        });
       }
     }
 

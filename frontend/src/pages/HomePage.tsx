@@ -7,6 +7,7 @@ import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
+import { VENUE_LEADER_GROUPS } from '@/config/venue-groups';
 import { getMvpOfWeekPublic } from '@/api/players';
 import { latestResultPublic } from '@/api/results';
 import { playerPublicPath } from '@/utils/player-path';
@@ -178,13 +179,22 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto border-t border-outline-variant/20">
-        <SeasonLeadersTables
-          variant="public"
-          linkPlayerNames={false}
-          title={`⚽ Tabla de goleo y tarjetas — Temporada ${season}`}
-          asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
-        />
+      <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto border-t border-outline-variant/20 space-y-stack-lg">
+        <h2 className="font-display-hero text-headline-lg text-primary">Tablas de goleo por sede</h2>
+        <p className="font-body-md text-body-md text-on-surface-variant -mt-stack-sm">
+          Estadísticas de partidos publicados, separadas por cancha.
+        </p>
+        {Object.values(VENUE_LEADER_GROUPS).map((g) => (
+          <SeasonLeadersTables
+            key={g.id}
+            venue={g.id}
+            variant="public"
+            linkPlayerNames={false}
+            title={`⚽ ${g.title} — Temporada ${season}`}
+            description={g.description}
+            asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
+          />
+        ))}
       </section>
 
       {/* ═══════════════════ HIGHLIGHTS BENTO GRID ═══════════════════ */}

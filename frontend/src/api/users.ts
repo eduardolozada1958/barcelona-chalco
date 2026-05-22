@@ -37,9 +37,20 @@ export async function updateUser(
   return data;
 }
 
-export async function requestUserEmailChange(id: string, newEmail: string) {
+export async function sendUserDeleteCode(id: string) {
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/users/${id}/send-delete-code`);
+  return data;
+}
+
+export async function sendUserEmailChangeCode(id: string) {
+  const { data } = await apiClient.post<ApiResponse<unknown>>(`/users/${id}/send-email-change-code`);
+  return data;
+}
+
+export async function requestUserEmailChange(id: string, newEmail: string, verificationCode?: string) {
   const { data } = await apiClient.post<ApiResponse<{ newEmail: string }>>(`/users/${id}/request-email-change`, {
     newEmail,
+    ...(verificationCode ? { verificationCode } : {}),
   });
   return data;
 }
@@ -50,8 +61,10 @@ export function isUserLoginLocked(u: Record<string, unknown>): boolean {
   return attempts >= 5;
 }
 
-/** Elimina cuenta (soft delete). No puede ser tu propio usuario. */
-export async function deleteUser(id: string) {
-  const { data } = await apiClient.delete<ApiResponse<{ ok: boolean }>>(`/users/${id}`);
+/** Elimina cuenta (soft delete). Requiere código enviado al correo del admin en producción. */
+export async function deleteUser(id: string, verificationCode: string) {
+  const { data } = await apiClient.delete<ApiResponse<{ ok: boolean }>>(`/users/${id}`, {
+    data: { verificationCode },
+  });
   return data;
 }

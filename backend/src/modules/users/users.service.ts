@@ -6,6 +6,10 @@ import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import { clearLoginLockout, isLoginLocked } from '@modules/auth/login-lockout';
 import { EmailChangeService } from '@modules/auth/email-change.service';
+import {
+  adminSensitiveVerificationRequired,
+  SensitiveActionService,
+} from '@shared/services/sensitive-action.service';
 import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.validation';
 
 const USER_SELECT =
@@ -121,9 +125,35 @@ export class UsersService {
     return data;
   }
 
-  static async requestEmailChange(id: string, actorUserId: string, newEmail: string) {
+  static async requestEmailChange(
+    id: string,
+    actorUserId: string,
+    _actorEmail: string,
+    newEmail: string,
+    verificationCode?: string,
+  ) {
     await UsersService.getById(id);
+
+    if (adminSensitiveVerificationRequired()) {
+      if (!verificationCode?.trim()) {
+        throw new BadRequestError(
+          'Se requiere código de verificación enviado a tu correo de administrador.',
+        );
+      }
+      await SensitiveActionService.verifyCode(
+        actorUserId,
+        'change_user_email',
+        verificationCode,
+        id,
+      );
+    }
+
     return EmailChangeService.requestByAdmin(actorUserId, id, newEmail);
+  }
+
+  static async sendEmailChangeVerificationCode(targetUserId: string, actorUserId: string, actorEmail: string) {
+    await UsersService.getById(targetUserId);
+    await SensitiveActionService.sendCode(actorUserId, actorEmail, 'change_user_email', targetUserId);
   }
 
   static async unlockLogin(id: string, actorUserId: string) {
@@ -143,18 +173,67 @@ export class UsersService {
     return UsersService.getById(id);
   }
 
-  static async softDelete(id: string, actorUserId: string) {
+  static async sendDeleteVerificationCode(targetUserId: string, actorUserId: string, actorEmail: string) {
+    await UsersService.getById(targetUserId);
+    await SensitiveActionService.sendCode(actorUserId, actorEmail, 'delete_user', targetUserId);
+  }
+
+  static async softDelete(
+    id: string,
+    actorUserId: string,
+    _actorEmail: string,
+    verificationCode?: string,
+  ) {
     if (id === actorUserId) {
       throw new BadRequestError('No puedes eliminar tu propio usuario');
     }
 
-    await UsersService.getById(id);
+    const user = await UsersService.getById(id);
+
+    if (adminSensitiveVerificationRequired()) {
+      if (!verificationCode?.trim()) {
+        throw new BadRequestError(
+          'Se requiere código de verificación enviado a tu correo de administrador. Solicítalo antes de eliminar.',
+        );
+      }
+      await SensitiveActionService.verifyCode(actorUserId, 'delete_user', verificationCode, id);
+    }
+
+    const now = new Date().toISOString();
 
     const { error } = await supabaseAdmin
       .from('users')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ deleted_at: now })
       .eq('id', id);
 
     if (error) throw new Error(error.message);
+
+    if (user.role === 'parent') {
+      const { data: parentRow } = await supabaseAdmin
+        .from('parents')
+        .select('id')
+        .eq('user_id', id)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (parentRow?.id) {
+        const parentId = String(parentRow.id);
+        await supabaseAdmin
+          .from('parents')
+          .update({ deleted_at: now })
+          .eq('id', parentId);
+
+        await supabaseAdmin
+          .from('parent_players')
+          .update({
+            status:         'rejected',
+            reject_reason:  'Cuenta de padre/tutor eliminada por administración',
+            reviewed_at:    now,
+            reviewed_by:    actorUserId,
+          })
+          .eq('parent_id', parentId)
+          .in('status', ['pending', 'approved']);
+      }
+    }
   }
 }

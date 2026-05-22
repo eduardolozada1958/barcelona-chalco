@@ -45,3 +45,14 @@ export const adminRequestEmailChangeSchema = z.object({
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type AdminRequestEmailChangeBody = z.infer<typeof adminRequestEmailChangeSchema>;
+
+export const deleteUserBodySchema = z.object({
+  verificationCode: z.string().min(6).max(6).optional(),
+});
+
+export const adminSensitiveEmailChangeSchema = adminRequestEmailChangeSchema.extend({
+  verificationCode: z.string().min(6).max(6).optional(),
+});
+
+export type DeleteUserBody = z.infer<typeof deleteUserBodySchema>;
+export type AdminSensitiveEmailChangeBody = z.infer<typeof adminSensitiveEmailChangeSchema>;

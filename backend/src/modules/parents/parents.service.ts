@@ -18,6 +18,7 @@ import {
   sessionDatesInMonth,
 } from '@shared/utils/attendance-calendar';
 import { phoneToWhatsAppJid } from '@modules/whatsapp/phone';
+import { maskEmail, maskPhone } from '@shared/utils/mask-contact';
 import type {
   CreateLinkRequestInput,
   ListLinkRequestsQuery,
@@ -60,10 +61,22 @@ const LINK_SELECT = `
 
 export class ParentsService {
   static async list(opts: ListParentsQuery) {
+    const { data: activeUsers, error: uErr } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('role', 'parent')
+      .is('deleted_at', null);
+    if (uErr) throw new Error(uErr.message);
+    const activeUserIds = (activeUsers ?? []).map((u) => String((u as { id: string }).id));
+    if (activeUserIds.length === 0) {
+      return { data: [], meta: buildPaginationMeta(0, opts.page, opts.limit) };
+    }
+
     let query = supabaseAdmin
       .from('parents')
       .select('*', { count: 'exact' })
       .is('deleted_at', null)
+      .in('user_id', activeUserIds)
       .order('last_name', { ascending: true })
       .range(
         getPaginationOffset(opts.page, opts.limit),
@@ -104,7 +117,29 @@ export class ParentsService {
       .is('deleted_at', null)
       .single();
 
-    return { ...parent, user: userRow };
+    return ParentsService.maskParentContact(parent, userRow);
+  }
+
+  private static maskParentContact(
+    parent: Record<string, unknown>,
+    user: Record<string, unknown> | null,
+  ) {
+    return {
+      ...parent,
+      phone_primary:   maskPhone(String(parent.phone_primary ?? '')),
+      phone_secondary: parent.phone_secondary ? maskPhone(String(parent.phone_secondary)) : null,
+      emergency_contact_phone: parent.emergency_contact_phone
+        ? maskPhone(String(parent.emergency_contact_phone))
+        : null,
+      user: user
+        ? {
+            ...user,
+            email: maskEmail(String(user.email ?? '')),
+            phone: user.phone ? maskPhone(String(user.phone)) : null,
+          }
+        : null,
+      contact_masked: true,
+    };
   }
 
   static async update(id: string, input: UpdateParentBody) {
@@ -345,13 +380,49 @@ export class ParentsService {
       query = query.eq('status', opts.status);
     }
 
-    const { data, error, count } = await query;
+    const { data, error } = await query;
     if (error) throw new Error(error.message);
 
+    const filtered = await ParentsService.filterLinksWithActiveParentUser(data ?? []);
+
     return {
-      data: (data ?? []).map((r) => ParentsService.mapLinkRow(r as Record<string, unknown>)),
-      meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
+      data: filtered.map((r) => ParentsService.mapLinkRow(r as Record<string, unknown>)),
+      meta: buildPaginationMeta(filtered.length, opts.page, opts.limit),
     };
+  }
+
+  /** Oculta vínculos cuyo padre ya fue eliminado como usuario. */
+  private static async filterLinksWithActiveParentUser(rows: unknown[]) {
+    if (!rows.length) return [];
+    const userIds = [
+      ...new Set(
+        rows
+          .map((r) => {
+            const parents = (r as Record<string, unknown>).parents as Record<string, unknown> | null;
+            return parents?.user_id != null ? String(parents.user_id) : null;
+          })
+          .filter((id): id is string => Boolean(id)),
+      ),
+    ];
+    if (!userIds.length) return rows;
+
+    const { data: users, error } = await supabaseAdmin
+      .from('users')
+      .select('id, deleted_at')
+      .in('id', userIds);
+    if (error) throw new Error(error.message);
+
+    const active = new Set(
+      (users ?? [])
+        .filter((u) => !(u as { deleted_at?: string | null }).deleted_at)
+        .map((u) => String((u as { id: string }).id)),
+    );
+
+    return rows.filter((r) => {
+      const parents = (r as Record<string, unknown>).parents as Record<string, unknown> | null;
+      const uid = parents?.user_id != null ? String(parents.user_id) : '';
+      return uid && active.has(uid);
+    });
   }
 
   private static async getLinkRequestById(id: string) {

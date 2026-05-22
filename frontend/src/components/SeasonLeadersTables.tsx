@@ -10,6 +10,8 @@ import { playerPublicPath } from '@/utils/player-path';
 export type SeasonLeadersTablesProps = {
   /** Filas máximas por tabla (goleo y disciplina vienen por separado del API). */
   limit?: number;
+  /** canchas100 | walmart-atlas — si se omite, todas las sedes. */
+  venue?: string;
   /** Si false, los nombres en goleo/tarjetas no enlazan (recomendado en inicio público). */
   linkPlayerNames?: boolean;
   /** Ruta al detalle del jugador (público o panel). */
@@ -31,6 +33,7 @@ function leaderName(r: SeasonLeaderRow) {
  */
 export function SeasonLeadersTables({
   limit = 12,
+  venue,
   linkPlayerNames = false,
   getPlayerHref = (_id, row) => playerPublicPath({ id: row.player_id, slug: row.slug }),
   title = '⚽ Tabla de goleo y tarjetas',
@@ -39,8 +42,8 @@ export function SeasonLeadersTables({
   variant = 'public',
 }: SeasonLeadersTablesProps) {
   const leadersQ = useQuery({
-    queryKey: ['season-leaders-public', limit],
-    queryFn: () => getSeasonLeadersPublic(limit),
+    queryKey: ['season-leaders-public', limit, venue ?? 'all'],
+    queryFn: () => getSeasonLeadersPublic(limit, venue),
     staleTime: 5 * 60_000,
     refetchOnWindowFocus: false,
   });

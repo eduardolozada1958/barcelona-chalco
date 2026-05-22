@@ -9,6 +9,8 @@ import {
   isUserLoginLocked,
   listUsers,
   requestUserEmailChange,
+  sendUserDeleteCode,
+  sendUserEmailChangeCode,
   unlockUserLogin,
   updateUser,
   type CreateUserBody,
@@ -39,6 +41,7 @@ export function DashboardUsersPage() {
   const [manageUser, setManageUser] = useState<Record<string, unknown> | null>(null);
   const [manageStatus, setManageStatus] = useState<string>('active');
   const [manageNewEmail, setManageNewEmail] = useState('');
+  const [manageVerifyCode, setManageVerifyCode] = useState('');
 
   const q = useQuery({
     queryKey: ['users-admin', roleFilter],
@@ -80,7 +83,8 @@ export function DashboardUsersPage() {
   });
 
   const emailChangeMut = useMutation({
-    mutationFn: ({ id, newEmail }: { id: string; newEmail: string }) => requestUserEmailChange(id, newEmail),
+    mutationFn: ({ id, newEmail, verificationCode }: { id: string; newEmail: string; verificationCode?: string }) =>
+      requestUserEmailChange(id, newEmail, verificationCode),
     onSuccess: (res) => {
       toast.success(res.message ?? 'Enlace enviado al nuevo correo');
       setManageNewEmail('');
@@ -88,8 +92,20 @@ export function DashboardUsersPage() {
     onError: (e: Error) => toast.error(getApiErrorMessage(e)),
   });
 
+  const sendDeleteCodeMut = useMutation({
+    mutationFn: (id: string) => sendUserDeleteCode(id),
+    onSuccess: (res) => toast.success(res.message ?? 'Código enviado a tu correo'),
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
+  const sendEmailCodeMut = useMutation({
+    mutationFn: (id: string) => sendUserEmailChangeCode(id),
+    onSuccess: (res) => toast.success(res.message ?? 'Código enviado a tu correo'),
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
   const deleteMut = useMutation({
-    mutationFn: (id: string) => deleteUser(id),
+    mutationFn: ({ id, code }: { id: string; code: string }) => deleteUser(id, code),
     onSuccess: () => {
       toast.success('Usuario eliminado');
       setManageUser(null);
@@ -115,6 +131,7 @@ export function DashboardUsersPage() {
     setManageUser(u);
     setManageStatus(String(u.status ?? 'active'));
     setManageNewEmail('');
+    setManageVerifyCode('');
   };
 
   if (q.isLoading) return <Spinner />;
@@ -318,10 +335,27 @@ export function DashboardUsersPage() {
               </div>
             ) : null}
 
+            <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-on-surface-variant space-y-2">
+              <p>
+                <strong className="text-primary">Seguridad:</strong> acciones sensibles requieren un código de 6 dígitos
+                enviado a <strong className="text-on-surface">{sessionUser?.email}</strong>. Activa 2FA en Mi perfil.
+              </p>
+              <label className={formLabelClass}>Código de verificación (6 dígitos)</label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                className={formInputClass}
+                placeholder="000000"
+                value={manageVerifyCode}
+                onChange={(e) => setManageVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              />
+            </div>
+
             <div>
               <label className={formLabelClass}>Cambiar correo de acceso</label>
               <p className="text-xs text-on-surface-variant mb-2">
-                Se envía un enlace al nuevo correo; el usuario debe confirmarlo. También se avisa al correo actual.
+                Solicita código, ingrésalo arriba y luego el nuevo correo. El usuario debe confirmar el enlace.
               </p>
               <input
                 type="email"
@@ -330,53 +364,78 @@ export function DashboardUsersPage() {
                 value={manageNewEmail}
                 onChange={(e) => setManageNewEmail(e.target.value)}
               />
-              <button
-                type="button"
-                disabled={emailChangeMut.isPending || !manageNewEmail.trim()}
-                onClick={() =>
-                  emailChangeMut.mutate({
-                    id:       String(manageUser.id),
-                    newEmail: manageNewEmail.trim(),
-                  })
-                }
-                className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-[10px] font-label-caps disabled:opacity-50"
-              >
-                <MaterialIcon name="forward_to_inbox" size={14} />
-                Enviar enlace de confirmación
-              </button>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={sendEmailCodeMut.isPending}
+                  onClick={() => sendEmailCodeMut.mutate(String(manageUser.id))}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant/40 text-on-surface-variant text-[10px] font-label-caps disabled:opacity-50"
+                >
+                  Enviar código
+                </button>
+                <button
+                  type="button"
+                  disabled={emailChangeMut.isPending || !manageNewEmail.trim() || manageVerifyCode.length !== 6}
+                  onClick={() =>
+                    emailChangeMut.mutate({
+                      id:               String(manageUser.id),
+                      newEmail:         manageNewEmail.trim(),
+                      verificationCode: manageVerifyCode,
+                    })
+                  }
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-primary/40 text-primary text-[10px] font-label-caps disabled:opacity-50"
+                >
+                  <MaterialIcon name="forward_to_inbox" size={14} />
+                  Confirmar cambio de correo
+                </button>
+              </div>
             </div>
 
             <div className="pt-4 border-t border-outline-variant/25">
               <p className="text-xs text-on-surface-variant mb-3">
-                Eliminar la cuenta: no podrá iniciar sesión. Los datos históricos (cuotas, vínculos) se conservan en el
-                sistema.
+                Eliminar cuenta: no podrá iniciar sesión. Si es padre, sus vínculos con jugadores se revocan automáticamente.
               </p>
-              <button
-                type="button"
-                disabled={
-                  deleteMut.isPending || String(manageUser.id) === sessionUser?.id
-                }
-                onClick={() => {
-                  const email = String(manageUser.email);
-                  const role = userRoleLabel(String(manageUser.role));
-                  if (
-                    !window.confirm(
-                      `¿Eliminar la cuenta ${email} (${role})?\n\nNo podrá volver a entrar al panel.`,
-                    )
-                  ) {
-                    return;
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={sendDeleteCodeMut.isPending || String(manageUser.id) === sessionUser?.id}
+                  onClick={() => sendDeleteCodeMut.mutate(String(manageUser.id))}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-outline-variant/40 text-[10px] font-label-caps disabled:opacity-50"
+                >
+                  Enviar código para eliminar
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    deleteMut.isPending ||
+                    String(manageUser.id) === sessionUser?.id ||
+                    import.meta.env.PROD && manageVerifyCode.length !== 6
                   }
-                  deleteMut.mutate(String(manageUser.id));
-                }}
-                className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-error/40 text-error text-[10px] font-label-caps hover:bg-error/10 disabled:opacity-50"
-              >
-                <MaterialIcon name="delete" size={14} />
-                {String(manageUser.id) === sessionUser?.id
-                  ? 'No puedes eliminar tu propia cuenta'
-                  : deleteMut.isPending
-                    ? 'Eliminando…'
-                    : 'Eliminar usuario'}
-              </button>
+                  onClick={() => {
+                    const email = String(manageUser.email);
+                    const role = userRoleLabel(String(manageUser.role));
+                    if (
+                      !window.confirm(
+                        `¿Eliminar la cuenta ${email} (${role})?\n\nNo podrá volver a entrar. Vínculos padre-jugador revocados si aplica.`,
+                      )
+                    ) {
+                      return;
+                    }
+                    deleteMut.mutate({
+                      id: String(manageUser.id),
+                      code: manageVerifyCode || '000000',
+                    });
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-2 rounded-lg border border-error/40 text-error text-[10px] font-label-caps hover:bg-error/10 disabled:opacity-50"
+                >
+                  <MaterialIcon name="delete" size={14} />
+                  {String(manageUser.id) === sessionUser?.id
+                    ? 'No puedes eliminar tu propia cuenta'
+                    : deleteMut.isPending
+                      ? 'Eliminando…'
+                      : 'Eliminar con código'}
+                </button>
+              </div>
             </div>
           </div>
         ) : null}

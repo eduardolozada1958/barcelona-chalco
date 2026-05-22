@@ -5,6 +5,7 @@ import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildPlayerNameIlikeFilter } from '@shared/utils/sanitize-search';
 import { cacheGetOrSet } from '@shared/utils/ttl-cache';
+import { matchLocationInVenueGroup, type VenueLeaderGroup } from '@config/venue-groups';
 import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
 import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { normalizeCurp } from '@shared/utils/curp';
@@ -139,21 +140,33 @@ export class PlayersService {
   }
 
   /** Totales de goles/asistencias y tarjetas solo de resultados publicados (sitio público / inicio). */
-  static async publicSeasonLeaders(limit = 15) {
+  static async publicSeasonLeaders(limit = 15, venueGroup?: VenueLeaderGroup | null) {
     const cap = Math.min(50, Math.max(5, limit));
-    return cacheGetOrSet(`players:season-leaders:${cap}`, 120_000, () =>
-      PlayersService.computePublicSeasonLeaders(cap),
+    const cacheKey = `players:season-leaders:${cap}:${venueGroup ?? 'all'}`;
+    return cacheGetOrSet(cacheKey, 120_000, () =>
+      PlayersService.computePublicSeasonLeaders(cap, venueGroup ?? null),
     );
   }
 
-  private static async computePublicSeasonLeaders(cap: number) {
+  private static async computePublicSeasonLeaders(
+    cap: number,
+    venueGroup: VenueLeaderGroup | null,
+  ) {
     const { data: resultsRows, error: rErr } = await supabaseAdmin
       .from('results')
-      .select('id')
+      .select('id, matches!inner(location)')
       .eq('published', true);
     if (rErr) throw new Error(rErr.message);
 
-    const resultIds = (resultsRows ?? []).map((r: { id: string }) => r.id);
+    const resultIds = (resultsRows ?? [])
+      .filter((r) => {
+        if (!venueGroup) return true;
+        const m = (r as { matches?: { location?: string } | { location?: string }[] }).matches;
+        const match = Array.isArray(m) ? m[0] : m;
+        const loc = typeof match?.location === 'string' ? match.location : '';
+        return matchLocationInVenueGroup(loc, venueGroup);
+      })
+      .map((r: { id: string }) => r.id);
     if (resultIds.length === 0) {
       return { scoring: [] as PublicLeaderRow[], discipline: [] as PublicLeaderRow[] };
     }

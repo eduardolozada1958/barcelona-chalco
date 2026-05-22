@@ -21,6 +21,7 @@ import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerStatusLabel } from '@/config/labels';
 import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
+import { VENUE_LEADER_GROUPS } from '@/config/venue-groups';
 import { MatchStatsQuickEdit } from '@/components/MatchStatsQuickEdit';
 import { MvpOfWeekPanel } from '@/components/MvpOfWeekPanel';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
@@ -385,15 +386,22 @@ export function DashboardPlayersPage() {
 
       <MatchStatsQuickEdit />
 
-      <SeasonLeadersTables
-        variant="dashboard"
-        limit={15}
-        linkPlayerNames
-        getPlayerHref={(id) => `/dashboard/players/${id}`}
-        title="⚽ Tabla de goleo y tarjetas"
-        description="Totales de la temporada (solo resultados publicados). Esta tabla es de consulta; para cambiar goles o tarjetas usa la sección de arriba o Resultados."
-        asideLink={{ to: '/dashboard/results', label: 'Ir a resultados →' }}
-      />
+      <div className="space-y-stack-md">
+        <h2 className="font-headline-lg text-headline-lg text-on-surface">Tablas de goleo por sede</h2>
+        {Object.values(VENUE_LEADER_GROUPS).map((g) => (
+          <SeasonLeadersTables
+            key={g.id}
+            venue={g.id}
+            variant="dashboard"
+            limit={12}
+            linkPlayerNames
+            getPlayerHref={(id) => `/dashboard/players/${id}`}
+            title={`⚽ ${g.title}`}
+            description={`${g.description}. Solo resultados publicados en esas canchas.`}
+            asideLink={{ to: '/dashboard/results', label: 'Ir a resultados →' }}
+          />
+        ))}
+      </div>
 
       <DashboardModal open={createOpen} onClose={() => setCreateOpen(false)} title="Nuevo jugador" wide>
         <form onSubmit={onCreate} className="space-y-3">

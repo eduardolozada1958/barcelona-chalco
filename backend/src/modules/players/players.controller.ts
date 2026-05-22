@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { parseVenueLeaderGroup } from '@config/venue-groups';
 import { PlayersService } from './players.service';
 import { sanitizePlayerRecordForApi } from './players.sanitize';
 import { sendSuccess } from '@shared/utils/response';
@@ -55,7 +56,8 @@ export class PlayersController {
     try {
       const raw = req.query.limit;
       const n = raw != null ? parseInt(String(raw), 10) : 15;
-      const data = await PlayersService.publicSeasonLeaders(Number.isFinite(n) ? n : 15);
+      const venue = parseVenueLeaderGroup(req.query.venue);
+      const data = await PlayersService.publicSeasonLeaders(Number.isFinite(n) ? n : 15, venue);
       sendSuccess(res, data, 'Clasificación de temporada');
     } catch (e) { next(e); }
   }

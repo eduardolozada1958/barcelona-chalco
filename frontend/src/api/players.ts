@@ -30,9 +30,9 @@ export interface SeasonLeadersPayload {
   discipline: SeasonLeaderRow[];
 }
 
-export async function getSeasonLeadersPublic(limit = 15) {
+export async function getSeasonLeadersPublic(limit = 15, venue?: string) {
   const { data } = await apiClient.get<ApiResponse<SeasonLeadersPayload>>('/players/public/season-leaders', {
-    params: { limit },
+    params: { limit, ...(venue ? { venue } : {}) },
   });
   return data;
 }
