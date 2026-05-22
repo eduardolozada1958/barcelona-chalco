@@ -141,6 +141,23 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v !== 'false' && v !== '0'),
+  WHATSAPP_NOTIFY_RESULTS: z
+    .string()
+    .optional()
+    .transform((v) => v !== 'false' && v !== '0'),
+  WHATSAPP_NOTIFY_MVP: z
+    .string()
+    .optional()
+    .transform((v) => v !== 'false' && v !== '0'),
+  WHATSAPP_NOTIFY_GALLERY: z
+    .string()
+    .optional()
+    .transform((v) => v !== 'false' && v !== '0'),
+  WHATSAPP_NOTIFY_LEADERS: z
+    .string()
+    .optional()
+    .transform((v) => v !== 'false' && v !== '0'),
+  CLUB_TIMEZONE: z.string().default('America/Mexico_City'),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -18,6 +18,7 @@ import {
   slotsToPitchPlayers,
   type PitchPlayer,
 } from '@/utils/lineup-players';
+import { CLUB_TIMEZONE } from '@/utils/club-datetime';
 
 function parseFormation(raw: unknown): 'football_7' | 'football_11' | null {
   return raw === 'football_7' || raw === 'football_11' ? raw : null;
@@ -31,12 +32,14 @@ function parseLineupIds(raw: unknown): string[] {
 function formatMatchDate(raw: unknown): string {
   try {
     return new Date(String(raw)).toLocaleString('es-MX', {
+      timeZone: CLUB_TIMEZONE,
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      hour12: true,
     });
   } catch {
     return String(raw ?? '');

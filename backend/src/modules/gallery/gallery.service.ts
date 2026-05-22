@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
+import { supabaseAdmin } from '@config/database';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import type {
@@ -344,6 +345,15 @@ export class GalleryService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    if (env.WHATSAPP_ENABLED && env.WHATSAPP_NOTIFY_GALLERY) {
+      void WhatsAppService.notifyGalleryPublished({
+        id:          String(data.id),
+        title:       String(data.title ?? 'Galería'),
+        description: data.description ? String(data.description) : null,
+      }).catch(() => {});
+    }
+
     return data;
   }
 

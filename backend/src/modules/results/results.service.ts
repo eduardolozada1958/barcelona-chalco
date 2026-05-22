@@ -1,6 +1,8 @@
+import { env } from '@config/env';
 import { supabaseAdmin } from '@config/database';
 import { NotFoundError, ConflictError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import type { ListResultsQuery, CreateResultBody, UpdateResultBody, PlayerStatInput } from './results.validation';
 
 export class ResultsService {
@@ -151,6 +153,26 @@ export class ResultsService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    if (env.WHATSAPP_ENABLED && env.WHATSAPP_NOTIFY_RESULTS) {
+      const { data: pub } = await supabaseAdmin
+        .from('v_match_results')
+        .select('id, goals_scored, goals_conceded, match_title, opponent_name, match_date')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (pub) {
+        void WhatsAppService.notifyResultPublished({
+          id:            String(pub.id),
+          goals_scored:    Number(pub.goals_scored ?? 0),
+          goals_conceded:  Number(pub.goals_conceded ?? 0),
+          match_title:     pub.match_title ? String(pub.match_title) : undefined,
+          opponent_name:   pub.opponent_name ? String(pub.opponent_name) : undefined,
+          match_date:      pub.match_date ? String(pub.match_date) : undefined,
+        }).catch(() => {});
+      }
+    }
+
     return data;
   }
 }

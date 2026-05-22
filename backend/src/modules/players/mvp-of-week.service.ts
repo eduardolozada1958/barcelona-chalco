@@ -1,5 +1,7 @@
+import { env } from '@config/env';
 import { supabaseAdmin } from '@config/database';
 import { BadRequestError, NotFoundError } from '@middlewares/error.middleware';
+import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 
 const MVP_PLAYER_COLUMNS =
   'id, slug, first_name, last_name, jersey_number, position, category, avatar_url, sport_description';
@@ -109,6 +111,19 @@ export class MvpOfWeekService {
       .eq('id', settings.id);
 
     if (error) throw new Error(error.message);
-    return MvpOfWeekService.getPublic();
+
+    const payload = await MvpOfWeekService.getPublic();
+    if (env.WHATSAPP_ENABLED && env.WHATSAPP_NOTIFY_MVP && playerId && payload.player) {
+      const p = payload.player as Record<string, unknown>;
+      const name = `${String(p.first_name ?? '')} ${String(p.last_name ?? '')}`.trim();
+      if (name) {
+        void WhatsAppService.notifyMvpSet({
+          playerName: name,
+          weekLabel:  payload.weekLabel,
+        }).catch(() => {});
+      }
+    }
+
+    return payload;
   }
 }

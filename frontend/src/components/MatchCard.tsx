@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { Match } from '@/types';
 import { CLUB_DISPLAY_NAME } from '@/config/club';
+import { formatMatchDateClub, formatMatchTimeClub } from '@/utils/club-datetime';
 import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { MaterialIcon } from './MaterialIcon';
 import { MapLinkButton } from '@/components/MatchMapEmbed';
@@ -14,12 +15,8 @@ interface MatchCardProps {
  * Features: date/time header, team crests VS, venue info, CTA.
  */
 export function MatchCard({ match }: MatchCardProps) {
-  const matchDate = match.match_date
-    ? new Date(match.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
-    : '—';
-  const matchTime = match.match_date
-    ? new Date(match.match_date).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) + ' HRS'
-    : '—';
+  const matchDate = formatMatchDateClub(match.match_date);
+  const matchTime = formatMatchTimeClub(match.match_date);
 
   return (
     <div className="bg-[#002366]/40 backdrop-blur-md rounded-xl border border-primary-container/20 p-stack-md relative overflow-hidden group">

@@ -22,6 +22,11 @@ Ejecuta en SQL Editor:
 | `WHATSAPP_SEND_DELAY_MS` | `4000` | Pausa entre mensajes (ms) |
 | `WHATSAPP_MAX_PER_HOUR` | `40` | Tope por hora |
 | `WHATSAPP_NOTIFY_MATCHES` | `true` | Aviso al crear partido programado |
+| `WHATSAPP_NOTIFY_RESULTS` | `true` | Al publicar resultado (+ tabla goleo si `NOTIFY_LEADERS`) |
+| `WHATSAPP_NOTIFY_MVP` | `true` | Al asignar MVP de la semana |
+| `WHATSAPP_NOTIFY_GALLERY` | `true` | Al publicar entrada en galería |
+| `WHATSAPP_NOTIFY_LEADERS` | `true` | Top goleadores tras publicar resultado |
+| `CLUB_TIMEZONE` | `America/Mexico_City` | Hora en WhatsApp = misma que el sitio |
 
 ### Plan Free (sin disco)
 
@@ -49,4 +54,10 @@ Requisitos: correo verificado, cuenta activa, hijo vinculado aprobado, teléfono
 ## 6. Cuándo se envía
 
 - Al **publicar** avisos tipo: urgente, partido, entrenamiento, evento  
-- Al **crear** un partido con estado `scheduled` y fecha futura (si `WHATSAPP_NOTIFY_MATCHES` no es `false`)
+- Al **crear** un partido con estado `scheduled` y fecha futura (`WHATSAPP_NOTIFY_MATCHES`)  
+- Al **publicar** un resultado (`WHATSAPP_NOTIFY_RESULTS`)  
+- Tras publicar resultado: **tabla de goleo** top 5 (`WHATSAPP_NOTIFY_LEADERS`)  
+- Al asignar **MVP de la semana** (`WHATSAPP_NOTIFY_MVP`)  
+- Al **publicar** galería (`WHATSAPP_NOTIFY_GALLERY`)
+
+Las horas usan `CLUB_TIMEZONE` (México central), igual que en la web.

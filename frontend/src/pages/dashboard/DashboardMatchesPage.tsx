@@ -24,6 +24,7 @@ import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config
 import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
 import { matchStatusLabel } from '@/config/labels';
 import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
+import { clubDatetimeLocalToIso, isoToClubDatetimeLocal } from '@/utils/club-datetime';
 
 /** Partidos sin ramas Sub-XX: una sola categoría lógica en base de datos. */
 const MATCH_CATEGORY_GENERAL = 'General';
@@ -51,14 +52,6 @@ type MatchEditForm = {
   status: NonNullable<CreateMatchBody['status']>;
   isHome: boolean;
 };
-
-function isoToDatetimeLocal(iso: string | unknown): string {
-  if (typeof iso !== 'string' || !iso) return '';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '';
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
 
 function normalizeLineupFromRow(raw: unknown): string[] {
   if (!raw || !Array.isArray(raw)) return [];
@@ -216,7 +209,7 @@ export function DashboardMatchesPage() {
     resetEdit({
       title: String(m.title ?? ''),
       opponentName: String(m.opponent_name ?? ''),
-      matchDateLocal: isoToDatetimeLocal(m.match_date),
+      matchDateLocal: isoToClubDatetimeLocal(m.match_date),
       location: String(m.location ?? ''),
       matchType: (m.match_type as MatchEditForm['matchType']) ?? 'league',
       status: (m.status as MatchEditForm['status']) ?? 'scheduled',
@@ -245,7 +238,7 @@ export function DashboardMatchesPage() {
       body: {
         title:        data.title.trim(),
         opponentName: data.opponentName.trim(),
-        matchDate:    new Date(data.matchDateLocal).toISOString(),
+        matchDate:    clubDatetimeLocalToIso(data.matchDateLocal),
         location:     data.location.trim(),
         matchType:    data.matchType,
         status:       data.status,
@@ -307,7 +300,7 @@ export function DashboardMatchesPage() {
       toast.error('Indica fecha y hora del partido');
       return;
     }
-    const matchDate = new Date(data.matchDateLocal).toISOString();
+    const matchDate = clubDatetimeLocalToIso(data.matchDateLocal);
     const resolved = resolveVenueSelection(
       data.venuePreset,
       data.locationOther ?? '',

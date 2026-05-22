@@ -2,6 +2,8 @@ import QRCode from 'qrcode';
 import { env } from '@config/env';
 import { BadRequestError } from '@middlewares/error.middleware';
 import { logger } from '@shared/utils/logger';
+import { formatClubDate, formatClubDateTime, formatClubTime } from '@shared/utils/club-datetime';
+import { PlayersService } from '@modules/players/players.service';
 import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
 import { formatPhoneForDisplay, normalizePhoneDigits } from './phone';
 import {
@@ -169,14 +171,8 @@ export class WhatsAppService {
   }): Promise<void> {
     if (!env.WHATSAPP_ENABLED) return;
 
-    const d = new Date(match.match_date);
-    const fecha = d.toLocaleDateString('es-MX', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-    const hora = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    const fecha = formatClubDate(match.match_date);
+    const hora = formatClubTime(match.match_date);
     const origin = publicAppOrigin();
     const url = origin ? `${origin}/partidos/${match.id}` : `/partidos/${match.id}`;
     const cat = match.category ? `\nCategoría: ${match.category}` : '';
@@ -191,5 +187,103 @@ export class WhatsAppService {
 
     const { sent, failed } = await broadcastToParents(message);
     logger.info('WhatsApp partido programado', { matchId: match.id, sent, failed });
+  }
+
+  static async notifyResultPublished(result: {
+    id: string;
+    goals_scored: number;
+    goals_conceded: number;
+    match_title?: string;
+    opponent_name?: string;
+    match_date?: string;
+  }): Promise<void> {
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_RESULTS) return;
+
+    const origin = publicAppOrigin();
+    const url = origin ? `${origin}/resultados` : '/resultados';
+    const rival = result.opponent_name?.trim() || 'rival';
+    const titulo = result.match_title?.trim() || 'Partido';
+    const marcador = `${result.goals_scored} - ${result.goals_conceded}`;
+    const cuando = result.match_date ? `\n📅 ${formatClubDateTime(result.match_date)}` : '';
+
+    const message =
+      `🏟️ *Resultado publicado — Barcelona Cupido*\n\n` +
+      `*${titulo}* vs ${rival}\n` +
+      `⚽ Marcador: *${marcador}*${cuando}\n\n` +
+      url;
+
+    const { sent, failed } = await broadcastToParents(message);
+    logger.info('WhatsApp resultado publicado', { resultId: result.id, sent, failed });
+
+    if (env.WHATSAPP_NOTIFY_LEADERS) {
+      void WhatsAppService.notifySeasonLeadersUpdate().catch(() => {});
+    }
+  }
+
+  /** Top goleadores (tabla de goleo) tras publicar un resultado. */
+  static async notifySeasonLeadersUpdate(): Promise<void> {
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_LEADERS) return;
+
+    const leaders = await PlayersService.publicSeasonLeaders(5);
+    const top = leaders.scoring.slice(0, 5);
+    if (top.length === 0) return;
+
+    const lines = top.map(
+      (r, i) =>
+        `${i + 1}. ${r.first_name} ${r.last_name} — ${r.goals} gol${r.goals === 1 ? '' : 'es'}${
+          r.assists > 0 ? `, ${r.assists} asist.` : ''
+        }`,
+    );
+
+    const origin = publicAppOrigin();
+    const url = origin ? `${origin}/` : '/';
+
+    const message =
+      `🏟️ *Tabla de goleo — Barcelona Cupido*\n\n` +
+      `${lines.join('\n')}\n\n` +
+      `Ver más en el sitio:\n${url}`;
+
+    const { sent, failed } = await broadcastToParents(message);
+    logger.info('WhatsApp tabla goleo', { sent, failed });
+  }
+
+  static async notifyMvpSet(payload: {
+    playerName: string;
+    weekLabel?: string | null;
+  }): Promise<void> {
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_MVP) return;
+
+    const origin = publicAppOrigin();
+    const url = origin ? `${origin}/` : '/';
+    const semana = payload.weekLabel?.trim() ? `\n📆 ${payload.weekLabel.trim()}` : '';
+
+    const message =
+      `🏟️ *MVP de la semana — Barcelona Cupido*\n\n` +
+      `⭐ *${payload.playerName}*${semana}\n\n` +
+      url;
+
+    const { sent, failed } = await broadcastToParents(message);
+    logger.info('WhatsApp MVP', { sent, failed });
+  }
+
+  static async notifyGalleryPublished(post: {
+    id: string;
+    title: string;
+    description?: string | null;
+  }): Promise<void> {
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_GALLERY) return;
+
+    const origin = publicAppOrigin();
+    const url = origin ? `${origin}/galeria/${post.id}` : `/galeria/${post.id}`;
+    const body = truncate(post.description ?? '', 120);
+
+    const message =
+      `🏟️ *Nueva galería — Barcelona Cupido*\n\n` +
+      `📸 *${post.title}*\n` +
+      (body ? `${body}\n\n` : '\n') +
+      url;
+
+    const { sent, failed } = await broadcastToParents(message);
+    logger.info('WhatsApp galería', { postId: post.id, sent, failed });
   }
 }
