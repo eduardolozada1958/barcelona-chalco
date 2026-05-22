@@ -11,7 +11,11 @@ import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
  * Public results page – faithful translation of `resultados.html` mockup.
  */
 export function PublicResultsPage() {
-  const q = useQuery({ queryKey: ['results-public'], queryFn: () => listResultsPublic() });
+  const q = useQuery({
+    queryKey: ['results-public'],
+    queryFn: () => listResultsPublic({ page: 1, limit: 100 }),
+    staleTime: 2 * 60_000,
+  });
   const results = (q.data?.data ?? []) as Result[];
 
   return (

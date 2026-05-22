@@ -26,16 +26,22 @@ function matchesPlayer(
 }
 
 export function usePlayerHighlights(playerId: string | undefined, slug?: string | null): PlayerHighlights {
+  const enabled = Boolean(playerId);
+
   const mvpQ = useQuery({
     queryKey: ['mvp-of-week-public'],
     queryFn: getMvpOfWeekPublic,
-    staleTime: 60_000,
+    enabled,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 
   const leadersQ = useQuery({
     queryKey: ['season-leaders-public', 8],
     queryFn: () => getSeasonLeadersPublic(8),
-    staleTime: 60_000,
+    enabled,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
   });
 
   return useMemo(() => {

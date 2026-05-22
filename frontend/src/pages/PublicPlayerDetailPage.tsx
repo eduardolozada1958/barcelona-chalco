@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { getPlayerPublic } from '@/api/players';
+import type { ApiResponse } from '@/api/types';
+import { findCachedPublicPlayer } from '@/utils/player-prefetch';
 import type { Player } from '@/types';
 import { PlayerHighlightBadge, PlayerProfileCelebration } from '@/components/PlayerProfileCelebration';
 import { usePlayerHighlights } from '@/hooks/usePlayerHighlights';
@@ -24,11 +26,17 @@ import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 export function PublicPlayerDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const displaySeason = useDisplaySeason();
+  const cached = id ? findCachedPublicPlayer(queryClient, id) : undefined;
   const q = useQuery({
     queryKey: ['player-public', id],
     queryFn: () => getPlayerPublic(id!),
     enabled: Boolean(id),
+    staleTime: 5 * 60_000,
+    placeholderData: cached
+      ? ({ success: true, data: cached, message: '' } satisfies ApiResponse<Player>)
+      : undefined,
   });
 
   const player = q.data?.data as Player | undefined;

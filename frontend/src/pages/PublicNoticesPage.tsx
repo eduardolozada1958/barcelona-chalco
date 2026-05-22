@@ -21,7 +21,11 @@ const categories = [
  * Features: sidebar with categories, notice feed with typed cards.
  */
 export function PublicNoticesPage() {
-  const q = useQuery({ queryKey: ['notices-public'], queryFn: () => listNoticesPublic() });
+  const q = useQuery({
+    queryKey: ['notices-public'],
+    queryFn: () => listNoticesPublic({ page: 1, limit: 80 }),
+    staleTime: 2 * 60_000,
+  });
   const notices = (q.data?.data ?? []) as Notice[];
 
   return (

@@ -4,6 +4,7 @@ import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError, ForbiddenError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { buildPlayerNameIlikeFilter } from '@shared/utils/sanitize-search';
+import { cacheGetOrSet } from '@shared/utils/ttl-cache';
 import { allocateUniquePlayerSlug, isPlayerUuid } from '@shared/utils/player-slug';
 import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { normalizeCurp } from '@shared/utils/curp';
@@ -140,7 +141,12 @@ export class PlayersService {
   /** Totales de goles/asistencias y tarjetas solo de resultados publicados (sitio público / inicio). */
   static async publicSeasonLeaders(limit = 15) {
     const cap = Math.min(50, Math.max(5, limit));
+    return cacheGetOrSet(`players:season-leaders:${cap}`, 120_000, () =>
+      PlayersService.computePublicSeasonLeaders(cap),
+    );
+  }
 
+  private static async computePublicSeasonLeaders(cap: number) {
     const { data: resultsRows, error: rErr } = await supabaseAdmin
       .from('results')
       .select('id')

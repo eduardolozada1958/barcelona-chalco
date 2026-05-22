@@ -28,13 +28,27 @@ export function HomePage() {
   const season = useDisplaySeason();
 
   // Fetch real data for highlights
-  const latestResult = useQuery({ queryKey: ['latest-result'], queryFn: latestResultPublic });
-  const mvpQ = useQuery({ queryKey: ['mvp-of-week-public'], queryFn: getMvpOfWeekPublic });
+  const latestResult = useQuery({
+    queryKey: ['latest-result'],
+    queryFn: latestResultPublic,
+    staleTime: 2 * 60_000,
+  });
+  const mvpQ = useQuery({
+    queryKey: ['mvp-of-week-public'],
+    queryFn: getMvpOfWeekPublic,
+    staleTime: 5 * 60_000,
+    refetchOnWindowFocus: false,
+  });
   const matchesQ = useQuery({
     queryKey: ['matches-upcoming-home'],
     queryFn: () => listMatchesUpcoming({ limit: 1 }),
+    staleTime: 2 * 60_000,
   });
-  const noticesQ = useQuery({ queryKey: ['notices-public'], queryFn: () => listNoticesPublic() });
+  const noticesQ = useQuery({
+    queryKey: ['notices-public-home'],
+    queryFn: () => listNoticesPublic({ page: 1, limit: 12 }),
+    staleTime: 2 * 60_000,
+  });
 
   const latest = latestResult.data?.data as Result | undefined;
   const mvp = mvpQ.data?.data;

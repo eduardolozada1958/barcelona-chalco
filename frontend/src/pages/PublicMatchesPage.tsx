@@ -14,7 +14,11 @@ import { useState } from 'react';
 export function PublicMatchesPage() {
   const [tab, setTab] = useState<'upcoming' | 'played'>('upcoming');
 
-  const q = useQuery({ queryKey: ['matches-public'], queryFn: () => listMatchesPublic() });
+  const q = useQuery({
+    queryKey: ['matches-public'],
+    queryFn: () => listMatchesPublic({ page: 1, limit: 150 }),
+    staleTime: 2 * 60_000,
+  });
   const allMatches = (q.data?.data ?? []) as Match[];
 
   const matches = allMatches.filter((m) =>

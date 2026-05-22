@@ -1,6 +1,6 @@
 import { useDeferredValue, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { listPlayersPublic } from '@/api/players';
 import type { Player } from '@/types';
@@ -11,6 +11,8 @@ import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { playerPublicPath } from '@/utils/player-path';
 import { playerMatchesSearch } from '@/utils/search-text';
+import { prefetchPublicPlayer } from '@/utils/player-prefetch';
+import { useDisplaySeason } from '@/hooks/useClubSettings';
 
 const filterOptions = [
   { key: 'all',      label: 'Todos' },
@@ -22,6 +24,8 @@ const filterOptions = [
  * Public players page – faithful translation of `jugadores.html` mockup.
  */
 export function PublicPlayersPage() {
+  const queryClient = useQueryClient();
+  const displaySeason = useDisplaySeason();
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search);
@@ -93,8 +97,13 @@ export function PublicPlayersPage() {
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
           {players.map((player) => (
             <StaggerItem key={player.id}>
-              <Link to={playerPublicPath(player)} className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl">
-                <PlayerCard player={player} />
+              <Link
+                to={playerPublicPath(player)}
+                className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-2xl"
+                onMouseEnter={() => prefetchPublicPlayer(queryClient, player)}
+                onFocus={() => prefetchPublicPlayer(queryClient, player)}
+              >
+                <PlayerCard player={player} displaySeason={displaySeason} />
               </Link>
             </StaggerItem>
           ))}

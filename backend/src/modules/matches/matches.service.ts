@@ -64,11 +64,14 @@ async function assertLineupPlayersRegistered(playerIds: string[]): Promise<void>
   }
 }
 
+const MATCH_PUBLIC_LIST_COLUMNS =
+  'id, title, match_date, opponent_name, opponent_logo_url, location, location_maps_url, status, category, season, starting_lineup, formation_type';
+
 export class MatchesService {
   static async listPublic(opts: ListMatchesQuery) {
     let query = supabaseAdmin
       .from('matches')
-      .select('*', { count: 'exact' })
+      .select(MATCH_PUBLIC_LIST_COLUMNS, { count: 'exact' })
       .is('deleted_at', null)
       .order('match_date', { ascending: true })
       .range(

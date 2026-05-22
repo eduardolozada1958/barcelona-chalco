@@ -1,7 +1,10 @@
 import { supabaseAdmin } from '@config/database';
 import { CURRENT_SEASON } from '@config/constants';
 import { NotFoundError } from '@middlewares/error.middleware';
+import { cacheDelete, cacheGetOrSet } from '@shared/utils/ttl-cache';
 import type { UpdateSettingsBody } from './settings.validation';
+
+const SETTINGS_ROW_TTL_MS = 60_000;
 
 export class SettingsService {
   static async getActiveRow() {
@@ -19,17 +22,20 @@ export class SettingsService {
 
   /** Temporada activa del club (Ajustes → constante por defecto). */
   static async getDisplaySeason(): Promise<string> {
-    try {
-      const row = await SettingsService.getActiveRow();
-      const s = typeof row.season === 'string' ? row.season.trim() : '';
-      if (s) return s;
-    } catch {
-      /* sin fila activa */
-    }
-    return CURRENT_SEASON;
+    return cacheGetOrSet('club:display-season', SETTINGS_ROW_TTL_MS, async () => {
+      try {
+        const row = await SettingsService.getActiveRow();
+        const s = typeof row.season === 'string' ? row.season.trim() : '';
+        if (s) return s;
+      } catch {
+        /* sin fila activa */
+      }
+      return CURRENT_SEASON;
+    });
   }
 
   static async getPublic() {
+    return cacheGetOrSet('club:settings-public', SETTINGS_ROW_TTL_MS, async () => {
     const row = await SettingsService.getActiveRow();
     return {
       clubName:        row.club_name,
@@ -47,6 +53,7 @@ export class SettingsService {
       facebookUrl:     row.facebook_url,
       twitterUrl:      row.twitter_url,
     };
+    });
   }
 
   static async update(input: UpdateSettingsBody) {
@@ -79,6 +86,8 @@ export class SettingsService {
       .single();
 
     if (error) throw new Error(error.message);
+    cacheDelete('club:display-season');
+    cacheDelete('club:settings-public');
     return data;
   }
 }

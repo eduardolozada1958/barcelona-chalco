@@ -6,11 +6,14 @@ import { PushService } from '@modules/push/push.service';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './notices.validation';
 
+const NOTICE_PUBLIC_LIST_COLUMNS =
+  'id, title, content, type, audience, cover_image_url, is_pinned, published_at, expires_at, created_at';
+
 export class NoticesService {
   static async listPublic(opts: ListNoticesQuery) {
     let query = supabaseAdmin
       .from('notices')
-      .select('*', { count: 'exact' })
+      .select(NOTICE_PUBLIC_LIST_COLUMNS, { count: 'exact' })
       .eq('is_published', true)
       .is('deleted_at', null)
       .order('is_pinned', { ascending: false })

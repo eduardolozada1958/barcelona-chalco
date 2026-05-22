@@ -4,11 +4,14 @@ import { MaterialIcon } from './MaterialIcon';
 
 interface PlayerCardProps {
   player: Player;
+  /** Evita una consulta de ajustes por cada tarjeta en la grilla. */
+  displaySeason?: string;
 }
 
 /** Tarjeta pública: foto + nombre + descripción. La validación QR está en /credencial. */
-export function PlayerCard({ player }: PlayerCardProps) {
-  const displaySeason = useDisplaySeason();
+export function PlayerCard({ player, displaySeason: seasonProp }: PlayerCardProps) {
+  const seasonFromHook = useDisplaySeason();
+  const displaySeason = seasonProp ?? seasonFromHook;
   const fullName = `${player.first_name} ${player.last_name}`;
 
   return (

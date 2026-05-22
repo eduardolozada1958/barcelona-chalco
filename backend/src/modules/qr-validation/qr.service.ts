@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@config/database';
 import QRCode from 'qrcode';
 import { NotFoundError } from '@middlewares/error.middleware';
+import { cacheGet, cacheSet } from '@shared/utils/ttl-cache';
 import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { maskCurpFragment } from '@shared/utils/curp-mask';
 import { publicSiteBaseUrl } from '@shared/utils/public-site-url';
@@ -66,6 +67,10 @@ export class QrService {
       throw new NotFoundError('Jugador no encontrado o sin QR generado');
     }
 
+    const memKey = `qr:png:${player.id}:${player.qr_token}`;
+    const cached = cacheGet<Buffer>(memKey);
+    if (cached) return cached;
+
     const qrUrl = `${publicSiteBaseUrl()}/credencial-ar/${player.qr_token}`;
     /** Mayor anchura PNG + margen 4 módulos + ECC «L» = menos módulos a la misma URL, celdas más grandes y más fáciles de enfocar con la cámara. */
     const qrBuffer = await QRCode.toBuffer(qrUrl, {
@@ -76,6 +81,7 @@ export class QrService {
       color:                   { dark: '#000000', light: '#FFFFFF' },
     });
 
+    cacheSet(memKey, qrBuffer, 24 * 60 * 60_000);
     return qrBuffer;
   }
 }
