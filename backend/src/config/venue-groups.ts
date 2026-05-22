@@ -1,13 +1,15 @@
 /** Ubicaciones de partidos agrupadas para tablas de goleo por sede. */
 export const VENUE_GROUP_LOCATIONS = {
   canchas100: ['Canchas 100'],
-  'walmart-atlas': ['Cancha Walmart', 'Cancha Atlas'],
+  walmart: ['Cancha Walmart'],
 } as const;
 
 export type VenueLeaderGroup = keyof typeof VENUE_GROUP_LOCATIONS;
 
 export function parseVenueLeaderGroup(raw: unknown): VenueLeaderGroup | null {
-  if (raw === 'canchas100' || raw === 'walmart-atlas') return raw;
+  if (raw === 'canchas100' || raw === 'walmart') return raw;
+  /** Compatibilidad con enlaces antiguos. */
+  if (raw === 'walmart-atlas') return 'walmart';
   return null;
 }
 

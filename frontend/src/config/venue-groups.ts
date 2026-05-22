@@ -1,15 +1,19 @@
 /** Grupos de sede para tablas de goleo (debe coincidir con backend venue-groups). */
-export const VENUE_LEADER_GROUPS = {
-  canchas100: {
+export const VENUE_LEADER_GROUPS = [
+  {
     id: 'canchas100' as const,
+    tabLabel: 'Canchas 100',
     title: 'Canchas 100',
-    description: 'Partidos en Canchas 100',
+    description: 'Goles y tarjetas de partidos publicados en Canchas 100.',
   },
-  'walmart-atlas': {
-    id: 'walmart-atlas' as const,
-    title: 'Walmart y Atlas',
-    description: 'Partidos en Cancha Walmart y Cancha Atlas',
+  {
+    id: 'walmart' as const,
+    tabLabel: 'Cancha Walmart',
+    title: 'Cancha Walmart',
+    description: 'Goles y tarjetas de partidos publicados en Cancha Walmart.',
   },
-} as const;
+] as const;
 
-export type VenueLeaderGroupId = keyof typeof VENUE_LEADER_GROUPS;
+export type VenueLeaderGroupId = (typeof VENUE_LEADER_GROUPS)[number]['id'];
+
+export const DEFAULT_VENUE_LEADER_ID: VenueLeaderGroupId = 'canchas100';

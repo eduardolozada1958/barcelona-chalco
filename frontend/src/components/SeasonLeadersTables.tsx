@@ -7,10 +7,12 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { playerPublicPath } from '@/utils/player-path';
 
+export type { SeasonLeaderRow } from '@/api/players';
+
 export type SeasonLeadersTablesProps = {
   /** Filas máximas por tabla (goleo y disciplina vienen por separado del API). */
   limit?: number;
-  /** canchas100 | walmart-atlas — si se omite, todas las sedes. */
+  /** canchas100 | walmart — si se omite, todas las sedes. */
   venue?: string;
   /** Si false, los nombres en goleo/tarjetas no enlazan (recomendado en inicio público). */
   linkPlayerNames?: boolean;
@@ -22,6 +24,8 @@ export type SeasonLeadersTablesProps = {
   asideLink?: { to: string; label: string };
   /** Estilo acorde al dashboard (bordes más marcados). */
   variant?: 'public' | 'dashboard';
+  /** Sin título de sección (dentro de pestañas por sede). */
+  embedded?: boolean;
 };
 
 function leaderName(r: SeasonLeaderRow) {
@@ -40,6 +44,7 @@ export function SeasonLeadersTables({
   description = 'Estadísticas acumuladas de jugadores verificados en partidos cuyo resultado ya está publicado. Se actualiza al registrar estadísticas por jugador en cada resultado.',
   asideLink,
   variant = 'public',
+  embedded = false,
 }: SeasonLeadersTablesProps) {
   const leadersQ = useQuery({
     queryKey: ['season-leaders-public', limit, venue ?? 'all'],
@@ -101,29 +106,7 @@ export function SeasonLeadersTables({
       ? 'px-4 py-3 bg-surface-container border-b border-outline-variant/20 flex items-center gap-2'
       : 'px-4 py-3 bg-surface-container-low border-b border-outline-variant/20 flex items-center gap-2';
 
-  return (
-    <section className={variant === 'dashboard' ? 'mt-stack-lg pt-stack-lg border-t border-outline-variant/20' : ''}>
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-stack-md">
-        <div>
-          <h2
-            className={
-              variant === 'public'
-                ? 'font-display-hero text-headline-lg text-primary'
-                : 'font-headline-lg text-headline-lg text-primary'
-            }
-          >
-            {title}
-          </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">{description}</p>
-        </div>
-        {asideLink ? (
-          <Link to={asideLink.to} className="text-primary font-label-caps text-label-caps hover:underline shrink-0">
-            {asideLink.label}
-          </Link>
-        ) : null}
-      </div>
-
-      {leadersQ.isLoading ? (
+  const tablesBody = leadersQ.isLoading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-gutter animate-pulse">
           <div className="h-48 rounded-xl bg-surface-container-low border border-outline-variant/20" />
           <div className="h-48 rounded-xl bg-surface-container-low border border-outline-variant/20" />
@@ -199,7 +182,34 @@ export function SeasonLeadersTables({
             )}
           </div>
         </div>
-      )}
+      );
+
+  if (embedded) {
+    return <div>{tablesBody}</div>;
+  }
+
+  return (
+    <section className={variant === 'dashboard' ? 'mt-stack-lg pt-stack-lg border-t border-outline-variant/20' : ''}>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-stack-md">
+        <div>
+          <h2
+            className={
+              variant === 'public'
+                ? 'font-display-hero text-headline-lg text-primary'
+                : 'font-headline-lg text-headline-lg text-primary'
+            }
+          >
+            {title}
+          </h2>
+          <p className="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl">{description}</p>
+        </div>
+        {asideLink ? (
+          <Link to={asideLink.to} className="text-primary font-label-caps text-label-caps hover:underline shrink-0">
+            {asideLink.label}
+          </Link>
+        ) : null}
+      </div>
+      {tablesBody}
     </section>
   );
 }

@@ -138,10 +138,10 @@ export function DashboardNoticesPage() {
       const row = res.data as Record<string, unknown>;
       const id = String(row.id);
       if (vars.cover) await uploadNoticeCover(id, vars.cover);
-      const future = vars.scheduledIso && new Date(vars.scheduledIso).getTime() > Date.now();
-      if (future) {
-        await scheduleNotice(id, vars.scheduledIso!);
-        return 'scheduled' as const;
+      if (vars.scheduledIso) {
+        await scheduleNotice(id, vars.scheduledIso);
+        const future = new Date(vars.scheduledIso).getTime() > Date.now();
+        return future ? ('scheduled' as const) : ('published' as const);
       }
       if (vars.publishNow) {
         await publishNotice(id);
@@ -160,6 +160,8 @@ export function DashboardNoticesPage() {
       void qc.invalidateQueries({ queryKey: ['notices-admin'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
       void qc.invalidateQueries({ queryKey: ['notices-public'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-home'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-urgent-popup'] });
       setCreateOpen(false);
       setCreateCoverFile(null);
       reset();
@@ -201,6 +203,8 @@ export function DashboardNoticesPage() {
       toast.success('Aviso publicado (WhatsApp a todos los padres elegibles)');
       void qc.invalidateQueries({ queryKey: ['notices-admin'] });
       void qc.invalidateQueries({ queryKey: ['notices-public'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-home'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-urgent-popup'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -211,6 +215,8 @@ export function DashboardNoticesPage() {
       toast.success(v.archived ? 'Aviso archivado' : 'Aviso restaurado');
       void qc.invalidateQueries({ queryKey: ['notices-admin'] });
       void qc.invalidateQueries({ queryKey: ['notices-public'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-home'] });
+      void qc.invalidateQueries({ queryKey: ['notices-public-urgent-popup'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

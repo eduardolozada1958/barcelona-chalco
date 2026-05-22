@@ -25,7 +25,8 @@ export function UrgentNoticePopup() {
 
   const notice = useMemo(() => {
     const rows = (q.data?.data ?? []) as Notice[];
-    return rows.find((n) => n.type === 'urgent' && n.is_published && !isExpired(n));
+    // La API pública solo devuelve avisos ya publicados (sin campo is_published).
+    return rows.find((n) => n.type === 'urgent' && !isExpired(n));
   }, [q.data?.data]);
 
   useEffect(() => {

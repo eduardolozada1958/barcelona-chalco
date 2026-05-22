@@ -75,9 +75,10 @@ export function DashboardUsersPage() {
 
   const statusMut = useMutation({
     mutationFn: ({ id, status }: { id: string; status: string }) => updateUser(id, { status }),
-    onSuccess: () => {
+    onSuccess: (_res, vars) => {
       toast.success('Estado actualizado');
       void qc.invalidateQueries({ queryKey: ['users-admin'] });
+      setManageUser((u) => (u ? { ...u, status: vars.status } : null));
     },
     onError: (e: Error) => toast.error(getApiErrorMessage(e)),
   });
@@ -299,9 +300,10 @@ export function DashboardUsersPage() {
                 type="button"
                 disabled={statusMut.isPending || manageStatus === String(manageUser.status)}
                 onClick={() => statusMut.mutate({ id: String(manageUser.id), status: manageStatus })}
-                className="mt-2 text-[10px] font-label-caps text-primary hover:underline disabled:opacity-50"
+                className="mt-3 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-caps text-sm shadow-sm hover:shadow-gold-glow disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
               >
-                Guardar estado
+                <MaterialIcon name="save" size={18} />
+                {statusMut.isPending ? 'Guardando…' : 'Guardar estado'}
               </button>
               {String(manageUser.role) === 'parent' ? (
                 <p className="mt-2 text-[11px] text-on-surface-variant">

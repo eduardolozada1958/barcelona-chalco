@@ -17,6 +17,7 @@ import { InscriptionPublicPage } from '@/pages/InscriptionPublicPage';
 import { PublicMatchesPage } from '@/pages/PublicMatchesPage';
 import { PublicMatchDetailPage } from '@/pages/PublicMatchDetailPage';
 import { PublicResultsPage } from '@/pages/PublicResultsPage';
+import { PublicGoleoPage } from '@/pages/PublicGoleoPage';
 import { PublicNoticesPage } from '@/pages/PublicNoticesPage';
 import { PublicNoticeDetailPage } from '@/pages/PublicNoticeDetailPage';
 import { PublicGalleryPage } from '@/pages/PublicGalleryPage';
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/partidos" element={<PublicMatchesPage />} />
         <Route path="/partidos/:id" element={<PublicMatchDetailPage />} />
         <Route path="/resultados" element={<PublicResultsPage />} />
+        <Route path="/goleo" element={<PublicGoleoPage />} />
         <Route path="/avisos" element={<PublicNoticesPage />} />
         <Route path="/avisos/:id" element={<PublicNoticeDetailPage />} />
         <Route path="/galeria" element={<PublicGalleryPage />} />

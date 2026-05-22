@@ -20,6 +20,7 @@ const publicLinks = [
   { to: '/jugadores',   label: 'Jugadores' },
   { to: '/partidos',    label: 'Partidos' },
   { to: '/resultados',  label: 'Resultados' },
+  { to: '/goleo',        label: 'Goleo' },
   { to: '/avisos',      label: 'Avisos' },
   { to: '/galeria',     label: 'Galería' },
   { to: '/contacto', label: 'Contacto' },

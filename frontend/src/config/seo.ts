@@ -83,6 +83,12 @@ export function getStaticRouteSeo(pathname: string): SeoMeta {
         'Resultados publicados, marcadores y tabla de goleo y tarjetas de F.C. Barcelona Cupido.',
       path: '/resultados',
     },
+    '/goleo': {
+      title: 'Tablas de goleo por sede',
+      description:
+        'Goleadores y tarjetas por cancha: Canchas 100 y Cancha Walmart. Estadísticas de partidos publicados de F.C. Barcelona Cupido.',
+      path: '/goleo',
+    },
     '/avisos': {
       title: 'Avisos del club',
       description:
@@ -133,6 +139,7 @@ export const SITEMAP_PATHS: { path: string; changefreq: string; priority: string
   { path: '/jugadores', changefreq: 'daily', priority: '0.9' },
   { path: '/partidos', changefreq: 'daily', priority: '0.9' },
   { path: '/resultados', changefreq: 'daily', priority: '0.85' },
+  { path: '/goleo', changefreq: 'daily', priority: '0.8' },
   { path: '/avisos', changefreq: 'daily', priority: '0.85' },
   { path: '/galeria', changefreq: 'weekly', priority: '0.8' },
   { path: '/contacto', changefreq: 'monthly', priority: '0.75' },

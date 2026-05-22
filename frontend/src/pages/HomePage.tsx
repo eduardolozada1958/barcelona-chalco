@@ -6,17 +6,21 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CLUB_LOGO_URL } from '@/config/club';
-import { SeasonLeadersTables } from '@/components/SeasonLeadersTables';
-import { VENUE_LEADER_GROUPS } from '@/config/venue-groups';
 import { getMvpOfWeekPublic } from '@/api/players';
 import { latestResultPublic } from '@/api/results';
 import { playerPublicPath } from '@/utils/player-path';
 import { listMatchesUpcoming } from '@/api/matches';
 import { fetchPlayersPublicByIds } from '@/api/players';
 import { displayPlayerShort, rosterRowToPitchPlayer } from '@/utils/lineup-players';
+import { NoticeCard } from '@/components/NoticeCard';
 import { listNoticesPublic } from '@/api/notices';
 import { useDisplaySeason } from '@/hooks/useClubSettings';
 import type { Result, Match, Notice } from '@/types';
+
+function isNoticeExpired(notice: Notice): boolean {
+  if (!notice.expires_at) return false;
+  return new Date(notice.expires_at).getTime() < Date.now();
+}
 
 /* ─── Hero placeholder image (cinematic stadium) ─── */
 const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=80&auto=format&fit=crop';
@@ -68,8 +72,13 @@ export function HomePage() {
     },
     enabled: Boolean(nextMatch?.id) && nextLineupIds.length > 0,
   });
-  const urgentNotice = (noticesQ.data?.data as Notice[] | undefined)?.find((n) => n.type === 'urgent')
-    ?? (noticesQ.data?.data as Notice[] | undefined)?.[0];
+  const publishedNotices = ((noticesQ.data?.data as Notice[] | undefined) ?? []).filter(
+    (n) => !isNoticeExpired(n),
+  );
+  const urgentNotice = publishedNotices.find((n) => n.type === 'urgent');
+  const latestNotices = publishedNotices
+    .filter((n) => n.id !== urgentNotice?.id)
+    .slice(0, 3);
 
   return (
     <>
@@ -179,22 +188,26 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="px-margin-mobile md:px-margin-desktop py-stack-lg max-w-[1280px] mx-auto border-t border-outline-variant/20 space-y-stack-lg">
-        <h2 className="font-display-hero text-headline-lg text-primary">Tablas de goleo por sede</h2>
-        <p className="font-body-md text-body-md text-on-surface-variant -mt-stack-sm">
-          Estadísticas de partidos publicados, separadas por cancha.
-        </p>
-        {Object.values(VENUE_LEADER_GROUPS).map((g) => (
-          <SeasonLeadersTables
-            key={g.id}
-            venue={g.id}
-            variant="public"
-            linkPlayerNames={false}
-            title={`⚽ ${g.title} — Temporada ${season}`}
-            description={g.description}
-            asideLink={{ to: '/jugadores', label: 'Ver plantilla →' }}
-          />
-        ))}
+      <section className="px-margin-mobile md:px-margin-desktop py-stack-md max-w-[1280px] mx-auto border-t border-outline-variant/20">
+        <Link
+          to="/goleo"
+          className="glass-panel rounded-xl border border-outline-variant/20 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/40 transition-colors group"
+        >
+          <div className="flex items-start gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/25 transition-colors">
+              <MaterialIcon name="leaderboard" className="text-primary" size={28} />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-headline-lg text-headline-lg text-primary">Tablas de goleo por sede</h2>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Canchas 100 y Cancha Walmart — goleadores y tarjetas de la temporada {season}.
+              </p>
+            </div>
+          </div>
+          <span className="text-primary font-label-caps text-label-caps shrink-0 group-hover:underline">
+            Ver tablas →
+          </span>
+        </Link>
       </section>
 
       {/* ═══════════════════ HIGHLIGHTS BENTO GRID ═══════════════════ */}
@@ -325,14 +338,17 @@ export function HomePage() {
             )}
           </div>
 
-          {/* Important Notice (2-col span) */}
-          <div className="md:col-span-2 bg-error-container/20 border border-error/30 rounded-xl p-stack-md flex flex-col justify-center relative overflow-hidden">
+          {/* Urgent notice (2-col span) */}
+          <Link
+            to={urgentNotice ? `/avisos/${urgentNotice.id}` : '/avisos'}
+            className="md:col-span-2 bg-error-container/20 border border-error/30 rounded-xl p-stack-md flex flex-col justify-center relative overflow-hidden hover:border-error/50 transition-colors group"
+          >
             <div className="absolute right-0 top-0 w-32 h-32 bg-error/10 rounded-full blur-2xl" />
             <div className="flex items-center gap-3 mb-2">
               <span className="bg-error text-on-error font-label-caps text-[10px] px-2 py-1 rounded-sm">URGENTE</span>
               <MaterialIcon name="warning" className="text-error" />
             </div>
-            <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">
+            <h3 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 group-hover:text-primary transition-colors">
               {urgentNotice?.title || 'Sin avisos urgentes'}
             </h3>
             <p className="font-body-md text-body-md text-on-surface-variant">
@@ -340,11 +356,36 @@ export function HomePage() {
                 ? urgentNotice.content.length > 200
                   ? urgentNotice.content.slice(0, 200) + '…'
                   : urgentNotice.content
-                : 'Todos los avisos al día. Revisa la sección de noticias para más información.'}
+                : 'Cuando publiques un aviso urgente, aparecerá aquí y en un popup al entrar al sitio.'}
             </p>
-          </div>
+          </Link>
         </div>
       </section>
+
+      {/* ═══════════════════ LATEST NOTICES ═══════════════════ */}
+      {latestNotices.length > 0 ? (
+        <section className="px-margin-mobile md:px-margin-desktop py-stack-md max-w-[1280px] mx-auto border-t border-outline-variant/20">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-stack-md">
+            <div>
+              <h2 className="font-display-hero text-headline-lg text-primary">Últimos avisos</h2>
+              <p className="text-sm text-on-surface-variant mt-1">
+                Comunicados publicados del club (incluye los programados ya publicados).
+              </p>
+            </div>
+            <Link
+              to="/avisos"
+              className="text-primary font-label-caps text-label-caps hover:underline shrink-0"
+            >
+              Ver todos →
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+            {latestNotices.map((notice) => (
+              <NoticeCard key={notice.id} notice={notice} />
+            ))}
+          </div>
+        </section>
+      ) : null}
     </>
   );
 }
