@@ -20,16 +20,19 @@ Documentación técnica adicional en `docs/` (por ejemplo [WHATSAPP_BAILEYS.md](
 
 ---
 
-## Cómo exportar a PDF
+## Cómo exportar a PDF (con imágenes)
 
-1. Abre el `.md` en VS Code, Cursor o [StackEdit](https://stackedit.io).
-2. Vista previa → **Imprimir** → «Guardar como PDF».
-
-O con [Pandoc](https://pandoc.org) (si lo tienes instalado):
+Desde la raíz del proyecto (necesitas **Pandoc** instalado):
 
 ```bash
-pandoc docs/tutoriales/TUTORIAL_PADRES.md -o Tutorial-Padres.pdf
+npm run tutorials:pdf
 ```
+
+Genera los PDF en `docs/tutoriales/pdf/` con las capturas **incrustadas** (no salen rotas).
+
+**No uses** «Imprimir → PDF» sobre un HTML guardado en `pdf/` sin el script: las rutas `./img/` quedarían mal.
+
+Alternativa manual: abre el `.md` en Cursor → vista previa (`Ctrl+Shift+V`) → `Ctrl+P` → Guardar como PDF.
 
 ---
 

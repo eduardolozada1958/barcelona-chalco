@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "tutorials:capture": "node docs/tutoriales/scripts/capture-screenshots.mjs"
+    "tutorials:capture": "node docs/tutoriales/scripts/capture-screenshots.mjs",
+    "tutorials:pdf": "node docs/tutoriales/scripts/export-pdf.mjs"
   },
   "devDependencies": {
     "playwright": "^1.60.0"
