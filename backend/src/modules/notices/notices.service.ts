@@ -218,7 +218,16 @@ export class NoticesService {
         contentType: file.mimetype,
         upsert: false,
       });
-    if (upErr) throw new Error(upErr.message);
+    if (upErr) {
+      const msg = upErr.message ?? 'Error al subir imagen';
+      if (/bucket not found/i.test(msg)) {
+        throw new BadRequestError(
+          `El bucket «${bucket}» no existe en Supabase Storage. ` +
+            'Ejecuta en el SQL Editor la migración database/migrations/20260610_notices_covers_storage.sql.',
+        );
+      }
+      throw new Error(msg);
+    }
 
     const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(objectPath);
     const { data, error } = await supabaseAdmin
