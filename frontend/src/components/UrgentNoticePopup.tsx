@@ -63,11 +63,13 @@ export function UrgentNoticePopup() {
         </button>
 
         {notice.cover_image_url ? (
-          <div className="shrink-0 w-full bg-surface-container max-h-[38vh] sm:max-h-[42vh] overflow-hidden">
+          <div className="relative shrink-0 w-full h-44 sm:h-52 md:h-56 bg-black/90 border-b border-outline-variant/20 overflow-hidden">
             <img
               src={notice.cover_image_url}
               alt=""
-              className="w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-contain object-center"
+              loading="eager"
+              decoding="async"
             />
           </div>
         ) : (
