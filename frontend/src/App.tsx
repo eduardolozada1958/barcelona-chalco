@@ -22,6 +22,8 @@ import { PublicNoticesPage } from '@/pages/PublicNoticesPage';
 import { PublicNoticeDetailPage } from '@/pages/PublicNoticeDetailPage';
 import { PublicGalleryPage } from '@/pages/PublicGalleryPage';
 import { PublicGalleryDetailPage } from '@/pages/PublicGalleryDetailPage';
+import { PublicPerformancePage } from '@/pages/PublicPerformancePage';
+import { PublicPerformanceDetailPage } from '@/pages/PublicPerformanceDetailPage';
 import { PublicPlayersPage } from '@/pages/PublicPlayersPage';
 import { PublicPlayerDetailPage } from '@/pages/PublicPlayerDetailPage';
 import { PrivacyPolicyPage } from '@/pages/legal/PrivacyPolicyPage';
@@ -46,6 +48,7 @@ import { DashboardGuidePage } from '@/pages/dashboard/DashboardGuidePage';
 import { DashboardAttendancePage } from '@/pages/dashboard/DashboardAttendancePage';
 import { DashboardFeesPage } from '@/pages/dashboard/DashboardFeesPage';
 import { DashboardWhatsappPage } from '@/pages/dashboard/DashboardWhatsappPage';
+import { DashboardPerformancePage } from '@/pages/dashboard/DashboardPerformancePage';
 
 export default function App() {
   return (
@@ -68,6 +71,8 @@ export default function App() {
         <Route path="/partidos/:id" element={<PublicMatchDetailPage />} />
         <Route path="/resultados" element={<PublicResultsPage />} />
         <Route path="/goleo" element={<PublicGoleoPage />} />
+        <Route path="/rendimiento" element={<PublicPerformancePage />} />
+        <Route path="/rendimiento/:id" element={<PublicPerformanceDetailPage />} />
         <Route path="/avisos" element={<PublicNoticesPage />} />
         <Route path="/avisos/:id" element={<PublicNoticeDetailPage />} />
         <Route path="/galeria" element={<PublicGalleryPage />} />
@@ -185,6 +190,14 @@ export default function App() {
           element={
             <ProtectedRoute roles={['admin']}>
               <DashboardSettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="performance"
+          element={
+            <ProtectedRoute roles={['admin', 'coach']}>
+              <DashboardPerformancePage />
             </ProtectedRoute>
           }
         />

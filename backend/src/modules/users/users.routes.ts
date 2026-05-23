@@ -10,6 +10,7 @@ import {
   updateUserBodySchema,
   adminSensitiveEmailChangeSchema,
   deleteUserBodySchema,
+  remindUnlinkedParentsBodySchema,
 } from './users.validation';
 
 export const usersRouter = Router();
@@ -20,6 +21,21 @@ usersRouter.get(
   requireAdmin,
   validateQuery(listUsersQuerySchema),
   UsersController.list
+);
+
+usersRouter.get(
+  '/unlinked-parents/stats',
+  authMiddleware,
+  requireAdmin,
+  UsersController.unlinkedParentsStats,
+);
+
+usersRouter.post(
+  '/unlinked-parents/remind',
+  authMiddleware,
+  requireAdmin,
+  validateBody(remindUnlinkedParentsBodySchema),
+  UsersController.remindUnlinkedParents,
 );
 
 usersRouter.post(

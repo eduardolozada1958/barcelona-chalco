@@ -33,6 +33,7 @@ import { commentsRouter }     from '@modules/comments/comments.routes';
 import { feesRouter }         from '@modules/fees/fees.routes';
 import { attendanceRouter }   from '@modules/attendance/attendance.routes';
 import { whatsappRouter }     from '@modules/whatsapp/whatsapp.routes';
+import { performanceRouter }  from '@modules/performance/performance.routes';
 
 /** Rutas de solo lectura pública: no deben agotar la cuota global tan rápido. */
 function isPublicReadRoute(path: string, method: string): boolean {
@@ -175,6 +176,7 @@ export function createApp(): Application {
   app.use(`${prefix}/fees`,         feesRouter);
   app.use(`${prefix}/attendance`,   attendanceRouter);
   app.use(`${prefix}/whatsapp`,     whatsappRouter);
+  app.use(`${prefix}/performance`,  performanceRouter);
 
   // ── Manejador de rutas no encontradas ────────────────────
   app.use((_req, res) => {

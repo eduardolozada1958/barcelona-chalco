@@ -22,6 +22,7 @@ const NAV: NavItem[] = [
   { to: '/dashboard/players',       label: '⚽ Plantilla',     icon: 'groups',          roles: ['admin','coach'] },
   { to: '/dashboard/matches',       label: '📅 Partidos',      icon: 'calendar_today',  roles: ['admin','coach'] },
   { to: '/dashboard/results',       label: '🏆 Resultados',    icon: 'sports_score',    roles: ['admin','coach'] },
+  { to: '/dashboard/performance',   label: '📊 Rendimiento',   icon: 'insights',        roles: ['admin','coach'] },
   { to: '/dashboard/notices',       label: '📢 Avisos',        icon: 'campaign',        roles: ['admin','coach'] },
   { to: '/dashboard/gallery',       label: '📸 Galería',       icon: 'photo_library',   roles: ['admin','coach'] },
   { to: '/dashboard/attendance',     label: '📋 Asistencia',    icon: 'fact_check',    roles: ['admin'] },

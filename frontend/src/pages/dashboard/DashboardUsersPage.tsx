@@ -7,8 +7,10 @@ import toast from 'react-hot-toast';
 import {
   createUser,
   deleteUser,
+  getUnlinkedParentsStats,
   isUserLoginLocked,
   listUsers,
+  remindUnlinkedParents,
   requestUserEmailChange,
   sendUserDeleteCode,
   sendUserEmailChangeCode,
@@ -74,6 +76,15 @@ export function DashboardUsersPage() {
   const [manageStatus, setManageStatus] = useState<string>('active');
   const [manageNewEmail, setManageNewEmail] = useState('');
   const [manageVerifyCode, setManageVerifyCode] = useState('');
+  const [remindOpen, setRemindOpen] = useState(false);
+  const [remindEmail, setRemindEmail] = useState(true);
+  const [remindWhatsApp, setRemindWhatsApp] = useState(false);
+
+  const unlinkedStatsQ = useQuery({
+    queryKey: ['unlinked-parents-stats'],
+    queryFn: getUnlinkedParentsStats,
+    enabled: roleFilter === 'parent',
+  });
 
   const q = useQuery({
     queryKey: ['users-admin', roleFilter],
@@ -150,6 +161,16 @@ export function DashboardUsersPage() {
       toast.success('Usuario eliminado');
       setManageUser(null);
       void qc.invalidateQueries({ queryKey: ['users-admin'] });
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
+  const remindMut = useMutation({
+    mutationFn: () => remindUnlinkedParents({ sendEmail: remindEmail, sendWhatsApp: remindWhatsApp }),
+    onSuccess: (res) => {
+      toast.success(res.message ?? 'Recordatorios enviados');
+      setRemindOpen(false);
+      void unlinkedStatsQ.refetch();
     },
     onError: (e: Error) => toast.error(getApiErrorMessage(e)),
   });
@@ -238,6 +259,17 @@ export function DashboardUsersPage() {
           <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
             {rows.length} registrados
           </span>
+          {roleFilter === 'parent' ? (
+            <button
+              type="button"
+              onClick={() => setRemindOpen(true)}
+              className="bg-secondary/15 text-secondary border border-secondary/30 font-label-caps text-label-caps px-4 py-2.5 rounded-lg hover:bg-secondary/25 transition-all flex items-center gap-2"
+            >
+              <MaterialIcon name="mail" size={16} />
+              Recordar vínculo CURP
+              {unlinkedStatsQ.data?.data?.count != null ? ` (${unlinkedStatsQ.data.data.count})` : ''}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={() => setCreateOpen(true)}
@@ -556,6 +588,44 @@ export function DashboardUsersPage() {
             </div>
           </div>
         ) : null}
+      </DashboardModal>
+
+      <DashboardModal open={remindOpen} onClose={() => setRemindOpen(false)} title="Recordar vínculo CURP">
+        <p className="text-sm text-on-surface-variant mb-4">
+          Envía un recordatorio a padres <strong>activos que nunca solicitaron vínculo</strong> con la CURP de su hijo.
+          El mensaje incluye enlace a <em>Mis jugadores</em> en su panel.
+        </p>
+        {unlinkedStatsQ.data?.data ? (
+          <ul className="text-sm text-on-surface-variant mb-4 space-y-1">
+            <li>• {unlinkedStatsQ.data.data.count} padre(s) sin vínculo</li>
+            <li>• {unlinkedStatsQ.data.data.withEmail} con correo</li>
+            <li>• {unlinkedStatsQ.data.data.withPhone} con teléfono (WhatsApp)</li>
+          </ul>
+        ) : null}
+        <label className="flex items-center gap-2 mb-2 cursor-pointer">
+          <input type="checkbox" checked={remindEmail} onChange={(e) => setRemindEmail(e.target.checked)} />
+          <span className="text-sm">Enviar correo electrónico</span>
+        </label>
+        <label className="flex items-center gap-2 mb-6 cursor-pointer">
+          <input type="checkbox" checked={remindWhatsApp} onChange={(e) => setRemindWhatsApp(e.target.checked)} />
+          <span className="text-sm">Enviar WhatsApp (requiere teléfono registrado)</span>
+        </label>
+        <div className={formActionsClass}>
+          <button type="button" onClick={() => setRemindOpen(false)} className="px-4 py-2 rounded-lg border border-outline-variant/40 text-on-surface-variant">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={remindMut.isPending || (!remindEmail && !remindWhatsApp)}
+            onClick={() => {
+              if (!window.confirm('¿Enviar recordatorios a todos los padres sin vínculo CURP?')) return;
+              remindMut.mutate();
+            }}
+            className="px-4 py-2 rounded-lg bg-primary text-on-primary disabled:opacity-50"
+          >
+            {remindMut.isPending ? 'Enviando…' : 'Enviar recordatorios'}
+          </button>
+        </div>
       </DashboardModal>
     </div>
   );

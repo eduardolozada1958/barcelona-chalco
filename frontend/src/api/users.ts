@@ -68,3 +68,29 @@ export async function deleteUser(id: string, verificationCode: string) {
   });
   return data;
 }
+
+export type UnlinkedParentsStats = {
+  count: number;
+  withEmail: number;
+  withPhone: number;
+};
+
+export async function getUnlinkedParentsStats() {
+  const { data } = await apiClient.get<ApiResponse<UnlinkedParentsStats>>('/users/unlinked-parents/stats');
+  return data;
+}
+
+export type RemindUnlinkedResult = {
+  targets: number;
+  emailsSent: number;
+  emailsFailed: number;
+  whatsappSent: number;
+  whatsappFailed: number;
+  skippedNoEmail: number;
+  skippedNoPhone: number;
+};
+
+export async function remindUnlinkedParents(body: { sendEmail?: boolean; sendWhatsApp?: boolean }) {
+  const { data } = await apiClient.post<ApiResponse<RemindUnlinkedResult>>('/users/unlinked-parents/remind', body);
+  return data;
+}

@@ -89,6 +89,12 @@ export function getStaticRouteSeo(pathname: string): SeoMeta {
         'Goleadores y tarjetas por cancha: Canchas 100 y Cancha Walmart. Estadísticas de partidos publicados de F.C. Barcelona Cupido.',
       path: '/goleo',
     },
+    '/rendimiento': {
+      title: 'Análisis de rendimiento',
+      description:
+        'Informes generales del cuerpo técnico de F.C. Barcelona Cupido: avances y áreas de mejora por categoría y jugador.',
+      path: '/rendimiento',
+    },
     '/avisos': {
       title: 'Avisos del club',
       description:
@@ -128,6 +134,7 @@ export function getStaticRouteSeo(pathname: string): SeoMeta {
   }
   if (base.startsWith('/partidos/')) return { path: base };
   if (base.startsWith('/avisos/')) return { path: base, type: 'article' };
+  if (base.startsWith('/rendimiento/')) return { path: base, type: 'article' };
   if (base.startsWith('/galeria/')) return { path: base };
 
   return { path: base, noindex: base.startsWith('/dashboard') };
@@ -140,6 +147,7 @@ export const SITEMAP_PATHS: { path: string; changefreq: string; priority: string
   { path: '/partidos', changefreq: 'daily', priority: '0.9' },
   { path: '/resultados', changefreq: 'daily', priority: '0.85' },
   { path: '/goleo', changefreq: 'daily', priority: '0.8' },
+  { path: '/rendimiento', changefreq: 'weekly', priority: '0.8' },
   { path: '/avisos', changefreq: 'daily', priority: '0.85' },
   { path: '/galeria', changefreq: 'weekly', priority: '0.8' },
   { path: '/contacto', changefreq: 'monthly', priority: '0.75' },

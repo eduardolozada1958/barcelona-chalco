@@ -56,3 +56,10 @@ export const adminSensitiveEmailChangeSchema = adminRequestEmailChangeSchema.ext
 
 export type DeleteUserBody = z.infer<typeof deleteUserBodySchema>;
 export type AdminSensitiveEmailChangeBody = z.infer<typeof adminSensitiveEmailChangeSchema>;
+
+export const remindUnlinkedParentsBodySchema = z.object({
+  sendEmail:    z.boolean().optional().default(true),
+  sendWhatsApp: z.boolean().optional().default(false),
+});
+
+export type RemindUnlinkedParentsBody = z.infer<typeof remindUnlinkedParentsBodySchema>;

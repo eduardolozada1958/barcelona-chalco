@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from './users.service';
+import { listUnlinkedParents, remindUnlinkedParents } from '@modules/parents/unlinked-reminder.service';
 import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
@@ -9,6 +10,7 @@ import type {
   ListUsersQuery,
   DeleteUserBody,
   AdminSensitiveEmailChangeBody,
+  RemindUnlinkedParentsBody,
 } from './users.validation';
 
 export class UsersController {
@@ -118,6 +120,36 @@ export class UsersController {
         verificationCode,
       );
       sendSuccess(res, null, 'Usuario eliminado');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async unlinkedParentsStats(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const targets = await listUnlinkedParents();
+      sendSuccess(res, {
+        count: targets.length,
+        withEmail: targets.filter((t) => Boolean(t.email)).length,
+        withPhone: targets.filter((t) => Boolean(t.jid)).length,
+      }, 'Padres sin vínculo CURP');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async remindUnlinkedParents(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = (req.body ?? {}) as RemindUnlinkedParentsBody;
+      const result = await remindUnlinkedParents({
+        sendEmail:    body.sendEmail !== false,
+        sendWhatsApp: Boolean(body.sendWhatsApp),
+      });
+      sendSuccess(
+        res,
+        result,
+        `Recordatorio enviado a ${result.targets} padre(s): ${result.emailsSent} correo(s), ${result.whatsappSent} WhatsApp.`,
+      );
     } catch (e) {
       next(e);
     }
