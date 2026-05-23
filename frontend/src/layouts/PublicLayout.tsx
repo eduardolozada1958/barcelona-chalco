@@ -133,21 +133,15 @@ function PublicBrand() {
   return (
     <NavLink
       to="/"
-      className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0 group hover:opacity-90 transition-opacity"
+      className="flex items-center gap-2.5 shrink-0 min-w-0 group hover:opacity-90 transition-opacity"
     >
       <img
         src={CLUB_LOGO_URL}
         alt="F.C. Barcelona Cupido"
-        className="h-8 w-8 sm:h-9 sm:w-9 object-contain drop-shadow-md shrink-0"
+        className="h-9 w-9 sm:h-10 sm:w-10 object-contain drop-shadow-md shrink-0"
       />
-      {/* Nombre compacto — nunca gigante en el header */}
-      <span className="hidden min-[360px]:flex flex-col justify-center leading-none min-w-0 max-w-[9.5rem] sm:max-w-[11rem] lg:max-w-none">
-        <span className="font-label-caps text-[8px] sm:text-[9px] tracking-[0.16em] text-primary/65 uppercase truncate">
-          F.C. Barcelona
-        </span>
-        <span className="font-display-hero text-[13px] sm:text-sm font-bold text-primary tracking-tight uppercase mt-0.5 truncate">
-          Cupido
-        </span>
+      <span className="hidden min-[400px]:block font-label-caps text-[11px] lg:text-xs tracking-[0.1em] text-primary uppercase leading-tight whitespace-nowrap">
+        F.C. Barcelona Cupido
       </span>
     </NavLink>
   );
@@ -194,38 +188,20 @@ export function PublicLayout() {
               </button>
             </div>
 
-            {/* Desktop lg–2xl: logo + acciones arriba, enlaces abajo */}
-            <div className="hidden lg:block 2xl:hidden">
-              <div className="flex items-center justify-between gap-4 h-14 border-b border-outline-variant/10">
+            {/* Desktop: marca + acceso arriba, menú abajo */}
+            <div className="hidden lg:block">
+              <div className="flex items-center justify-between gap-4 h-[3.25rem] border-b border-outline-variant/10">
                 <PublicBrand />
                 <PublicAuthActions />
               </div>
               <nav
                 aria-label="Navegación principal"
-                className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-2 py-3"
+                className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1.5 py-2.5"
               >
                 {publicLinks.map((l) => (
                   <PublicNavItem key={l.to} link={l} compact />
                 ))}
               </nav>
-            </div>
-
-            {/* Desktop 2xl+: una fila — logo | nav | acciones */}
-            <div className="hidden 2xl:grid 2xl:grid-cols-[auto_1fr_auto] 2xl:items-center 2xl:gap-8 2xl:min-h-[4.25rem] 2xl:py-2">
-              <div className="justify-self-start shrink-0">
-                <PublicBrand />
-              </div>
-              <nav
-                aria-label="Navegación principal"
-                className="flex flex-nowrap items-center justify-center gap-x-1 justify-self-center min-w-0 px-2"
-              >
-                {publicLinks.map((l) => (
-                  <PublicNavItem key={l.to} link={l} compact />
-                ))}
-              </nav>
-              <div className="justify-self-end shrink-0">
-                <PublicAuthActions />
-              </div>
             </div>
           </div>
         </header>
