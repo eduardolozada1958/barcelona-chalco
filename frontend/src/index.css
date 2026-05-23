@@ -22,7 +22,7 @@
 
   @media (min-width: 1024px) {
     :root {
-      --public-header-h: calc(6.5rem + env(safe-area-inset-top, 0px));
+      --public-header-h: calc(7rem + env(safe-area-inset-top, 0px));
     }
   }
 

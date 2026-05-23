@@ -171,32 +171,50 @@ export function PublicLayout() {
         <PublicRouteSeo />
         <UrgentNoticePopup />
 
-        {/* ═══════════════════ TopNavBar ═══════════════════ */}
-        <header className="fixed top-0 left-0 right-0 z-[90] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0 pt-[env(safe-area-inset-top,0px)]">
+        {/* ═══════════════════ Header público ═══════════════════ */}
+        <header className="fixed top-0 left-0 right-0 z-[90] bg-surface/95 backdrop-blur-md shadow-md min-w-0 pt-[env(safe-area-inset-top,0px)]">
           <div className="mx-auto w-full max-w-[1400px] min-w-0 px-3 sm:px-margin-mobile lg:px-8 xl:px-margin-desktop">
 
-            {/* Móvil / tablet pequeña: logo + menú */}
-            <div className="flex lg:hidden items-center justify-between gap-3 h-14 sm:h-16">
+            {/* ── Móvil / tablet: topbar (marca + acceso + menú) ── */}
+            <div className="flex lg:hidden items-center justify-between gap-2 min-h-[3.5rem] sm:min-h-[3.75rem] py-2">
               <PublicBrand />
-              <button
-                type="button"
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation shrink-0"
-                aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
-                onClick={() => setMobileOpen((v) => !v)}
-              >
-                <MaterialIcon name={mobileOpen ? 'close' : 'menu'} size={26} />
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <PublicAuthActions />
+                <button
+                  type="button"
+                  className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation"
+                  aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
+                  onClick={() => setMobileOpen((v) => !v)}
+                >
+                  <MaterialIcon name={mobileOpen ? 'close' : 'menu'} size={24} />
+                </button>
+              </div>
             </div>
 
-            {/* Desktop: marca + acceso arriba, menú abajo */}
+            {/* ── Desktop: topbar + separador + franja de navegación ── */}
             <div className="hidden lg:block">
-              <div className="flex items-center justify-between gap-4 h-[3.25rem] border-b border-outline-variant/10">
+              {/* Topbar: logo + nombre + Acceder en una fila */}
+              <div
+                className="flex items-center justify-between gap-6 min-h-[3.5rem] py-2"
+                role="banner"
+              >
                 <PublicBrand />
                 <PublicAuthActions />
               </div>
+
+              {/* Separador visual entre topbar y menú */}
+              <div
+                className="relative h-px w-full"
+                aria-hidden
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-px bg-outline-variant/25" />
+              </div>
+
+              {/* Franja de navegación (segunda fila) */}
               <nav
                 aria-label="Navegación principal"
-                className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1.5 py-2.5"
+                className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 py-3.5 px-2 bg-surface-container-lowest/30"
               >
                 {publicLinks.map((l) => (
                   <PublicNavItem key={l.to} link={l} compact />
@@ -204,6 +222,9 @@ export function PublicLayout() {
               </nav>
             </div>
           </div>
+
+          {/* Borde inferior del header completo */}
+          <div className="h-px w-full bg-outline-variant/20" aria-hidden />
         </header>
 
         {/* Menú móvil */}
