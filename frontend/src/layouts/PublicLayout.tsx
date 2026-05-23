@@ -20,11 +20,11 @@ const publicLinks = [
   { to: '/jugadores',   label: 'Jugadores' },
   { to: '/partidos',    label: 'Partidos' },
   { to: '/resultados',  label: 'Resultados' },
-  { to: '/goleo',        label: 'Goleo' },
-  { to: '/rendimiento',   label: 'Rendimiento' },
+  { to: '/goleo',       label: 'Goleo' },
+  { to: '/rendimiento', label: 'Rendimiento' },
   { to: '/avisos',      label: 'Avisos' },
   { to: '/galeria',     label: 'Galería' },
-  { to: '/contacto', label: 'Contacto' },
+  { to: '/contacto',    label: 'Contacto' },
 ];
 
 const footerLinks = [
@@ -34,10 +34,122 @@ const footerLinks = [
   { to: '/soporte', label: 'Soporte' },
 ];
 
+type PublicLink = (typeof publicLinks)[number];
+
+function useLinkActive(link: PublicLink) {
+  const location = useLocation();
+  return link.to === '/'
+    ? location.pathname === '/'
+    : location.pathname.startsWith(link.to);
+}
+
+function PublicNavItem({
+  link,
+  onNavigate,
+  compact,
+}: {
+  link: PublicLink;
+  onNavigate?: () => void;
+  compact?: boolean;
+}) {
+  const active = useLinkActive(link);
+
+  return (
+    <NavLink
+      to={link.to}
+      end={'end' in link ? link.end : undefined}
+      onClick={onNavigate}
+      className={clsx(
+        'inline-flex items-center justify-center font-label-caps tracking-[0.08em] whitespace-nowrap transition-all duration-200',
+        compact
+          ? 'text-[11px] px-2.5 py-1 rounded-full'
+          : 'text-[11px] sm:text-xs px-3 py-1.5 rounded-full',
+        active
+          ? 'text-primary bg-primary/12 border border-primary/30 shadow-[0_0_14px_rgba(212,175,55,0.12)]'
+          : 'text-on-surface-variant border border-transparent hover:text-primary hover:bg-surface-container-high hover:border-outline-variant/25',
+      )}
+    >
+      {link.label}
+    </NavLink>
+  );
+}
+
+function MobileNavItem({ link, onNavigate }: { link: PublicLink; onNavigate: () => void }) {
+  const active = useLinkActive(link);
+
+  return (
+    <NavLink
+      to={link.to}
+      end={'end' in link ? link.end : undefined}
+      className={clsx(
+        'font-label-caps text-[11px] tracking-wide px-3 py-3 rounded-xl border text-center transition-colors',
+        active
+          ? 'text-primary bg-primary/12 border-primary/30'
+          : 'text-on-surface-variant border-outline-variant/20 hover:text-primary hover:border-primary/25',
+      )}
+      onClick={onNavigate}
+    >
+      {link.label}
+    </NavLink>
+  );
+}
+
+function PublicAuthActions({ className }: { className?: string }) {
+  const { user } = useAuth();
+
+  return (
+    <div className={clsx('flex items-center gap-2 sm:gap-3 shrink-0', className)}>
+      {user ? (
+        <>
+          <NavLink
+            to="/dashboard/guia"
+            className="hidden xl:inline-flex items-center gap-1 text-primary/90 font-label-caps text-[10px] hover:underline"
+          >
+            <MaterialIcon name="menu_book" size={16} />
+            Guía
+          </NavLink>
+          <NavLink
+            to="/dashboard"
+            className="inline-flex items-center gap-1.5 bg-primary-container text-on-primary-container px-4 sm:px-5 py-2 rounded-full font-label-caps text-[10px] sm:text-label-caps hover:shadow-gold-glow transition-all"
+          >
+            <MaterialIcon name={getPanelNavIcon(user.role)} size={18} />
+            <span className="hidden sm:inline">{getPanelShortLabel(user.role)}</span>
+            <span className="sm:hidden">Panel</span>
+          </NavLink>
+        </>
+      ) : (
+        <NavLink
+          to="/login"
+          className="bg-surface-container-lowest text-primary border-2 border-primary px-5 sm:px-6 py-2 rounded-full font-label-caps text-[10px] sm:text-label-caps hover:bg-primary hover:text-on-primary transition-colors duration-300"
+        >
+          Acceder
+        </NavLink>
+      )}
+    </div>
+  );
+}
+
+function PublicBrand() {
+  return (
+    <NavLink to="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">
+      <img
+        src={CLUB_LOGO_URL}
+        alt="F.C. Barcelona Cupido"
+        className="h-9 w-9 sm:h-11 sm:w-11 lg:h-12 lg:w-12 object-contain drop-shadow-lg shrink-0"
+      />
+      <span className="font-display-hero text-xs sm:text-sm lg:text-base xl:text-headline-lg-mobile text-primary tracking-tight leading-tight min-w-0">
+        <span className="hidden min-[420px]:inline">F.C. </span>
+        <span className="block sm:inline">BARCELONA</span>
+        <span className="hidden sm:inline"> </span>
+        <span className="block sm:inline text-primary/90">CUPIDO</span>
+      </span>
+    </NavLink>
+  );
+}
+
 /* ─── Layout ─── */
 export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useAuth();
   const location = useLocation();
   const season = useDisplaySeason();
 
@@ -50,194 +162,138 @@ export function PublicLayout() {
     return () => document.body.classList.remove('mobile-menu-open');
   }, [mobileOpen]);
 
+  const closeMobile = () => setMobileOpen(false);
+
   return (
     <MobileMenuProvider open={mobileOpen}>
-    <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
-      <ScrollToTop />
-      <PublicRouteSeo />
-      <UrgentNoticePopup />
-      {/* ═══════════════════ TopNavBar ═══════════════════ */}
-      <nav className="fixed top-0 left-0 right-0 z-[90] flex justify-between items-end gap-2 px-3 sm:px-margin-mobile md:px-margin-desktop pb-2 sm:pb-3 min-h-[var(--public-header-h)] pt-[env(safe-area-inset-top,0px)] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0">
-        {/* Logo */}
-        <NavLink
-          to="/"
-          className="flex items-center gap-3 shrink-0"
-        >
-          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-10 w-10 sm:h-12 sm:w-12 object-contain drop-shadow-lg shrink-0" />
-          <span className="font-display-hero text-sm sm:text-headline-lg-mobile text-primary tracking-tighter truncate max-w-[42vw] sm:max-w-none hidden min-[400px]:inline">F.C. BARCELONA CUPIDO</span>
-        </NavLink>
+      <div className="min-h-screen flex flex-col bg-background text-on-background font-body-md min-w-0 overflow-x-hidden">
+        <ScrollToTop />
+        <PublicRouteSeo />
+        <UrgentNoticePopup />
 
-        {/* Desktop navigation */}
-        <div className="hidden md:flex items-center gap-gutter h-full">
-          {publicLinks.map((l) => {
-            const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
-            return (
+        {/* ═══════════════════ TopNavBar ═══════════════════ */}
+        <header className="fixed top-0 left-0 right-0 z-[90] bg-surface/95 backdrop-blur-md border-b border-outline-variant/20 shadow-md min-w-0 pt-[env(safe-area-inset-top,0px)]">
+          <div className="mx-auto w-full max-w-[1400px] min-w-0 px-3 sm:px-margin-mobile lg:px-8 xl:px-margin-desktop">
+
+            {/* Móvil / tablet pequeña: logo + menú */}
+            <div className="flex lg:hidden items-center justify-between gap-3 h-14 sm:h-16">
+              <PublicBrand />
+              <button
+                type="button"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation shrink-0"
+                aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
+                onClick={() => setMobileOpen((v) => !v)}
+              >
+                <MaterialIcon name={mobileOpen ? 'close' : 'menu'} size={26} />
+              </button>
+            </div>
+
+            {/* Desktop lg–xl: logo + acciones arriba, enlaces abajo */}
+            <div className="hidden lg:block xl:hidden">
+              <div className="flex items-center justify-between gap-4 h-14 border-b border-outline-variant/10">
+                <PublicBrand />
+                <PublicAuthActions />
+              </div>
+              <nav
+                aria-label="Navegación principal"
+                className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-2 py-3"
+              >
+                {publicLinks.map((l) => (
+                  <PublicNavItem key={l.to} link={l} compact />
+                ))}
+              </nav>
+            </div>
+
+            {/* Desktop xl+: una fila — logo | nav centrada | acciones */}
+            <div className="hidden xl:grid xl:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] xl:items-center xl:gap-6 xl:min-h-[4.75rem] xl:py-2">
+              <div className="justify-self-start min-w-0">
+                <PublicBrand />
+              </div>
+              <nav
+                aria-label="Navegación principal"
+                className="flex flex-wrap items-center justify-center gap-x-1 2xl:gap-x-1.5 max-w-[52rem]"
+              >
+                {publicLinks.map((l) => (
+                  <PublicNavItem key={l.to} link={l} />
+                ))}
+              </nav>
+              <div className="justify-self-end">
+                <PublicAuthActions />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Menú móvil */}
+        {mobileOpen && (
+          <div className="fixed inset-0 z-[100] lg:hidden flex flex-col bg-background">
+            <button
+              type="button"
+              className="absolute inset-0 z-0 cursor-default"
+              aria-label="Cerrar menú"
+              onClick={closeMobile}
+            />
+            <div className="relative z-10 flex flex-col flex-1 min-h-0 overflow-hidden">
+              <div className="flex items-center justify-between shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-outline-variant/20 bg-background">
+                <PublicBrand />
+                <button
+                  type="button"
+                  onClick={closeMobile}
+                  className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation"
+                  aria-label="Cerrar menú"
+                >
+                  <MaterialIcon name="close" size={26} />
+                </button>
+              </div>
+              <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-margin-mobile py-stack-md pb-[max(1rem,env(safe-area-inset-bottom))]">
+                <p className="font-label-caps text-[10px] text-on-surface-variant mb-3 tracking-widest">
+                  Navegación
+                </p>
+                <nav aria-label="Navegación móvil" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {publicLinks.map((l) => (
+                    <MobileNavItem key={l.to} link={l} onNavigate={closeMobile} />
+                  ))}
+                </nav>
+                <div className="mt-stack-md pt-stack-md border-t border-outline-variant/20">
+                  <PublicAuthActions className="flex-col sm:flex-row w-full [&>a]:w-full [&>a]:justify-center" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════ Main Content ═══════════════════ */}
+        <main className="flex-grow pt-[var(--public-header-h)] min-w-0 overflow-x-hidden">
+          <div className="pt-4 px-3 sm:px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full min-w-0">
+            <PushNotificationsPrompt />
+            <LoggedInPublicBanner />
+          </div>
+          <Outlet />
+        </main>
+
+        {/* ═══════════════════ Footer ═══════════════════ */}
+        <footer className="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center text-center px-2">
+            <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-12 w-12 sm:h-14 sm:w-14 object-contain drop-shadow-lg shrink-0" />
+            <span className="font-display-hero text-primary text-lg sm:text-2xl leading-tight">F.C. BARCELONA CUPIDO</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {footerLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
-                end={'end' in l ? l.end : undefined}
-                className={clsx(
-                  'font-label-caps text-label-caps h-full flex items-center transition-all duration-300 hover:text-primary',
-                  active
-                    ? 'text-primary border-b-2 border-primary pb-1'
-                    : 'text-on-surface-variant scale-95 active:scale-90'
-                )}
+                className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100"
               >
                 {l.label}
               </NavLink>
-            );
-          })}
-        </div>
-
-        {/* Auth button (desktop) */}
-        <div className="hidden md:flex items-center gap-3">
-          {user ? (
-            <>
-              <NavLink
-                to="/dashboard/guia"
-                className="hidden lg:inline-flex items-center gap-1 text-primary/90 font-label-caps text-[10px] hover:underline"
-              >
-                <MaterialIcon name="menu_book" size={16} />
-                Guía
-              </NavLink>
-              <NavLink
-                to="/dashboard"
-                className="inline-flex items-center gap-1.5 bg-primary-container text-on-primary-container px-5 py-2 rounded-full font-label-caps text-label-caps hover:shadow-gold-glow transition-all"
-              >
-                <MaterialIcon name={getPanelNavIcon(user.role)} size={18} />
-                {getPanelShortLabel(user.role)}
-              </NavLink>
-            </>
-          ) : (
-            <NavLink
-              to="/login"
-              className="bg-surface-container-lowest text-primary border-2 border-primary px-6 py-2 rounded-full font-label-caps text-label-caps hover:bg-primary hover:text-on-primary transition-colors duration-300"
-            >
-              Acceder
-            </NavLink>
-          )}
-        </div>
-
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          className="md:hidden p-2 shrink-0 touch-manipulation"
-          aria-label="Toggle menu"
-          onClick={() => setMobileOpen((v) => !v)}
-        >
-          <MaterialIcon
-            name={mobileOpen ? 'close' : 'menu'}
-            className="text-primary"
-            size={28}
-          />
-        </button>
-      </nav>
-
-      {/* Menú móvil por encima de MVP / fuegos */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-[100] md:hidden flex flex-col bg-background">
-          <button
-            type="button"
-            className="absolute inset-0 z-0 cursor-default"
-            aria-label="Cerrar menú"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="relative z-10 flex flex-col flex-1 min-h-0 overflow-hidden">
-            <div className="flex items-center justify-between shrink-0 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 border-b border-outline-variant/20 bg-background">
-              <span className="font-label-caps text-label-caps text-primary">Menú</span>
-              <button
-                type="button"
-                onClick={() => setMobileOpen(false)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation"
-                aria-label="Cerrar menú"
-              >
-                <MaterialIcon name="close" size={28} />
-              </button>
-            </div>
-          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-margin-mobile py-stack-md pb-[max(1rem,env(safe-area-inset-bottom))]">
-            {publicLinks.map((l) => {
-              const active = l.to === '/' ? location.pathname === '/' : location.pathname.startsWith(l.to);
-              return (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  end={'end' in l ? l.end : undefined}
-                  className={clsx(
-                    'font-label-caps text-label-caps py-3 border-b border-outline-variant/20 transition-colors',
-                    active ? 'text-primary' : 'text-on-surface-variant hover:text-primary'
-                  )}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {l.label}
-                </NavLink>
-              );
-            })}
-            <div className="mt-stack-md">
-              {user ? (
-                <>
-                  <NavLink
-                    to="/dashboard"
-                    className="block w-full py-3 bg-primary-container text-on-primary-container font-label-caps text-label-caps rounded-lg text-center flex items-center justify-center gap-2"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <MaterialIcon name={getPanelNavIcon(user.role)} size={18} />
-                    {getPanelShortLabel(user.role)}
-                  </NavLink>
-                  <NavLink
-                    to="/dashboard/guia"
-                    className="block w-full py-2 mt-2 border border-primary/40 text-primary font-label-caps text-label-caps rounded-lg text-center"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    Guía de uso
-                  </NavLink>
-                </>
-              ) : (
-                <NavLink
-                  to="/login"
-                  className="block w-full py-3 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg text-center"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Acceder
-                </NavLink>
-              )}
-            </div>
+            ))}
           </div>
+          <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">
+            © {new Date().getFullYear()} F.C. BARCELONA CUPIDO
+            {` · Temporada ${season}`}. Rendimiento Élite & Identidad Digital.
           </div>
-        </div>
-      )}
-
-      {/* ═══════════════════ Main Content ═══════════════════ */}
-      <main className="flex-grow pt-[var(--public-header-h)] min-w-0 overflow-x-hidden">
-        <div className="pt-4 px-3 sm:px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full min-w-0">
-          <PushNotificationsPrompt />
-          <LoggedInPublicBanner />
-        </div>
-        <Outlet />
-      </main>
-
-      {/* ═══════════════════ Footer ═══════════════════ */}
-      <footer className="w-full py-stack-lg px-margin-mobile md:px-margin-desktop flex flex-col items-center gap-stack-md bg-surface-container-lowest border-t border-outline-variant/20 mt-auto">
-        <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-center text-center px-2">
-          <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="h-12 w-12 sm:h-14 sm:w-14 object-contain drop-shadow-lg shrink-0" />
-          <span className="font-display-hero text-primary text-lg sm:text-2xl leading-tight">F.C. BARCELONA CUPIDO</span>
-        </div>
-        <div className="flex flex-wrap justify-center gap-6">
-          {footerLinks.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100"
-            >
-              {l.label}
-            </NavLink>
-          ))}
-        </div>
-        <div className="font-body-md text-body-md text-on-surface-variant text-center text-sm opacity-60">
-          © {new Date().getFullYear()} F.C. BARCELONA CUPIDO
-          {` · Temporada ${season}`}. Rendimiento Élite & Identidad Digital.
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
     </MobileMenuProvider>
   );
 }
