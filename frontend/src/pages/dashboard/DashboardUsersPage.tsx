@@ -33,12 +33,42 @@ type CreateUserForm = {
 const STATUS_OPTIONS = ['active', 'inactive', 'suspended', 'pending'] as const;
 
 type RoleFilter = 'all' | 'parent' | 'coach' | 'admin';
+type ParentLinkFilter = 'all' | 'no_link' | 'pending' | 'linked';
+
+function parentLinkBadge(summary: unknown): { text: string; className: string } {
+  const s = summary as { approved?: number; pending?: number; hasNoLinks?: boolean } | null | undefined;
+  if (!s) return { text: '—', className: 'bg-surface-variant text-on-surface-variant' };
+  const approved = Number(s.approved ?? 0);
+  const pending = Number(s.pending ?? 0);
+  if (approved > 0) {
+    return {
+      text: approved === 1 ? '1 hijo vinculado' : `${approved} hijos vinculados`,
+      className: 'bg-green-500/15 text-green-400',
+    };
+  }
+  if (pending > 0) return { text: 'CURP por aprobar', className: 'bg-amber-500/15 text-amber-400' };
+  if (s.hasNoLinks) return { text: 'Sin vínculo CURP', className: 'bg-error/15 text-error' };
+  return { text: 'Sin vínculos activos', className: 'bg-surface-variant text-on-surface-variant' };
+}
+
+function matchesParentLinkFilter(summary: unknown, filter: ParentLinkFilter): boolean {
+  if (filter === 'all') return true;
+  const s = summary as { approved?: number; pending?: number; hasNoLinks?: boolean } | undefined;
+  const approved = Number(s?.approved ?? 0);
+  const pending = Number(s?.pending ?? 0);
+  const hasNoLinks = Boolean(s?.hasNoLinks);
+  if (filter === 'linked') return approved > 0;
+  if (filter === 'pending') return pending > 0 && approved === 0;
+  if (filter === 'no_link') return hasNoLinks || (approved === 0 && pending === 0);
+  return true;
+}
 
 export function DashboardUsersPage() {
   const { user: sessionUser } = useAuth();
   const qc = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [parentLinkFilter, setParentLinkFilter] = useState<ParentLinkFilter>('all');
   const [createOpen, setCreateOpen] = useState(false);
   const [manageUser, setManageUser] = useState<Record<string, unknown> | null>(null);
   const [manageStatus, setManageStatus] = useState<string>('active');
@@ -54,6 +84,13 @@ export function DashboardUsersPage() {
         ...(roleFilter !== 'all' ? { role: roleFilter } : {}),
       }),
   });
+
+  const allRows = (q.data?.data ?? []) as Record<string, unknown>[];
+  const rows = allRows.filter((u) => {
+    if (String(u.role) !== 'parent') return true;
+    return matchesParentLinkFilter(u.parentLinkSummary, parentLinkFilter);
+  });
+  const showParentLinkCol = roleFilter === 'parent' || roleFilter === 'all';
 
   const createMut = useMutation({
     mutationFn: (body: CreateUserBody) => createUser(body),
@@ -137,18 +174,17 @@ export function DashboardUsersPage() {
     setManageVerifyCode('');
   };
 
-  const rows = (q.data?.data ?? []) as Record<string, unknown>[];
   const deepLinkUserId = searchParams.get('userId');
 
   useEffect(() => {
-    if (q.isLoading || !deepLinkUserId || rows.length === 0) return;
-    const u = rows.find((r) => String(r.id) === deepLinkUserId);
+    if (q.isLoading || !deepLinkUserId || allRows.length === 0) return;
+    const u = allRows.find((r) => String(r.id) === deepLinkUserId);
     if (u) {
       if (String(u.role) === 'parent') setRoleFilter('parent');
       openManage(u);
       setSearchParams({}, { replace: true });
     }
-  }, [deepLinkUserId, q.isLoading, rows, setSearchParams]);
+  }, [deepLinkUserId, q.isLoading, allRows, setSearchParams]);
 
   if (q.isLoading) return <Spinner />;
 
@@ -161,7 +197,10 @@ export function DashboardUsersPage() {
             <button
               key={r}
               type="button"
-              onClick={() => setRoleFilter(r)}
+              onClick={() => {
+                setRoleFilter(r);
+                if (r !== 'parent') setParentLinkFilter('all');
+              }}
               className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
                 roleFilter === r
                   ? 'border-primary bg-primary/15 text-primary'
@@ -171,6 +210,31 @@ export function DashboardUsersPage() {
               {r === 'all' ? 'Todos' : userRoleLabel(r)}
             </button>
           ))}
+          {roleFilter === 'parent' ? (
+            <>
+              {(
+                [
+                  { v: 'all', label: 'Todos los padres' },
+                  { v: 'no_link', label: 'Sin CURP' },
+                  { v: 'pending', label: 'CURP pendiente' },
+                  { v: 'linked', label: 'Con hijo vinculado' },
+                ] as const
+              ).map((f) => (
+                <button
+                  key={f.v}
+                  type="button"
+                  onClick={() => setParentLinkFilter(f.v)}
+                  className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
+                    parentLinkFilter === f.v
+                      ? 'border-secondary bg-secondary/15 text-secondary'
+                      : 'border-outline-variant/30 text-on-surface-variant'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </>
+          ) : null}
           <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
             {rows.length} registrados
           </span>
@@ -190,6 +254,9 @@ export function DashboardUsersPage() {
             <tr>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Usuario</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Rol</th>
+              {showParentLinkCol ? (
+                <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Vínculo CURP</th>
+              ) : null}
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Estado</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Acciones</th>
             </tr>
@@ -199,6 +266,8 @@ export function DashboardUsersPage() {
               const role = String(u.role);
               const status = String(u.status);
               const locked = isUserLoginLocked(u);
+              const linkBadge = role === 'parent' ? parentLinkBadge(u.parentLinkSummary) : null;
+              const emailOk = u.email_verified !== false;
               return (
                 <tr key={String(u.id)} className="border-t border-outline-variant/10 hover:bg-surface-container/30 transition-colors">
                   <td className="p-4">
@@ -207,6 +276,9 @@ export function DashboardUsersPage() {
                         <MaterialIcon name={role === 'admin' ? 'admin_panel_settings' : role === 'coach' ? 'sports' : 'person'} className="text-on-surface-variant" size={18} />
                       </div>
                       <span className="text-on-surface">{String(u.email)}</span>
+                      {role === 'parent' && !emailOk ? (
+                        <span className="block text-[10px] text-amber-400 mt-0.5">Correo sin verificar</span>
+                      ) : null}
                     </div>
                   </td>
                   <td className="p-4">
@@ -218,6 +290,17 @@ export function DashboardUsersPage() {
                       {userRoleLabel(role)}
                     </span>
                   </td>
+                  {showParentLinkCol ? (
+                    <td className="p-4">
+                      {role === 'parent' && linkBadge ? (
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-label-caps ${linkBadge.className}`}>
+                          {linkBadge.text}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-on-surface-variant">—</span>
+                      )}
+                    </td>
+                  ) : null}
                   <td className="p-4">
                     <div className="flex flex-col gap-1 items-start">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-label-caps ${

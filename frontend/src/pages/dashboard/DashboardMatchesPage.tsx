@@ -21,7 +21,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { LineupPitchEditor } from '@/components/LineupPitchEditor';
 import { OpponentLogoUpload } from '@/components/OpponentLogoUpload';
 import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config/formations';
-import { CANCHAS_PRESETS, resolveVenueSelection, type VenuePresetId } from '@/config/venues';
+import { CANCHAS_PRESETS, parseStoredLocation, resolveVenueSelection, WALMART_FIELD_OPTIONS, type VenuePresetId, type WalmartFieldId } from '@/config/venues';
 import { matchStatusLabel } from '@/config/labels';
 import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
 import { clubDatetimeLocalToIso, isoToClubDatetimeLocal } from '@/utils/club-datetime';
@@ -34,6 +34,7 @@ type MatchForm = {
   opponentName: string;
   matchDateLocal: string;
   venuePreset: VenuePresetId;
+  walmartField: WalmartFieldId | '';
   locationOther: string;
   mapsUrlOther: string;
   matchType: NonNullable<CreateMatchBody['matchType']>;
@@ -43,15 +44,7 @@ type MatchForm = {
   formationType: '' | 'football_7' | 'football_11';
 };
 
-type MatchEditForm = {
-  title: string;
-  opponentName: string;
-  matchDateLocal: string;
-  location: string;
-  matchType: NonNullable<CreateMatchBody['matchType']>;
-  status: NonNullable<CreateMatchBody['status']>;
-  isHome: boolean;
-};
+type MatchEditForm = MatchForm;
 
 function normalizeLineupFromRow(raw: unknown): string[] {
   if (!raw || !Array.isArray(raw)) return [];
@@ -177,6 +170,7 @@ export function DashboardMatchesPage() {
       opponentName: '',
       matchDateLocal: '',
       venuePreset: 'walmart',
+      walmartField: '',
       locationOther: '',
       mapsUrlOther: '',
       matchType: 'league',
@@ -191,29 +185,41 @@ export function DashboardMatchesPage() {
     register: registerEdit,
     handleSubmit: handleSubmitEdit,
     reset: resetEdit,
+    watch: watchEdit,
     formState: { errors: editErrors },
   } = useForm<MatchEditForm>({
     defaultValues: {
       title: '',
       opponentName: '',
       matchDateLocal: '',
-      location: '',
+      venuePreset: 'walmart',
+      walmartField: '',
+      locationOther: '',
+      mapsUrlOther: '',
       matchType: 'league',
       status: 'scheduled',
       isHome: true,
+      description: '',
+      formationType: '',
     },
   });
 
   function openEditMatch(m: Record<string, unknown>) {
     setEditMatchRow(m);
+    const parsed = parseStoredLocation(String(m.location ?? ''));
     resetEdit({
       title: String(m.title ?? ''),
       opponentName: String(m.opponent_name ?? ''),
       matchDateLocal: isoToClubDatetimeLocal(m.match_date),
-      location: String(m.location ?? ''),
+      venuePreset: parsed.venuePreset,
+      walmartField: parsed.walmartField,
+      locationOther: parsed.locationOther,
+      mapsUrlOther: '',
       matchType: (m.match_type as MatchEditForm['matchType']) ?? 'league',
       status: (m.status as MatchEditForm['status']) ?? 'scheduled',
       isHome: m.is_home !== false,
+      description: '',
+      formationType: '',
     });
   }
 
@@ -233,13 +239,28 @@ export function DashboardMatchesPage() {
       toast.error('Indica fecha y hora del partido');
       return;
     }
+  if (data.venuePreset === 'walmart' && !data.walmartField) {
+      toast.error('Elige Campo 1, 2 o 3 en Cancha Walmart');
+      return;
+    }
+    const resolved = resolveVenueSelection(
+      data.venuePreset,
+      data.locationOther ?? '',
+      data.mapsUrlOther ?? '',
+      data.walmartField,
+    );
+    if (!resolved.location || resolved.location.length < 2) {
+      toast.error('Elige una cancha o escribe el nombre de la sede');
+      return;
+    }
     updateMatchMut.mutate({
       id: String(editMatchRow.id),
       body: {
         title:        data.title.trim(),
         opponentName: data.opponentName.trim(),
         matchDate:    clubDatetimeLocalToIso(data.matchDateLocal),
-        location:     data.location.trim(),
+        location:     resolved.location,
+        locationMapsUrl: resolved.locationMapsUrl,
         matchType:    data.matchType,
         status:       data.status,
         isHome:       data.isHome,
@@ -249,6 +270,7 @@ export function DashboardMatchesPage() {
 
   const formationWatch = watch('formationType');
   const venuePresetWatch = watch('venuePreset');
+  const editVenuePresetWatch = watchEdit('venuePreset');
 
   const playersLineupQ = useQuery({
     queryKey: ['players-admin', 'for-lineup-all'],
@@ -305,7 +327,12 @@ export function DashboardMatchesPage() {
       data.venuePreset,
       data.locationOther ?? '',
       data.mapsUrlOther ?? '',
+      data.walmartField,
     );
+    if (data.venuePreset === 'walmart' && !data.walmartField) {
+      toast.error('Elige Campo 1, 2 o 3 en Cancha Walmart');
+      return;
+    }
     if (!resolved.location || resolved.location.length < 2) {
       toast.error('Elige una cancha o escribe el nombre de la sede');
       return;
@@ -515,9 +542,22 @@ export function DashboardMatchesPage() {
               <option value="other">Otra sede…</option>
             </select>
             <p className="text-[10px] text-on-surface-variant mt-1">
-              Las tres canchas ya incluyen mapa. Si quieres cambiar enlaces en producción, usa en Cloudflare Pages las variables VITE_VENUE_WALMART_MAP_EMBED_URL, VITE_VENUE_ATLAS_MAP_EMBED_URL y VITE_VENUE_CANCHAS100_MAP_EMBED_URL (solo la URL del src del iframe).
+              En Cancha Walmart elige el campo (1, 2 o 3). Así aparece en partidos, detalle y WhatsApp.
             </p>
           </div>
+          {venuePresetWatch === 'walmart' ? (
+            <div>
+              <label className={formLabelClass}>Campo en Cancha Walmart</label>
+              <select className={formInputClass} {...register('walmartField', { required: true })}>
+                <option value="">Elige campo…</option>
+                {WALMART_FIELD_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           {venuePresetWatch === 'other' ? (
             <div className="space-y-2 rounded-lg border border-outline-variant/25 bg-surface-container/30 p-3">
               <div>
@@ -729,10 +769,35 @@ export function DashboardMatchesPage() {
             <input type="datetime-local" className={formInputClass} {...registerEdit('matchDateLocal', { required: true })} />
           </div>
           <div>
-            <label className={formLabelClass}>Ubicación</label>
-            <input className={formInputClass} {...registerEdit('location', { required: 'Requerido', minLength: 2 })} />
-            {editErrors.location && <p className={formErrorClass}>{editErrors.location.message}</p>}
+            <label className={formLabelClass}>Sede (cancha)</label>
+            <select className={formInputClass} {...registerEdit('venuePreset')}>
+              {CANCHAS_PRESETS.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+              <option value="other">Otra sede…</option>
+            </select>
           </div>
+          {editVenuePresetWatch === 'walmart' ? (
+            <div>
+              <label className={formLabelClass}>Campo en Cancha Walmart</label>
+              <select className={formInputClass} {...registerEdit('walmartField', { required: true })}>
+                <option value="">Elige campo…</option>
+                {WALMART_FIELD_OPTIONS.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {editVenuePresetWatch === 'other' ? (
+            <div>
+              <label className={formLabelClass}>Nombre de la sede</label>
+              <input className={formInputClass} {...registerEdit('locationOther', { minLength: 2 })} />
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className={formLabelClass}>Tipo</label>

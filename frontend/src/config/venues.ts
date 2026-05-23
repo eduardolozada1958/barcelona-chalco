@@ -6,6 +6,14 @@
 export const VENUE_PRESET_IDS = ['walmart', 'atlas', 'canchas100', 'other'] as const;
 export type VenuePresetId = (typeof VENUE_PRESET_IDS)[number];
 
+export const WALMART_FIELD_OPTIONS = [
+  { value: '1', label: 'Campo 1' },
+  { value: '2', label: 'Campo 2' },
+  { value: '3', label: 'Campo 3' },
+] as const;
+
+export type WalmartFieldId = (typeof WALMART_FIELD_OPTIONS)[number]['value'];
+
 export interface VenuePreset {
   id: Exclude<VenuePresetId, 'other'>;
   label: string;
@@ -49,10 +57,32 @@ export const CANCHAS_PRESETS: readonly VenuePreset[] = [
   },
 ];
 
+export function formatWalmartLocation(field: WalmartFieldId): string {
+  return `Cancha Walmart — Campo ${field}`;
+}
+
+/** Interpreta lo guardado en `matches.location` para rellenar formularios. */
+export function parseStoredLocation(location: string): {
+  venuePreset: VenuePresetId;
+  walmartField: WalmartFieldId | '';
+  locationOther: string;
+} {
+  const loc = location.trim();
+  const wm = /^Cancha Walmart — Campo ([123])$/.exec(loc);
+  if (wm) {
+    return { venuePreset: 'walmart', walmartField: wm[1] as WalmartFieldId, locationOther: '' };
+  }
+  const preset = CANCHAS_PRESETS.find((p) => p.locationLabel === loc);
+  if (preset) return { venuePreset: preset.id, walmartField: '', locationOther: '' };
+  if (loc === 'Cancha Walmart') return { venuePreset: 'walmart', walmartField: '', locationOther: '' };
+  return { venuePreset: 'other', walmartField: '', locationOther: loc };
+}
+
 export function resolveVenueSelection(
   preset: VenuePresetId,
   otherLocation: string,
   otherMapsUrl: string,
+  walmartField?: WalmartFieldId | '',
 ): { location: string; locationMapsUrl: string | null } {
   if (preset === 'other') {
     const maps = otherMapsUrl.trim();
@@ -63,5 +93,8 @@ export function resolveVenueSelection(
   }
   const p = CANCHAS_PRESETS.find((x) => x.id === preset);
   if (!p) return { location: '', locationMapsUrl: null };
+  if (preset === 'walmart' && walmartField) {
+    return { location: formatWalmartLocation(walmartField), locationMapsUrl: p.embedMapUrl };
+  }
   return { location: p.locationLabel, locationMapsUrl: p.embedMapUrl };
 }

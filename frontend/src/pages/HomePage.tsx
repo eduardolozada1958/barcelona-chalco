@@ -55,7 +55,10 @@ export function HomePage() {
     staleTime: 2 * 60_000,
   });
 
-  const latest = latestResult.data?.data as Result | undefined;
+  const latest = latestResult.data?.data as (Result & {
+    opponent_name?: string;
+    match_title?: string;
+  }) | undefined;
   const mvp = mvpQ.data?.data;
   const mvpPlayer = mvp?.player;
   const nextMatch = (matchesQ.data?.data as Match[] | undefined)?.[0];
@@ -330,7 +333,7 @@ export function HomePage() {
                   {latest.goals_scored} - {latest.goals_conceded}
                 </span>
                 <span className="font-body-lg text-body-lg text-on-surface-variant">
-                  Rival
+                  {latest.opponent_name?.trim() || 'Rival'}
                 </span>
               </div>
             ) : (

@@ -24,6 +24,7 @@ export class ResultsService {
     const { data, error } = await supabaseAdmin
       .from('v_match_results')
       .select('*')
+      .order('published_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 

@@ -15,6 +15,72 @@ import type { ListUsersQuery, CreateUserBody, UpdateUserBody } from './users.val
 const USER_SELECT =
   'id, email, role, status, full_name, avatar_url, phone, last_login_at, email_verified, failed_login_attempts, login_locked_at, payment_hold, created_at, updated_at';
 
+type ParentLinkSummary = {
+  approved: number;
+  pending: number;
+  rejected: number;
+  /** Sin ninguna solicitud de vínculo. */
+  hasNoLinks: boolean;
+};
+
+async function enrichParentLinkSummaries(users: Record<string, unknown>[]) {
+  const parentUsers = users.filter((u) => u.role === 'parent');
+  if (!parentUsers.length) return users;
+
+  const userIds = parentUsers.map((u) => String(u.id));
+  const { data: parents, error: pErr } = await supabaseAdmin
+    .from('parents')
+    .select('id, user_id')
+    .in('user_id', userIds)
+    .is('deleted_at', null);
+  if (pErr) throw new Error(pErr.message);
+
+  const parentByUser = new Map(
+    (parents ?? []).map((p) => [String((p as { user_id: string }).user_id), String((p as { id: string }).id)]),
+  );
+
+  const parentIds = [...parentByUser.values()];
+  const counts = new Map<string, { approved: number; pending: number; rejected: number }>();
+
+  if (parentIds.length) {
+    const { data: links, error: lErr } = await supabaseAdmin
+      .from('parent_players')
+      .select('parent_id, status')
+      .in('parent_id', parentIds);
+    if (lErr) throw new Error(lErr.message);
+
+    for (const row of links ?? []) {
+      const pid = String((row as { parent_id: string }).parent_id);
+      const st = String((row as { status: string }).status);
+      const cur = counts.get(pid) ?? { approved: 0, pending: 0, rejected: 0 };
+      if (st === 'approved') cur.approved += 1;
+      else if (st === 'pending') cur.pending += 1;
+      else if (st === 'rejected') cur.rejected += 1;
+      counts.set(pid, cur);
+    }
+  }
+
+  return users.map((u) => {
+    if (u.role !== 'parent') return u;
+    const parentId = parentByUser.get(String(u.id));
+    if (!parentId) {
+      return {
+        ...u,
+        parentLinkSummary: { approved: 0, pending: 0, rejected: 0, hasNoLinks: true } satisfies ParentLinkSummary,
+      };
+    }
+    const c = counts.get(parentId) ?? { approved: 0, pending: 0, rejected: 0 };
+    const total = c.approved + c.pending + c.rejected;
+    return {
+      ...u,
+      parentLinkSummary: {
+        ...c,
+        hasNoLinks: total === 0,
+      } satisfies ParentLinkSummary,
+    };
+  });
+}
+
 export class UsersService {
   static async list(opts: ListUsersQuery) {
     let query = supabaseAdmin
@@ -37,8 +103,10 @@ export class UsersService {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
+    const enriched = await enrichParentLinkSummaries((data ?? []) as Record<string, unknown>[]);
+
     return {
-      data,
+      data: enriched,
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };
   }

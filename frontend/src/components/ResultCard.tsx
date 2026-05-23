@@ -25,9 +25,16 @@ interface ResultCardProps {
  * Uses Result.goals_scored / goals_conceded plus optional Match metadata.
  */
 export function ResultCard({ result, match }: ResultCardProps) {
+  const row = result as Result & {
+    opponent_name?: string;
+    location?: string;
+    match_date?: string;
+  };
   const goalsScored = result.goals_scored;
   const goalsConceded = result.goals_conceded;
   const isWin = result.outcome === 'win';
+  const opponentName = match?.opponent_name ?? row.opponent_name ?? 'Rival';
+  const venueLabel = match?.location ?? row.location ?? 'Sede por confirmar';
   const dateStr = match?.match_date
     ? new Date(match.match_date).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase()
     : result.published_at
@@ -57,7 +64,7 @@ export function ResultCard({ result, match }: ResultCardProps) {
         <div className="font-label-caps text-label-caps text-on-surface-variant px-4">VS</div>
         <div className="text-center flex-1">
           <div className="font-headline-lg text-headline-lg text-on-surface-variant">
-            {match?.opponent_name ? match.opponent_name.slice(0, 3).toUpperCase() : 'OPP'}
+            {opponentName.length > 12 ? `${opponentName.slice(0, 12)}…` : opponentName}
           </div>
           <div className={`font-stat-value text-stat-value mt-2 text-on-surface-variant`}>
             {goalsConceded}
@@ -68,7 +75,7 @@ export function ResultCard({ result, match }: ResultCardProps) {
       {/* Venue */}
       <div className="text-center mb-4">
         <span className="font-body-md text-body-md text-on-surface-variant">
-          {match?.location || 'Sede por confirmar'}
+          {venueLabel}
         </span>
       </div>
 

@@ -15,5 +15,8 @@ export function parseVenueLeaderGroup(raw: unknown): VenueLeaderGroup | null {
 
 export function matchLocationInVenueGroup(location: string, group: VenueLeaderGroup): boolean {
   const loc = location.trim().toLowerCase();
+  if (group === 'walmart') {
+    return loc === 'cancha walmart' || loc.startsWith('cancha walmart — campo');
+  }
   return VENUE_GROUP_LOCATIONS[group].some((label) => loc === label.toLowerCase());
 }
