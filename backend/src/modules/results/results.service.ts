@@ -10,6 +10,7 @@ export class ResultsService {
     let query = supabaseAdmin
       .from('v_match_results')
       .select('*', { count: 'exact' })
+      .order('match_date', { ascending: false })
       .range(
         getPaginationOffset(opts.page, opts.limit),
         getPaginationOffset(opts.page, opts.limit) + opts.limit - 1
@@ -24,7 +25,7 @@ export class ResultsService {
     const { data, error } = await supabaseAdmin
       .from('v_match_results')
       .select('*')
-      .order('published_at', { ascending: false })
+      .order('match_date', { ascending: false })
       .limit(1)
       .maybeSingle();
 

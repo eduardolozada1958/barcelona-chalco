@@ -7,7 +7,7 @@ import { MatchTeamCrest } from '@/components/MatchTeamCrest';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { getMvpOfWeekPublic } from '@/api/players';
-import { latestResultPublic } from '@/api/results';
+import { latestResultPublic, listResultsPublic } from '@/api/results';
 import { playerPublicPath } from '@/utils/player-path';
 import { listMatchesUpcoming } from '@/api/matches';
 import { fetchPlayersPublicByIds } from '@/api/players';
@@ -35,8 +35,17 @@ export function HomePage() {
   // Fetch real data for highlights
   const latestResult = useQuery({
     queryKey: ['latest-result'],
-    queryFn: latestResultPublic,
+    queryFn: async () => {
+      try {
+        return await latestResultPublic();
+      } catch {
+        const fallback = await listResultsPublic({ page: 1, limit: 1 });
+        const row = (fallback.data as unknown[] | undefined)?.[0];
+        return { success: true, message: 'Último resultado', data: row ?? null };
+      }
+    },
     staleTime: 2 * 60_000,
+    retry: 1,
   });
   const mvpQ = useQuery({
     queryKey: ['mvp-of-week-public'],
