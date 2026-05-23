@@ -179,7 +179,7 @@ export function PublicLayout() {
             <div className="flex lg:hidden items-center justify-between gap-2 min-h-[3.5rem] sm:min-h-[3.75rem] py-2">
               <PublicBrand />
               <div className="flex items-center gap-2 shrink-0">
-                <PublicAuthActions />
+                {!mobileOpen ? <PublicAuthActions /> : null}
                 <button
                   type="button"
                   className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-outline-variant/30 text-primary hover:bg-primary/10 touch-manipulation"
@@ -248,7 +248,7 @@ export function PublicLayout() {
                   <MaterialIcon name="close" size={26} />
                 </button>
               </div>
-              <div className="flex flex-col flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-margin-mobile py-stack-md pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-margin-mobile py-stack-md">
                 <p className="font-label-caps text-[10px] text-on-surface-variant mb-3 tracking-widest">
                   Navegación
                 </p>
@@ -257,9 +257,9 @@ export function PublicLayout() {
                     <MobileNavItem key={l.to} link={l} onNavigate={closeMobile} />
                   ))}
                 </nav>
-                <div className="mt-stack-md pt-stack-md border-t border-outline-variant/20">
-                  <PublicAuthActions className="flex-col sm:flex-row w-full [&>a]:w-full [&>a]:justify-center" />
-                </div>
+              </div>
+              <div className="shrink-0 px-4 sm:px-margin-mobile pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-outline-variant/20 bg-background">
+                <PublicAuthActions className="w-full [&_a]:w-full [&_a]:justify-center [&_a]:text-center" />
               </div>
             </div>
           </div>

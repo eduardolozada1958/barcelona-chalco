@@ -3,10 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 
 import { getPerformancePublic } from '@/api/performance';
 import type { PerformanceEntry, PerformanceReport } from '@/api/performance';
+import { MaterialIcon } from '@/components/MaterialIcon';
 import { PageSeo } from '@/components/PageSeo';
 import { Spinner } from '@/components/Spinner';
 import { CLUB_DISPLAY_NAME, CLUB_LOGO_URL } from '@/config/club';
 import { CLUB_TIMEZONE } from '@/utils/club-datetime';
+import { downloadPerformanceReportPdf } from '@/utils/performance-pdf';
 
 function formatReportDateLong(iso: string): string {
   try {
@@ -58,7 +60,7 @@ export function PublicPerformanceDetailPage() {
     return <p className="p-8 text-center text-on-surface-variant">Informe no encontrado.</p>;
   }
 
-  const excerpt = `${report.category} · ${report.entries.length} jugador(es)`;
+  const excerpt = `${report.title} · ${report.entries.length} jugador(es)`;
 
   return (
     <div className="pt-4 pb-stack-lg px-margin-mobile md:px-margin-desktop max-w-[820px] mx-auto w-full">
@@ -69,9 +71,19 @@ export function PublicPerformanceDetailPage() {
         type="article"
       />
 
-      <Link to="/rendimiento" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-stack-md">
-        ← Análisis de rendimiento
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-stack-md">
+        <Link to="/rendimiento" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+          ← Análisis de rendimiento
+        </Link>
+        <button
+          type="button"
+          onClick={() => downloadPerformanceReportPdf(report)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/40 text-primary font-label-caps text-[11px] hover:bg-primary/10 transition-colors"
+        >
+          <MaterialIcon name="picture_as_pdf" size={18} />
+          Descargar PDF
+        </button>
+      </div>
 
       <div className="rounded-2xl border border-outline-variant/30 bg-surface-container-low overflow-hidden shadow-lg">
         <header className="bg-gradient-to-b from-surface-container-high to-surface-container-low px-stack-md py-stack-lg text-center border-b border-outline-variant/25">
@@ -82,13 +94,8 @@ export function PublicPerformanceDetailPage() {
           />
           <p className="font-label-caps text-label-caps text-primary tracking-widest mb-2">{CLUB_DISPLAY_NAME}</p>
           <h1 className="font-display-hero text-2xl sm:text-3xl text-on-surface mb-3">Análisis de rendimiento</h1>
-          <p className="font-body-md text-on-surface-variant capitalize">{formatReportDateLong(report.reportDate)}</p>
-          <span className="inline-block mt-4 px-4 py-1.5 rounded-full bg-secondary/15 text-secondary font-label-caps text-label-caps border border-secondary/30">
-            {report.category}
-          </span>
-          {report.title !== report.category ? (
-            <p className="mt-3 font-body-lg text-on-surface">{report.title}</p>
-          ) : null}
+          <p className="font-body-md text-on-surface-variant capitalize mb-2">{formatReportDateLong(report.reportDate)}</p>
+          <p className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{report.title}</p>
         </header>
 
         <section className="px-stack-md py-stack-lg space-y-stack-md">

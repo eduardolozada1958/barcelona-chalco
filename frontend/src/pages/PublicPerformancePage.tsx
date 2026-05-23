@@ -23,7 +23,7 @@ export function PublicPerformancePage() {
       <header className="mb-stack-lg border-b border-outline-variant/30 pb-stack-sm text-center">
         <h1 className="font-display-hero text-display-hero text-primary mb-base">Análisis de rendimiento</h1>
         <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mx-auto">
-          Informes generales del cuerpo técnico sobre avances y áreas de mejora por categoría.
+          Informes del cuerpo técnico sobre avances y áreas de mejora por jugador.
         </p>
       </header>
 
@@ -43,7 +43,6 @@ export function PublicPerformancePage() {
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-label-caps text-label-caps text-secondary mb-1">{r.category}</p>
                     <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">{r.title}</h2>
                     <p className="font-body-sm text-on-surface-variant mt-1">
                       {formatMatchDateClub(r.reportDate)} · {r.entries.length} jugador{r.entries.length === 1 ? '' : 'es'}

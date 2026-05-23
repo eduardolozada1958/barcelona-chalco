@@ -18,6 +18,7 @@ import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { formatMatchDateClub } from '@/utils/club-datetime';
+import { downloadPerformanceReportPdf } from '@/utils/performance-pdf';
 import { getApiErrorMessage } from '@utils/api-error';
 
 const EMPTY_ENTRY: PerformanceEntry = { playerName: '', advance: '', difficulty: '' };
@@ -32,7 +33,6 @@ export function DashboardPerformancePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editRow, setEditRow] = useState<PerformanceReport | null>(null);
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Sub-11');
   const [reportDate, setReportDate] = useState(todayIsoDate());
   const [entries, setEntries] = useState<PerformanceEntry[]>([{ ...EMPTY_ENTRY }]);
 
@@ -45,7 +45,6 @@ export function DashboardPerformancePage() {
 
   const resetForm = () => {
     setTitle('');
-    setCategory('Sub-11');
     setReportDate(todayIsoDate());
     setEntries([{ ...EMPTY_ENTRY }]);
     setEditRow(null);
@@ -59,7 +58,6 @@ export function DashboardPerformancePage() {
   const openEdit = (row: PerformanceReport) => {
     setEditRow(row);
     setTitle(row.title);
-    setCategory(row.category);
     setReportDate(row.reportDate);
     setEntries(row.entries.length ? row.entries.map((e) => ({ ...e })) : [{ ...EMPTY_ENTRY }]);
     setModalOpen(true);
@@ -74,7 +72,7 @@ export function DashboardPerformancePage() {
     mutationFn: async (publishAfter: boolean) => {
       const body: CreatePerformanceReportBody = {
         title: title.trim(),
-        category: category.trim(),
+        category: 'General',
         reportDate,
         entries: entries
           .map((e) => ({
@@ -85,7 +83,7 @@ export function DashboardPerformancePage() {
           .filter((e) => e.playerName && e.advance),
       };
       if (body.entries.length === 0) throw new Error('Agrega al menos un jugador con avance');
-      if (!body.title || !body.category) throw new Error('Título y categoría son obligatorios');
+      if (!body.title) throw new Error('El título es obligatorio');
 
       if (editRow) {
         const res = await updatePerformanceReport(editRow.id, body);
@@ -148,11 +146,11 @@ export function DashboardPerformancePage() {
       </div>
 
       <p className="text-sm text-on-surface-variant mb-stack-md max-w-2xl">
-        Crea informes por categoría (ej. Sub-11) con avance y dificultad por jugador. Al publicar, aparecen en{' '}
+        Crea informes con avance y dificultad por jugador. Al publicar, aparecen en{' '}
         <Link to="/rendimiento" className="text-primary hover:underline" target="_blank" rel="noreferrer">
           /rendimiento
         </Link>{' '}
-        con el logo de F.C. Barcelona Cupido.
+        y puedes exportarlos en PDF con el logo de F.C. Barcelona Cupido.
       </p>
 
       <div className="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low/50">
@@ -160,7 +158,6 @@ export function DashboardPerformancePage() {
           <thead className="bg-surface-container border-b border-outline-variant/20">
             <tr>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Informe</th>
-              <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Categoría</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Fecha</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Estado</th>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Acciones</th>
@@ -169,7 +166,7 @@ export function DashboardPerformancePage() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="p-8 text-center text-on-surface-variant">
+                <td colSpan={4} className="p-8 text-center text-on-surface-variant">
                   No hay informes. Crea el primero con el botón de arriba.
                 </td>
               </tr>
@@ -180,7 +177,6 @@ export function DashboardPerformancePage() {
                     <p className="font-medium text-on-surface">{row.title}</p>
                     <p className="text-xs text-on-surface-variant">{row.entries.length} jugador(es)</p>
                   </td>
-                  <td className="p-4 text-on-surface-variant">{row.category}</td>
                   <td className="p-4 text-on-surface-variant">{formatMatchDateClub(row.reportDate)}</td>
                   <td className="p-4">
                     <span
@@ -203,25 +199,35 @@ export function DashboardPerformancePage() {
                       }}
                       deletePending={deleteMut.isPending}
                     />
-                    {row.isPublished ? (
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        <Link
-                          to={`/rendimiento/${row.id}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[11px] text-primary hover:underline"
-                        >
-                          Ver público ↗
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() => publishMut.mutate({ id: row.id, publish: false })}
-                          className="text-[11px] text-on-surface-variant hover:text-secondary"
-                        >
-                          Despublicar
-                        </button>
-                      </div>
-                    ) : null}
+                    <div className="mt-1.5 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => downloadPerformanceReportPdf(row)}
+                        className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline"
+                      >
+                        <MaterialIcon name="picture_as_pdf" size={14} />
+                        PDF
+                      </button>
+                      {row.isPublished ? (
+                        <>
+                          <Link
+                            to={`/rendimiento/${row.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[11px] text-primary hover:underline"
+                          >
+                            Ver público ↗
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => publishMut.mutate({ id: row.id, publish: false })}
+                            className="text-[11px] text-on-surface-variant hover:text-secondary"
+                          >
+                            Despublicar
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -233,18 +239,17 @@ export function DashboardPerformancePage() {
       <DashboardModal open={modalOpen} onClose={closeModal} title={editRow ? 'Editar informe' : 'Nuevo informe'}>
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
           <div>
-            <label className={formLabelClass}>Título</label>
-            <input className={formInputClass} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Análisis Sub-11 — mayo 2026" />
+            <label className={formLabelClass}>Título del informe</label>
+            <input
+              className={formInputClass}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Análisis Sub-11 — mayo 2026"
+            />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={formLabelClass}>Categoría</label>
-              <input className={formInputClass} value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Sub-11" />
-            </div>
-            <div>
-              <label className={formLabelClass}>Fecha del informe</label>
-              <input type="date" className={formInputClass} value={reportDate} onChange={(e) => setReportDate(e.target.value)} />
-            </div>
+          <div>
+            <label className={formLabelClass}>Fecha del informe</label>
+            <input type="date" className={formInputClass} value={reportDate} onChange={(e) => setReportDate(e.target.value)} />
           </div>
 
           <div>

@@ -21,7 +21,7 @@ export const performanceEntrySchema = z.object({
 
 export const createPerformanceReportSchema = z.object({
   title:      z.string().min(3).max(200),
-  category:   z.string().min(2).max(80).default('General'),
+  category:   z.string().max(80).optional().default('General'),
   reportDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (YYYY-MM-DD)'),
   entries:    z.array(performanceEntrySchema).min(1).max(40),
 });
