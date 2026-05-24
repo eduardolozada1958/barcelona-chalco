@@ -259,11 +259,11 @@ export function DashboardUsersPage() {
           <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
             {rows.length} registrados
           </span>
-          {roleFilter === 'parent' ? (
+          {(roleFilter === 'parent' || roleFilter === 'all') ? (
             <button
               type="button"
               onClick={() => setRemindOpen(true)}
-              className="bg-secondary/15 text-secondary border border-secondary/30 font-label-caps text-label-caps px-4 py-2.5 rounded-lg hover:bg-secondary/25 transition-all flex items-center gap-2"
+              className="bg-secondary/15 text-secondary border border-secondary/30 font-label-caps text-label-caps px-4 py-2.5 rounded-lg hover:bg-secondary/25 transition-all flex items-center gap-2 shrink-0"
             >
               <MaterialIcon name="mail" size={16} />
               Recordar vínculo CURP
