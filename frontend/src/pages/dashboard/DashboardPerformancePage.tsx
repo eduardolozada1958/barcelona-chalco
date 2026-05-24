@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ import {
   type PerformanceEntry,
   type PerformanceReport,
 } from '@/api/performance';
+import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -21,7 +22,11 @@ import { formatMatchDateClub } from '@/utils/club-datetime';
 import { downloadPerformanceReportPdf } from '@/utils/performance-pdf';
 import { getApiErrorMessage } from '@utils/api-error';
 
-const EMPTY_ENTRY: PerformanceEntry = { playerName: '', advance: '', difficulty: '' };
+const EMPTY_ENTRY: PerformanceEntry = { playerName: '', advance: '', difficulty: '', playerId: null };
+
+function playerDisplayName(p: Record<string, unknown>): string {
+  return `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || String(p.id ?? '');
+}
 
 function todayIsoDate(): string {
   const d = new Date();
@@ -40,6 +45,22 @@ export function DashboardPerformancePage() {
     queryKey: ['performance-admin'],
     queryFn: () => listPerformanceAdmin({ page: 1, limit: 50 }),
   });
+
+  const playersQ = useQuery({
+    queryKey: ['players-admin', 'performance-report'],
+    queryFn: () => listPlayersAdmin({ page: 1, limit: 200, status: 'active' }),
+    enabled: modalOpen,
+  });
+
+  const rosterPlayers = useMemo(() => {
+    const rows = (playersQ.data?.data ?? []) as Record<string, unknown>[];
+    return [...rows].sort((a, b) => {
+      const la = String(a.last_name ?? '');
+      const lb = String(b.last_name ?? '');
+      if (la !== lb) return la.localeCompare(lb, 'es');
+      return String(a.first_name ?? '').localeCompare(String(b.first_name ?? ''), 'es');
+    });
+  }, [playersQ.data]);
 
   const rows = (q.data?.data ?? []) as PerformanceReport[];
 
@@ -77,6 +98,7 @@ export function DashboardPerformancePage() {
         entries: entries
           .map((e) => ({
             playerName: e.playerName.trim(),
+            playerId: e.playerId ?? null,
             advance: e.advance.trim(),
             difficulty: e.difficulty?.trim() ?? '',
           }))
@@ -84,6 +106,9 @@ export function DashboardPerformancePage() {
       };
       if (body.entries.length === 0) throw new Error('Agrega al menos un jugador con avance');
       if (!body.title) throw new Error('El título es obligatorio');
+      if (entries.some((e) => e.advance.trim() && !e.playerName.trim())) {
+        throw new Error('Selecciona un jugador de la plantilla para cada fila con avance');
+      }
 
       if (editRow) {
         const res = await updatePerformanceReport(editRow.id, body);
@@ -264,19 +289,69 @@ export function DashboardPerformancePage() {
               </button>
             </div>
             <div className="space-y-4">
-              {entries.map((entry, idx) => (
+              {playersQ.isLoading ? (
+                <p className="text-xs text-on-surface-variant">Cargando plantilla…</p>
+              ) : rosterPlayers.length === 0 ? (
+                <p className="text-xs text-on-surface-variant">
+                  No hay jugadores activos en Plantilla.{' '}
+                  <Link to="/dashboard/players" className="text-primary hover:underline">
+                    Agregar jugadores
+                  </Link>
+                </p>
+              ) : null}
+              {entries.map((entry, idx) => {
+                const selectedElsewhere = new Set(
+                  entries.flatMap((e, i) => {
+                    if (i === idx) return [];
+                    if (e.playerId) return [String(e.playerId)];
+                    const match = rosterPlayers.find((p) => playerDisplayName(p) === e.playerName.trim());
+                    return match ? [String(match.id)] : [];
+                  }),
+                );
+                const matchedPlayer = rosterPlayers.find(
+                  (p) =>
+                    (entry.playerId && String(p.id) === String(entry.playerId)) ||
+                    playerDisplayName(p) === entry.playerName.trim(),
+                );
+                const selectedId = matchedPlayer ? String(matchedPlayer.id) : '';
+                const legacyName =
+                  entry.playerName.trim() && !matchedPlayer ? entry.playerName.trim() : '';
+
+                return (
                 <div key={idx} className="rounded-lg border border-outline-variant/25 p-3 space-y-2 bg-surface-container/30">
                   <div className="flex gap-2 items-start">
-                    <input
+                    <select
                       className={formInputClass}
-                      value={entry.playerName}
+                      value={selectedId || (legacyName ? '__legacy__' : '')}
                       onChange={(e) => {
+                        const id = e.target.value;
+                        const player = rosterPlayers.find((p) => String(p.id) === id);
                         const next = [...entries];
-                        next[idx] = { ...next[idx], playerName: e.target.value };
+                        next[idx] = {
+                          ...next[idx],
+                          playerId: player ? String(player.id) : null,
+                          playerName: player ? playerDisplayName(player) : '',
+                        };
                         setEntries(next);
                       }}
-                      placeholder="Nombre del jugador"
-                    />
+                    >
+                      <option value="">Selecciona un jugador…</option>
+                      {legacyName ? (
+                        <option value="__legacy__">{legacyName} (nombre guardado)</option>
+                      ) : null}
+                      {rosterPlayers.map((p) => {
+                        const id = String(p.id);
+                        const disabled = selectedElsewhere.has(id);
+                        const jersey = p.jersey_number != null ? `#${p.jersey_number} · ` : '';
+                        return (
+                          <option key={id} value={id} disabled={disabled}>
+                            {jersey}
+                            {playerDisplayName(p)}
+                            {disabled ? ' (ya agregado)' : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
                     {entries.length > 1 ? (
                       <button
                         type="button"
@@ -309,7 +384,8 @@ export function DashboardPerformancePage() {
                     placeholder="Dificultad (opcional)"
                   />
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
