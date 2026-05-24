@@ -203,11 +203,13 @@ export class AuthService {
 
     // Insertar perfil de padre
     await supabaseAdmin.from('parents').insert({
-      user_id:       newUser.id,
-      first_name:    input.firstName,
-      last_name:     input.lastName,
-      phone_primary: input.phonePrimary,
-      relationship:  input.relationship,
+      user_id:                 newUser.id,
+      first_name:              input.firstName,
+      last_name:               input.lastName,
+      phone_primary:           input.phonePrimary,
+      relationship:            input.relationship,
+      whatsapp_notify_enabled: true,
+      whatsapp_notify_at:      new Date().toISOString(),
     });
 
     await EmailVerificationService.createAndSend(

@@ -170,8 +170,8 @@ export function ParentAccountStatus({ compact = false }: { compact?: boolean }) 
                 onChange={(e) => waMut.mutate(e.target.checked)}
               />
               <span className="text-on-surface-variant">
-                Recibir avisos urgentes, partidos y comunicados en mi WhatsApp ({data.coach.phone} es solo contacto
-                del entrenador; esto usa el número del club).
+                Recibir partidos, resultados, avisos y galería en mi WhatsApp. Se activa solo cuando verificas correo,
+                vinculas a tu hijo y tienes teléfono en Mi perfil. Puedes desactivarlo aquí.
               </span>
             </label>
           ) : (

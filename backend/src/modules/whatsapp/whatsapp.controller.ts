@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '@shared/utils/response';
 import { formatPhoneForDisplay } from './phone';
-import { listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
+import { getWhatsAppRecipientDiagnostics, listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
 import { WhatsAppService } from './whatsapp.service';
 
 export class WhatsAppController {
@@ -11,6 +11,7 @@ export class WhatsAppController {
       res.set('Pragma', 'no-cache');
       const status = WhatsAppService.getStatus();
       const recipients = await listVerifiedParentWhatsAppRecipients();
+      const diagnostics = await getWhatsAppRecipientDiagnostics();
       const eligible = recipients.length;
       const qrDataUrl = status.qr ? await WhatsAppService.getQrDataUrl() : null;
       const first = recipients[0];
@@ -21,7 +22,7 @@ export class WhatsAppController {
             phoneSource: first.phoneSource,
           }
         : null;
-      sendSuccess(res, { ...status, qrDataUrl, eligibleRecipients: eligible, testRecipient });
+      sendSuccess(res, { ...status, qrDataUrl, eligibleRecipients: eligible, testRecipient, diagnostics });
     } catch (e) {
       next(e);
     }

@@ -19,6 +19,7 @@ import {
 } from '@shared/utils/attendance-calendar';
 import { phoneToWhatsAppJid } from '@modules/whatsapp/phone';
 import { maskEmail, maskPhone } from '@shared/utils/mask-contact';
+import { logger } from '@shared/utils/logger';
 import type {
   CreateLinkRequestInput,
   ListLinkRequestsQuery,
@@ -462,7 +463,16 @@ export class ParentsService {
       .single();
 
     if (error) throw new Error(error.message);
-    return ParentsService.mapLinkRow(data as Record<string, unknown>);
+    const mapped = ParentsService.mapLinkRow(data as Record<string, unknown>);
+    const parentUserId = (() => {
+      const parents = row.parents as Record<string, unknown> | null | undefined;
+      if (parents?.user_id) return String(parents.user_id);
+      return null;
+    })();
+    if (parentUserId) {
+      void ParentsService.tryAutoEnableWhatsAppNotify(parentUserId);
+    }
+    return mapped;
   }
 
   static async rejectLinkRequest(
@@ -525,6 +535,37 @@ export class ParentsService {
 
     if (error) throw new Error(error.message);
     return ParentsService.mapLinkRow(data as Record<string, unknown>);
+  }
+
+  static async tryAutoEnableWhatsAppNotify(userId: string): Promise<void> {
+    try {
+      const parent = await ParentsService.getParentByUserId(userId);
+      const check = await ParentsService.isParentEligibleForWhatsApp(parent.id, userId);
+      if (!check.eligible) return;
+
+      const { data: row } = await supabaseAdmin
+        .from('parents')
+        .select('whatsapp_notify_enabled')
+        .eq('id', parent.id)
+        .maybeSingle();
+
+      if (row?.whatsapp_notify_enabled) return;
+
+      await supabaseAdmin
+        .from('parents')
+        .update({
+          whatsapp_notify_enabled: true,
+          whatsapp_notify_at:      new Date().toISOString(),
+        })
+        .eq('id', parent.id);
+
+      logger.info('WhatsApp: avisos activados automáticamente para padre elegible', {
+        userId,
+        parentId: parent.id,
+      });
+    } catch (e) {
+      logger.warn('WhatsApp: no se pudo auto-activar avisos', { userId, err: e });
+    }
   }
 
   static async isParentEligibleForWhatsApp(parentId: string, userId: string): Promise<{

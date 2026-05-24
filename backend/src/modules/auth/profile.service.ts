@@ -53,6 +53,8 @@ export class ProfileService {
           'No se encontró tu ficha de padre/tutor. Contacta al club para vincular tu cuenta.',
         );
       }
+      const { ParentsService } = await import('@modules/parents/parents.service');
+      void ParentsService.tryAutoEnableWhatsAppNotify(userId);
     }
 
     return data;

@@ -398,7 +398,7 @@ export class GalleryService {
       void WhatsAppService.notifyGalleryPublished({
         id:          String(data.id),
         title:       String(data.title ?? 'Galería'),
-        description: data.description ? String(data.description) : null,
+        description: data.caption ? String(data.caption) : null,
       }).catch((e) => logger.warn('WhatsApp: falló aviso de galería publicada', { postId: id, err: e }));
     }
 

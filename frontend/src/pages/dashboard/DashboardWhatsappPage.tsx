@@ -103,11 +103,34 @@ export function DashboardWhatsappPage() {
           </span>
         </div>
         <p className="text-sm text-on-surface-variant">
-          Padres con WhatsApp activo y elegibles:{' '}
+          Padres que recibirán avisos (partidos, resultados, avisos, galería, MVP):{' '}
           <strong className="text-on-surface">{status?.eligibleRecipients ?? 0}</strong>
         </p>
-        <p className="text-xs text-on-surface-variant">
-          Al publicar avisos, galería, MVP, resultados o partidos, el mensaje se envía a{' '}
+        {status?.diagnostics ? (
+          <ul className="text-xs text-on-surface-variant space-y-1 mt-2">
+            {status.diagnostics.optedOut > 0 ? (
+              <li>• {status.diagnostics.optedOut} desactivaron avisos en Mi perfil</li>
+            ) : null}
+            {status.diagnostics.noApprovedChild > 0 ? (
+              <li>• {status.diagnostics.noApprovedChild} sin hijo vinculado aprobado</li>
+            ) : null}
+            {status.diagnostics.emailNotVerified > 0 ? (
+              <li>• {status.diagnostics.emailNotVerified} con correo sin verificar</li>
+            ) : null}
+            {status.diagnostics.noPhone > 0 ? (
+              <li>• {status.diagnostics.noPhone} sin teléfono válido en Mi perfil</li>
+            ) : null}
+            {status.diagnostics.accountNotActive > 0 ? (
+              <li>• {status.diagnostics.accountNotActive} con cuenta inactiva</li>
+            ) : null}
+            {status.diagnostics.duplicatePhone > 0 ? (
+              <li>• {status.diagnostics.duplicatePhone} con teléfono duplicado (omitidos)</li>
+            ) : null}
+          </ul>
+        ) : null}
+        <p className="text-xs text-on-surface-variant mt-2">
+          Los avisos se activan automáticamente cuando el padre verifica correo, vincula un hijo aprobado y tiene
+          teléfono. Al publicar avisos, galería, MVP, resultados o crear partidos, el mensaje se envía a{' '}
           <strong className="text-on-surface">todos</strong> esos padres (uno por uno, con pausa entre envíos).
           «Enviar prueba» solo manda a <strong className="text-on-surface">uno</strong> para comprobar la conexión.
         </p>

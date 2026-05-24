@@ -114,6 +114,9 @@ export class EmailVerificationService {
       .from('email_verification_tokens')
       .update({ used_at: new Date().toISOString() })
       .eq('id', row.id);
+
+    const { ParentsService } = await import('@modules/parents/parents.service');
+    void ParentsService.tryAutoEnableWhatsAppNotify(String(row.user_id));
   }
 
   /** Reenvía solo si existe un padre sin verificar (respuesta genérica en el controlador). */

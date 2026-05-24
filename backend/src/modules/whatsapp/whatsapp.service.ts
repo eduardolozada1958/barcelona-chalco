@@ -7,6 +7,7 @@ import { PlayersService } from '@modules/players/players.service';
 import { NOTICE_TYPES_WITH_WHATSAPP } from './whatsapp.constants';
 import { formatPhoneForDisplay, normalizePhoneDigits } from './phone';
 import {
+  ensureWhatsAppClientRunning,
   getConnectedWhatsAppJid,
   getWhatsAppStatus,
   initWhatsAppClient,
@@ -14,7 +15,7 @@ import {
   sendWhatsAppText,
 } from './whatsapp.client';
 import { jidToPhoneDigits } from './whatsapp-delivery';
-import { listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
+import { getWhatsAppRecipientDiagnostics, listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
 
 function publicAppOrigin(): string {
   const raw = env.APP_PUBLIC_URL ?? env.CORS_ORIGIN.split(',')[0]?.trim() ?? '';
@@ -34,6 +35,9 @@ function delay(ms: number): Promise<void> {
 let sendsThisHour = 0;
 let hourStarted = Date.now();
 
+const BROADCAST_CONNECT_WAIT_MS = 20_000;
+const BROADCAST_CONNECT_POLL_MS = 1_000;
+
 function resetHourlyCapIfNeeded(): void {
   if (Date.now() - hourStarted > 3_600_000) {
     hourStarted = Date.now();
@@ -41,22 +45,57 @@ function resetHourlyCapIfNeeded(): void {
   }
 }
 
-async function broadcastToParents(message: string): Promise<{ sent: number; failed: number; total: number }> {
+async function assertReadyForBroadcast(): Promise<void> {
+  if (!env.WHATSAPP_ENABLED) {
+    throw new Error('WhatsApp no está habilitado en el servidor.');
+  }
+  await ensureWhatsAppClientRunning();
+  const deadline = Date.now() + BROADCAST_CONNECT_WAIT_MS;
+  while (Date.now() < deadline) {
+    if (getWhatsAppStatus().state === 'open') return;
+    await delay(BROADCAST_CONNECT_POLL_MS);
+  }
+  throw new Error('WhatsApp no está conectado. Abre el panel de administración y escanea el QR.');
+}
+
+async function broadcastToParents(message: string): Promise<{ sent: number; failed: number; total: number; skippedCap: number }> {
   resetHourlyCapIfNeeded();
+  await assertReadyForBroadcast();
+
   const recipients = await listVerifiedParentWhatsAppRecipients();
   const total = recipients.length;
   let sent = 0;
   let failed = 0;
+  let skippedCap = 0;
 
   if (total === 0) {
-    logger.warn('WhatsApp: broadcast sin padres elegibles (opt-in + hijo aprobado + teléfono)');
-    return { sent: 0, failed: 0, total: 0 };
+    const diag = await getWhatsAppRecipientDiagnostics();
+    logger.warn('WhatsApp: broadcast sin padres elegibles', diag);
+    return { sent: 0, failed: 0, total: 0, skippedCap: 0 };
   }
+
+  const botJid = getConnectedWhatsAppJid();
+  const botDigits = jidToPhoneDigits(botJid);
 
   for (const r of recipients) {
     if (sendsThisHour >= env.WHATSAPP_MAX_PER_HOUR) {
-      logger.warn('WhatsApp: límite por hora alcanzado', { cap: env.WHATSAPP_MAX_PER_HOUR });
+      skippedCap = total - sent - failed;
+      logger.warn('WhatsApp: límite por hora alcanzado', {
+        cap: env.WHATSAPP_MAX_PER_HOUR,
+        sent,
+        failed,
+        skippedCap,
+      });
       break;
+    }
+    const destDigits = normalizePhoneDigits(r.phoneRaw);
+    if (botDigits && destDigits && botDigits === destDigits) {
+      failed += 1;
+      logger.warn('WhatsApp: teléfono del padre coincide con el chip del club; omitido', {
+        label: r.label,
+        phone: formatPhoneForDisplay(r.phoneRaw),
+      });
+      continue;
     }
     try {
       await sendWhatsAppText(r.jid, message, r.phoneRaw, { lenientVerify: true });
@@ -69,8 +108,8 @@ async function broadcastToParents(message: string): Promise<{ sent: number; fail
     }
   }
 
-  logger.info('WhatsApp: broadcast a todos los elegibles', { sent, failed, total });
-  return { sent, failed, total };
+  logger.info('WhatsApp: broadcast a todos los elegibles', { sent, failed, total, skippedCap });
+  return { sent, failed, total, skippedCap };
 }
 
 export class WhatsAppService {
@@ -106,6 +145,10 @@ export class WhatsAppService {
     return list.length;
   }
 
+  static async getRecipientDiagnostics() {
+    return getWhatsAppRecipientDiagnostics();
+  }
+
   static async sendTestMessage(): Promise<{
     sent: number;
     failed: number;
@@ -136,6 +179,7 @@ export class WhatsAppService {
       r.jid,
       '🏟️ *Barcelona Cupido*\n\nMensaje de prueba del sistema de avisos. Si lo recibiste, la conexión funciona.',
       r.phoneRaw,
+      { lenientVerify: true },
     );
     return {
       sent: 1,
@@ -176,7 +220,7 @@ export class WhatsAppService {
     location: string;
     category?: string;
   }): Promise<void> {
-    if (!env.WHATSAPP_ENABLED) return;
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_MATCHES) return;
 
     const fecha = formatClubDate(match.match_date);
     const hora = formatClubTime(match.match_date);

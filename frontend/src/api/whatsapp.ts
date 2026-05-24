@@ -1,6 +1,16 @@
 import { apiClient } from './client';
 import type { ApiResponse } from './types';
 
+export type WhatsAppRecipientDiagnostics = {
+  eligible: number;
+  optedOut: number;
+  noPhone: number;
+  emailNotVerified: number;
+  accountNotActive: number;
+  noApprovedChild: number;
+  duplicatePhone: number;
+};
+
 export type WhatsAppStatus = {
   enabled: boolean;
   state: 'disabled' | 'connecting' | 'qr' | 'open' | 'closed';
@@ -13,6 +23,7 @@ export type WhatsAppStatus = {
   recovering?: boolean;
   linkingAfterQr?: boolean;
   testRecipient?: { name: string; phone: string; phoneSource: string } | null;
+  diagnostics?: WhatsAppRecipientDiagnostics;
 };
 
 export async function getWhatsAppStatus() {
