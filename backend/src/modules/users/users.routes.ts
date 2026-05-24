@@ -64,6 +64,15 @@ usersRouter.patch(
 );
 
 usersRouter.post(
+  '/:id/remind-curp-link',
+  authMiddleware,
+  requireAdmin,
+  validateParams(userIdParamSchema),
+  validateBody(remindUnlinkedParentsBodySchema),
+  UsersController.remindSingleParentCurp,
+);
+
+usersRouter.post(
   '/:id/send-delete-code',
   authMiddleware,
   requireAdmin,

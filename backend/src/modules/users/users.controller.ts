@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { UsersService } from './users.service';
-import { listUnlinkedParents, remindUnlinkedParents } from '@modules/parents/unlinked-reminder.service';
+import { remindUnlinkedParents, remindSingleParent, unlinkedParentsStats } from '@modules/parents/unlinked-reminder.service';
 import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
 import { HTTP_STATUS } from '@config/constants';
@@ -127,12 +127,25 @@ export class UsersController {
 
   static async unlinkedParentsStats(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const targets = await listUnlinkedParents();
-      sendSuccess(res, {
-        count: targets.length,
-        withEmail: targets.filter((t) => Boolean(t.email)).length,
-        withPhone: targets.filter((t) => Boolean(t.jid)).length,
-      }, 'Padres sin vínculo CURP');
+      const stats = await unlinkedParentsStats();
+      sendSuccess(res, stats, 'Padres sin vínculo CURP');
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async remindSingleParentCurp(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const body = (req.body ?? {}) as RemindUnlinkedParentsBody;
+      const result = await remindSingleParent(routeParam(req, 'id'), {
+        sendEmail:    body.sendEmail !== false,
+        sendWhatsApp: Boolean(body.sendWhatsApp),
+      });
+      sendSuccess(
+        res,
+        result,
+        `Recordatorio enviado: ${result.emailsSent} correo(s), ${result.whatsappSent} WhatsApp.`,
+      );
     } catch (e) {
       next(e);
     }

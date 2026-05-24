@@ -10,6 +10,7 @@ import {
   getUnlinkedParentsStats,
   isUserLoginLocked,
   listUsers,
+  remindSingleParentCurp,
   remindUnlinkedParents,
   requestUserEmailChange,
   sendUserDeleteCode,
@@ -170,6 +171,16 @@ export function DashboardUsersPage() {
     onSuccess: (res) => {
       toast.success(res.message ?? 'Recordatorios enviados');
       setRemindOpen(false);
+      void unlinkedStatsQ.refetch();
+    },
+    onError: (e: Error) => toast.error(getApiErrorMessage(e)),
+  });
+
+  const singleRemindMut = useMutation({
+    mutationFn: ({ id, sendEmail, sendWhatsApp }: { id: string; sendEmail: boolean; sendWhatsApp: boolean }) =>
+      remindSingleParentCurp(id, { sendEmail, sendWhatsApp }),
+    onSuccess: (res) => {
+      toast.success(res.message ?? 'Recordatorio enviado');
       void unlinkedStatsQ.refetch();
     },
     onError: (e: Error) => toast.error(getApiErrorMessage(e)),
@@ -475,6 +486,57 @@ export function DashboardUsersPage() {
               </div>
             ) : null}
 
+            {String(manageUser.role) === 'parent' &&
+            (manageUser.parentLinkSummary as { hasNoLinks?: boolean } | undefined)?.hasNoLinks ? (
+              <div className="rounded-lg border border-secondary/30 bg-secondary/5 px-3 py-3 space-y-3">
+                <p className="font-label-caps text-[10px] text-secondary tracking-wide">Recordatorio vínculo CURP</p>
+                <p className="text-xs text-on-surface-variant leading-relaxed">
+                  Este padre aún no ha vinculado a su hijo con CURP. Puedes enviar{' '}
+                  <strong className="text-on-surface">WhatsApp aunque el correo no esté verificado</strong>, si registró
+                  teléfono. El correo solo se envía si la cuenta está activa y verificada.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={singleRemindMut.isPending}
+                    onClick={() => {
+                      if (!window.confirm(`¿Enviar WhatsApp a ${String(manageUser.email)}?`)) return;
+                      singleRemindMut.mutate({
+                        id: String(manageUser.id),
+                        sendEmail: false,
+                        sendWhatsApp: true,
+                      });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-green-500/40 text-green-400 text-[10px] font-label-caps hover:bg-green-500/10 disabled:opacity-50"
+                  >
+                    <MaterialIcon name="chat" size={16} />
+                    WhatsApp (1 mensaje)
+                  </button>
+                  <button
+                    type="button"
+                    disabled={singleRemindMut.isPending || manageUser.email_verified === false}
+                    onClick={() => {
+                      if (!window.confirm(`¿Enviar correo a ${String(manageUser.email)}?`)) return;
+                      singleRemindMut.mutate({
+                        id: String(manageUser.id),
+                        sendEmail: true,
+                        sendWhatsApp: false,
+                      });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/40 text-primary text-[10px] font-label-caps hover:bg-primary/10 disabled:opacity-50"
+                    title={
+                      manageUser.email_verified === false
+                        ? 'Correo no verificado: usa WhatsApp o espera a que active la cuenta'
+                        : undefined
+                    }
+                  >
+                    <MaterialIcon name="mail" size={16} />
+                    Correo
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
             <div className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-3 text-xs text-on-surface-variant space-y-2">
               <p className="font-label-caps text-[10px] text-primary tracking-wide">
                 Tu confirmación como administrador
@@ -592,14 +654,17 @@ export function DashboardUsersPage() {
 
       <DashboardModal open={remindOpen} onClose={() => setRemindOpen(false)} title="Recordar vínculo CURP">
         <p className="text-sm text-on-surface-variant mb-4">
-          Envía un recordatorio a padres <strong>activos que nunca solicitaron vínculo</strong> con la CURP de su hijo.
-          El mensaje incluye enlace a <em>Mis jugadores</em> en su panel.
+          Envía un recordatorio a padres <strong>sin vínculo CURP</strong> (incluye cuentas pendientes de verificar
+          correo para WhatsApp). Un solo mensaje por padre.
         </p>
         {unlinkedStatsQ.data?.data ? (
           <ul className="text-sm text-on-surface-variant mb-4 space-y-1">
             <li>• {unlinkedStatsQ.data.data.count} padre(s) sin vínculo</li>
-            <li>• {unlinkedStatsQ.data.data.withEmail} con correo</li>
-            <li>• {unlinkedStatsQ.data.data.withPhone} con teléfono (WhatsApp)</li>
+            <li>• {unlinkedStatsQ.data.data.withEmail} pueden recibir correo (activos + verificados)</li>
+            <li>• {unlinkedStatsQ.data.data.withPhone} pueden recibir WhatsApp (con teléfono)</li>
+            {unlinkedStatsQ.data.data.pendingEmail != null && unlinkedStatsQ.data.data.pendingEmail > 0 ? (
+              <li>• {unlinkedStatsQ.data.data.pendingEmail} con correo aún sin verificar (solo WA)</li>
+            ) : null}
           </ul>
         ) : null}
         <label className="flex items-center gap-2 mb-2 cursor-pointer">

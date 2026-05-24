@@ -73,6 +73,7 @@ export type UnlinkedParentsStats = {
   count: number;
   withEmail: number;
   withPhone: number;
+  pendingEmail?: number;
 };
 
 export async function getUnlinkedParentsStats() {
@@ -89,6 +90,17 @@ export type RemindUnlinkedResult = {
   skippedNoEmail: number;
   skippedNoPhone: number;
 };
+
+export async function remindSingleParentCurp(
+  userId: string,
+  body: { sendEmail?: boolean; sendWhatsApp?: boolean },
+) {
+  const { data } = await apiClient.post<ApiResponse<RemindUnlinkedResult>>(
+    `/users/${encodeURIComponent(userId)}/remind-curp-link`,
+    body,
+  );
+  return data;
+}
 
 export async function remindUnlinkedParents(body: { sendEmail?: boolean; sendWhatsApp?: boolean }) {
   const { data } = await apiClient.post<ApiResponse<RemindUnlinkedResult>>('/users/unlinked-parents/remind', body);
