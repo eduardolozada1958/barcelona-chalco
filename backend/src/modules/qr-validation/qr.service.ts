@@ -1,6 +1,6 @@
 import { supabaseAdmin } from '@config/database';
 import QRCode from 'qrcode';
-import { NotFoundError } from '@middlewares/error.middleware';
+import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { cacheGet, cacheSet } from '@shared/utils/ttl-cache';
 import { normalizeBirthDateOutput } from '@shared/utils/birth-date';
 import { maskCurpFragment } from '@shared/utils/curp-mask';
@@ -54,12 +54,19 @@ export class QrService {
 
   /**
    * Genera una imagen QR (PNG buffer) para el jugador indicado.
+   * Requiere el qr_token del jugador para evitar enumeración por UUID.
    */
-  static async generateImage(playerId: string): Promise<Buffer> {
+  static async generateImage(playerId: string, qrToken: string): Promise<Buffer> {
+    const token = qrToken.trim();
+    if (!token) {
+      throw new BadRequestError('Token QR requerido');
+    }
+
     const { data: player, error } = await supabaseAdmin
       .from('players')
       .select('id, first_name, last_name, qr_token, is_verified')
       .eq('id', playerId)
+      .eq('qr_token', token)
       .is('deleted_at', null)
       .single();
 

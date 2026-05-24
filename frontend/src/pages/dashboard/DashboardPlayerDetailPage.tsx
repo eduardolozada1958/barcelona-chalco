@@ -82,7 +82,10 @@ export function DashboardPlayerDetailPage() {
   const p = q.data?.data as Record<string, unknown> | undefined;
   if (!p) return <p className="text-on-surface">No encontrado.</p>;
 
-  const imgUrl = `${playerQrImageUrl(String(p.id))}?v=${encodeURIComponent(String(p.qr_generated_at ?? p.qr_token ?? p.id))}`;
+  const imgUrl =
+    typeof p.qr_token === 'string' && p.qr_token
+      ? `${playerQrImageUrl(String(p.id), String(p.qr_token))}&v=${encodeURIComponent(String(p.qr_generated_at ?? p.qr_token))}`
+      : null;
 
   return (
     <div className="max-w-3xl">
@@ -214,12 +217,14 @@ export function DashboardPlayerDetailPage() {
             El QR abre la vista inmersiva <strong className="text-on-surface">/credencial-ar/…</strong> (tarjeta 3D con efecto holográfico, sin cámara). La misma validación en formato de página está en <code className="text-primary">/credencial/…</code>. Si el escaneo abre otro sitio, define <code className="text-primary">APP_PUBLIC_URL</code> en Render con la URL de Cloudflare Pages.
           </p>
           <div className="flex flex-col sm:flex-row items-start gap-6">
+            {imgUrl ? (
             <img
               key={String(p.qr_generated_at ?? p.qr_token)}
               src={imgUrl}
               alt="QR jugador"
               className="h-48 w-48 rounded-lg border border-outline-variant/20 bg-white p-2"
             />
+            ) : null}
             <div className="space-y-3 text-sm text-on-surface-variant">
               <p><span className="font-label-caps text-[10px]">TOKEN:</span> <code className="text-primary break-all">{String(p.qr_token)}</code></p>
               <div className="flex flex-col gap-2">

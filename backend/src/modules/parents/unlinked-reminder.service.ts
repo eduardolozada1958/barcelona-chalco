@@ -4,7 +4,7 @@ import { BadRequestError } from '@middlewares/error.middleware';
 import { isEmailConfigured, sendMail } from '@shared/services/email.service';
 import { logger } from '@shared/utils/logger';
 import { phoneToWhatsAppJid } from '@modules/whatsapp/phone';
-import { sendWhatsAppText } from '@modules/whatsapp/whatsapp.client';
+import { sendWhatsAppText, getWhatsAppStatus } from '@modules/whatsapp/whatsapp.client';
 
 export type UnlinkedParentTarget = {
   userId: string;
@@ -125,7 +125,19 @@ export async function remindUnlinkedParents(opts: {
   let skippedNoPhone = 0;
 
   if (opts.sendEmail && !isEmailConfigured()) {
-    throw new BadRequestError('Correo no configurado en el servidor (SMTP).');
+    throw new BadRequestError('Correo no configurado en el servidor (Brevo/SMTP).');
+  }
+
+  if (opts.sendWhatsApp) {
+    if (!env.WHATSAPP_ENABLED) {
+      throw new BadRequestError('WhatsApp no está habilitado en el servidor.');
+    }
+    const { state } = getWhatsAppStatus();
+    if (state !== 'open') {
+      throw new BadRequestError(
+        'WhatsApp no está conectado. Abre el panel de administración y escanea el QR antes de enviar.',
+      );
+    }
   }
 
   for (const t of targets) {

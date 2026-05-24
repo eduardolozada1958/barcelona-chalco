@@ -4,6 +4,7 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { publicReadLimiter } from '@middlewares/rate-limit.middleware';
 
 import { parseCorsOrigins } from '@config/cors-origins';
 import { env, isProd } from '@config/env';
@@ -100,6 +101,13 @@ export function createApp(): Application {
       env:     env.NODE_ENV,
       version: '1.0.0',
     });
+  });
+
+  app.use((req, res, next) => {
+    if (isPublicReadRoute(req.path, req.method)) {
+      return publicReadLimiter(req, res, next);
+    }
+    return next();
   });
 
   // ── Rate Limiting ─────────────────────────────────────────

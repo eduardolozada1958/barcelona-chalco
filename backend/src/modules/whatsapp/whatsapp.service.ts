@@ -196,6 +196,34 @@ export class WhatsAppService {
     logger.info('WhatsApp partido programado', { matchId: match.id, sent, failed });
   }
 
+  static async notifyMatchUpdated(match: {
+    id: string;
+    title: string;
+    opponent_name: string;
+    match_date: string;
+    location: string;
+    category?: string;
+  }): Promise<void> {
+    if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_MATCHES) return;
+
+    const fecha = formatClubDate(match.match_date);
+    const hora = formatClubTime(match.match_date);
+    const origin = publicAppOrigin();
+    const url = origin ? `${origin}/partidos/${match.id}` : `/partidos/${match.id}`;
+    const cat = match.category ? `\nCategoría: ${match.category}` : '';
+
+    const message =
+      `⚽ *Partido actualizado — Barcelona Cupido*\n\n` +
+      `*${match.title}*\n` +
+      `vs ${match.opponent_name}${cat}\n` +
+      `📅 ${fecha} · ${hora}\n` +
+      `📍 ${match.location || 'Por confirmar'}\n\n` +
+      url;
+
+    const { sent, failed } = await broadcastToParents(message);
+    logger.info('WhatsApp partido actualizado', { matchId: match.id, sent, failed });
+  }
+
   static async notifyResultPublished(result: {
     id: string;
     goals_scored: number;
@@ -223,7 +251,9 @@ export class WhatsAppService {
     logger.info('WhatsApp resultado publicado', { resultId: result.id, sent, failed });
 
     if (env.WHATSAPP_NOTIFY_LEADERS) {
-      void WhatsAppService.notifySeasonLeadersUpdate().catch(() => {});
+      void WhatsAppService.notifySeasonLeadersUpdate().catch((e) =>
+        logger.warn('WhatsApp: falló aviso de tabla de goleo', { err: e }),
+      );
     }
   }
 

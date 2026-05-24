@@ -164,7 +164,7 @@ export class AuthService {
   ): Promise<{ email: string; verificationSent: boolean }> {
     if (!isEmailConfigured()) {
       throw new BadRequestError(
-        'El registro requiere verificación por correo; el servidor SMTP no está configurado.',
+        'El registro requiere verificación por correo; configura Brevo o SMTP en el servidor.',
       );
     }
 
@@ -210,7 +210,7 @@ export class AuthService {
       relationship:  input.relationship,
     });
 
-    EmailVerificationService.queueVerificationEmail(
+    await EmailVerificationService.createAndSend(
       newUser.id,
       newUser.email,
       newUser.full_name,

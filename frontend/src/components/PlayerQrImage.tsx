@@ -14,7 +14,9 @@ const SIZE_CLASS = {
 
 interface PlayerQrImageProps {
   playerId: string;
-  /** Token o fecha de generación; invalida caché del navegador al renovar el QR. */
+  /** Token QR del jugador (obligatorio para cargar la imagen). */
+  qrToken: string;
+  /** Fecha de generación; invalida caché del navegador al renovar el QR. */
   cacheKey: string;
   size?: keyof typeof SIZE_CLASS;
   className?: string;
@@ -23,9 +25,9 @@ interface PlayerQrImageProps {
 /**
  * QR único por jugador (generado en backend). Misma URL /api/v1 (proxy en Pages).
  */
-export function PlayerQrImage({ playerId, cacheKey, size = 'md', className = '' }: PlayerQrImageProps) {
+export function PlayerQrImage({ playerId, qrToken, cacheKey, size = 'md', className = '' }: PlayerQrImageProps) {
   const dim = SIZE_CLASS[size];
-  const src = `${playerQrImageUrl(playerId)}?v=${encodeURIComponent(cacheKey)}`;
+  const src = `${playerQrImageUrl(playerId, qrToken)}&v=${encodeURIComponent(cacheKey)}`;
   const [failed, setFailed] = useState(false);
 
   if (failed) {

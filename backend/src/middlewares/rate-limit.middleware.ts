@@ -24,6 +24,18 @@ export const commentsWriteLimiter = rateLimit({
   },
 });
 
+/** Lecturas públicas (anti-scraping sin bloquear navegación normal). */
+export const publicReadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      300,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: {
+    success: false,
+    message: 'Demasiadas peticiones públicas. Intenta de nuevo en unos minutos.',
+  },
+});
+
 /** Inscripciones públicas (anti-spam). */
 export const publicInscriptionLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,

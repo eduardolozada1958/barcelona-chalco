@@ -40,7 +40,7 @@ function withNormalizedBirthDate(row: Record<string, unknown>): Record<string, u
 
 function mapPublicPlayerRow(
   row: Record<string, unknown>,
-  opts?: { includeCredentialUrl?: boolean; displaySeason?: string },
+  opts?: { includeCredentialUrl?: boolean; displaySeason?: string; includeQrToken?: boolean },
 ): Record<string, unknown> {
   const { qr_token: token, ...rest } = row;
   const out: Record<string, unknown> = {
@@ -52,6 +52,9 @@ function mapPublicPlayerRow(
   }
   if (opts?.includeCredentialUrl && token) {
     out.credential_ar_url = `/credencial-ar/${encodeURIComponent(String(token))}`;
+  }
+  if (opts?.includeQrToken && token) {
+    out.qr_token = String(token);
   }
   return out;
 }
@@ -107,7 +110,9 @@ export class PlayersService {
     };
   }
 
-  static async listPublic(opts: Omit<ListOptions, 'status' | 'isVerified' | 'season'>) {
+  static async listPublic(
+    opts: Omit<ListOptions, 'status' | 'isVerified' | 'season'> & { forCredentials?: boolean },
+  ) {
     let query = supabaseAdmin
       .from('players')
       .select(PUBLIC_PLAYER_COLUMNS, { count: 'exact' })
@@ -133,7 +138,10 @@ export class PlayersService {
 
     return {
       data: (data ?? []).map((row) =>
-        mapPublicPlayerRow(row as Record<string, unknown>, { displaySeason }),
+        mapPublicPlayerRow(row as Record<string, unknown>, {
+          displaySeason,
+          includeQrToken: Boolean(opts.forCredentials),
+        }),
       ),
       meta: buildPaginationMeta(count ?? 0, opts.page, opts.limit),
     };

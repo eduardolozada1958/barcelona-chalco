@@ -129,7 +129,7 @@ export class EmailVerificationService {
     if (error) throw new Error(error.message);
     if (!user || user.role !== 'parent' || user.email_verified) return false;
 
-    EmailVerificationService.queueVerificationEmail(
+    await EmailVerificationService.createAndSend(
       user.id,
       user.email,
       String(user.full_name ?? ''),

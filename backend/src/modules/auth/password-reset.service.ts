@@ -44,30 +44,33 @@ export class PasswordResetService {
       return;
     }
 
-    PasswordResetService.queueResetEmail(user.id, user.email, user.full_name ?? '');
+    PasswordResetService.sendResetEmail(user.id, user.email, user.full_name ?? '');
   }
 
+  static async sendResetEmail(userId: string, email: string, fullName: string): Promise<void> {
+    try {
+      const rawToken = await PasswordResetService.createToken(userId);
+      const link = resetUrl(rawToken);
+      const { html, text } = buildPasswordResetEmail({
+        fullName,
+        link,
+        hours: env.PASSWORD_RESET_HOURS,
+      });
+      await sendMail({
+        to:      email,
+        subject: 'Restablece tu contraseña — F.C. Barcelona Cupido',
+        text,
+        html,
+      });
+      logger.info(`Correo de restablecimiento enviado a ${email}`);
+    } catch (err) {
+      logger.error(`No se pudo enviar restablecimiento a ${email}: ${(err as Error).message}`);
+    }
+  }
+
+  /** @deprecated Usar sendResetEmail (await interno). Mantenido por compatibilidad. */
   static queueResetEmail(userId: string, email: string, fullName: string): void {
-    void (async () => {
-      try {
-        const rawToken = await PasswordResetService.createToken(userId);
-        const link = resetUrl(rawToken);
-        const { html, text } = buildPasswordResetEmail({
-          fullName,
-          link,
-          hours: env.PASSWORD_RESET_HOURS,
-        });
-        await sendMail({
-          to:      email,
-          subject: 'Restablece tu contraseña — F.C. Barcelona Cupido',
-          text,
-          html,
-        });
-        logger.info(`Correo de restablecimiento enviado a ${email}`);
-      } catch (err) {
-        logger.error(`No se pudo enviar restablecimiento a ${email}: ${(err as Error).message}`);
-      }
-    })();
+    void PasswordResetService.sendResetEmail(userId, email, fullName);
   }
 
   private static async createToken(userId: string): Promise<string> {

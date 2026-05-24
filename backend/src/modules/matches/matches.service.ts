@@ -7,6 +7,7 @@ import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
 import { throwStorageOrDbError } from '@shared/utils/storage-errors';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
+import { logger } from '@shared/utils/logger';
 
 function normalizeLineup(raw: unknown): string[] {
   if (!raw) return [];
@@ -172,9 +173,7 @@ export class MatchesService {
         match_date:    String(data.match_date),
         location:      String(data.location ?? ''),
         category:      data.category ? String(data.category) : undefined,
-      }).catch(() => {
-        /* log en servicio */
-      });
+      }).catch((e) => logger.warn('WhatsApp: falló aviso de partido programado', { matchId: data.id, err: e }));
     }
 
     return data;
@@ -228,7 +227,43 @@ export class MatchesService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    if (
+      env.WHATSAPP_ENABLED &&
+      env.WHATSAPP_NOTIFY_MATCHES &&
+      data.status === 'scheduled' &&
+      new Date(String(data.match_date)).getTime() > Date.now() &&
+      MatchesService.shouldNotifyMatchUpdate(existing, data, input)
+    ) {
+      void WhatsAppService.notifyMatchUpdated({
+        id:            String(data.id),
+        title:         String(data.title),
+        opponent_name: String(data.opponent_name),
+        match_date:    String(data.match_date),
+        location:      String(data.location ?? ''),
+        category:      data.category ? String(data.category) : undefined,
+      }).catch((e) => logger.warn('WhatsApp: falló aviso de partido actualizado', { matchId: data.id, err: e }));
+    }
+
     return data;
+  }
+
+  /** Notifica solo si cambió algo relevante para padres (fecha, rival, sede, título). */
+  private static shouldNotifyMatchUpdate(
+    before: Record<string, unknown>,
+    after: Record<string, unknown>,
+    input: UpdateMatchBody,
+  ): boolean {
+    const keys: (keyof UpdateMatchBody)[] = ['matchDate', 'location', 'opponentName', 'title', 'category', 'status'];
+    if (!keys.some((k) => input[k] !== undefined)) return false;
+    const changed =
+      (input.matchDate !== undefined && String(before.match_date) !== String(after.match_date)) ||
+      (input.location !== undefined && String(before.location ?? '') !== String(after.location ?? '')) ||
+      (input.opponentName !== undefined && String(before.opponent_name) !== String(after.opponent_name)) ||
+      (input.title !== undefined && String(before.title) !== String(after.title)) ||
+      (input.category !== undefined && String(before.category ?? '') !== String(after.category ?? '')) ||
+      (input.status !== undefined && String(before.status) !== String(after.status));
+    return changed;
   }
 
   static async softDelete(id: string) {

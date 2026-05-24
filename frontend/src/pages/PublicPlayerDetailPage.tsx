@@ -9,7 +9,6 @@ import type { Player } from '@/types';
 import { PlayerHighlightBadge, PlayerProfileCelebration } from '@/components/PlayerProfileCelebration';
 import { usePlayerHighlights } from '@/hooks/usePlayerHighlights';
 import { MaterialIcon } from '@/components/MaterialIcon';
-import { PlayerQrImage } from '@/components/PlayerQrImage';
 import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
@@ -207,13 +206,14 @@ export function PublicPlayerDetailPage() {
 
           <div className="flex-grow flex items-center justify-center py-stack-lg">
             <div className="w-48 h-48 bg-white p-2 rounded-lg flex items-center justify-center relative shadow-[0_0_30px_rgba(212,175,55,0.15)] select-none [-webkit-touch-callout:none]">
-              {player.has_qr ?? player.qr_generated_at ? (
-                <PlayerQrImage
-                  playerId={player.id}
-                  cacheKey={player.qr_generated_at ?? player.id}
-                  size="lg"
-                  className="!w-full !h-full"
-                />
+              {(player.has_qr ?? player.qr_generated_at) && player.credential_ar_url ? (
+                <Link
+                  to={player.credential_ar_url}
+                  className="flex flex-col items-center gap-2 text-primary hover:opacity-90 transition-opacity"
+                >
+                  <MaterialIcon name="qr_code_2" className="text-gray-800" size={120} />
+                  <span className="text-[10px] font-label-caps text-primary">Ver credencial QR</span>
+                </Link>
               ) : (
                 <MaterialIcon name="qr_code_2" className="text-gray-400" size={120} />
               )}

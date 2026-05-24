@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@config/database';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { logger } from '@shared/utils/logger';
 import type {
   ListGalleryQuery,
   CreateGalleryPostBody,
@@ -398,7 +399,7 @@ export class GalleryService {
         id:          String(data.id),
         title:       String(data.title ?? 'Galería'),
         description: data.description ? String(data.description) : null,
-      }).catch(() => {});
+      }).catch((e) => logger.warn('WhatsApp: falló aviso de galería publicada', { postId: id, err: e }));
     }
 
     return data;

@@ -113,6 +113,11 @@ export const listPlayersQuerySchema = z.object({
     .string()
     .optional()
     .transform((v) => (v === 'true' ? true : v === 'false' ? false : undefined)),
+  /** Incluye qr_token solo para la galería de credenciales (jugadores verificados). */
+  forCredentials: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true' || v === '1'),
 });
 
 export type ListPlayersQuery = z.infer<typeof listPlayersQuerySchema>;

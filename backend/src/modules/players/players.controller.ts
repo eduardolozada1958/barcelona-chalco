@@ -41,12 +41,16 @@ export class PlayersController {
 
   static async listPublic(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const q = req.validatedQuery as Pick<ListPlayersQuery, 'page' | 'limit' | 'category' | 'search'>;
+      const q = req.validatedQuery as Pick<
+        ListPlayersQuery,
+        'page' | 'limit' | 'category' | 'search' | 'forCredentials'
+      >;
       const result = await PlayersService.listPublic({
-        page:     q.page,
-        limit:    q.limit,
-        category: q.category,
-        search:   q.search,
+        page:           q.page,
+        limit:          q.limit,
+        category:       q.category,
+        search:         q.search,
+        forCredentials: q.forCredentials,
       });
       sendSuccess(res, result.data, 'Jugadores obtenidos', HTTP_STATUS.OK, result.meta);
     } catch (e) { next(e); }

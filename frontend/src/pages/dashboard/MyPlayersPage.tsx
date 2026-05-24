@@ -210,9 +210,9 @@ export function MyPlayersPage() {
                     </div>
                   </div>
                   </div>
-                  {hasQr && qrAt ? (
+                  {hasQr && qrAt && qrToken ? (
                     <div className="flex flex-col items-center shrink-0 sm:border-l sm:border-primary/15 sm:pl-4">
-                      <PlayerQrImage playerId={pid} cacheKey={qrAt} size="md" />
+                      <PlayerQrImage playerId={pid} qrToken={qrToken} cacheKey={qrAt} size="md" />
                       <p className="text-[10px] text-on-surface-variant mt-2 text-center max-w-[8rem]">
                         Escanea con otro teléfono
                       </p>

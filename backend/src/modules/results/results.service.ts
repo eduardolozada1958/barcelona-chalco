@@ -2,6 +2,7 @@ import { env } from '@config/env';
 import { supabaseAdmin } from '@config/database';
 import { NotFoundError, ConflictError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
+import { logger } from '@shared/utils/logger';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import type { ListResultsQuery, CreateResultBody, UpdateResultBody, PlayerStatInput } from './results.validation';
 
@@ -142,7 +143,8 @@ export class ResultsService {
   }
 
   static async publish(id: string) {
-    await ResultsService.getById(id);
+    const cur = await ResultsService.getById(id);
+    if (cur.published) return cur;
 
     const { data, error } = await supabaseAdmin
       .from('results')
@@ -171,7 +173,7 @@ export class ResultsService {
           match_title:     pub.match_title ? String(pub.match_title) : undefined,
           opponent_name:   pub.opponent_name ? String(pub.opponent_name) : undefined,
           match_date:      pub.match_date ? String(pub.match_date) : undefined,
-        }).catch(() => {});
+        }).catch((e) => logger.warn('WhatsApp: falló aviso de resultado publicado', { resultId: id, err: e }));
       }
     }
 
