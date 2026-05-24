@@ -4,6 +4,8 @@ Allow: /
 Allow: /jugadores
 Allow: /partidos
 Allow: /resultados
+Allow: /goleo
+Allow: /rendimiento
 Allow: /avisos
 Allow: /galeria
 Allow: /contacto

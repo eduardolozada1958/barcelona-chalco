@@ -1,3 +1,8 @@
+# Archivos estáticos SEO (antes del fallback SPA)
+/sitemap.xml /sitemap.xml 200
+/robots.txt /robots.txt 200
+/googlea8bbd9e440b744cd.html /googlea8bbd9e440b744cd.html 200
+
 # Proxy API (mismo dominio): imágenes QR y peticiones /api/*
 /api/* https://barcelona-chalco.onrender.com/api/:splat 200
 

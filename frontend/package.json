@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --mode development",
-    "build": "tsc && vite build --mode production",
+    "build": "node scripts/generate-sitemap.mjs && tsc && vite build --mode production",
     "build:dev": "tsc && vite build --mode development",
     "preview": "vite preview",
     "test": "vitest run",
