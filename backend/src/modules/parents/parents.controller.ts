@@ -95,6 +95,15 @@ export class ParentsController {
     }
   }
 
+  static async pendingLinkRequestsCount(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const count = await ParentsService.pendingLinkRequestsCount();
+      sendSuccess(res, { count }, 'Solicitudes pendientes');
+    } catch (e) {
+      next(e);
+    }
+  }
+
   static async listLinkRequests(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const q = req.validatedQuery as ListLinkRequestsQuery;

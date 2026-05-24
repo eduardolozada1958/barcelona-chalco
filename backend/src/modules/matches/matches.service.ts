@@ -6,6 +6,7 @@ import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response
 import { buildIlikeOrFilter } from '@shared/utils/sanitize-search';
 import type { ListMatchesQuery, CreateMatchBody, UpdateMatchBody, ConvocatoryBody } from './matches.validation';
 import { throwStorageOrDbError } from '@shared/utils/storage-errors';
+import { isClubDatetimeInPast } from '@shared/utils/club-datetime';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import { logger } from '@shared/utils/logger';
 
@@ -134,6 +135,12 @@ export class MatchesService {
   static async create(input: CreateMatchBody, createdBy: string) {
     validateLineupConsistency(input.formationType ?? null, input.startingLineup ?? null);
     await assertLineupPlayersRegistered(input.startingLineup ?? []);
+
+    if (isClubDatetimeInPast(input.matchDate)) {
+      throw new BadRequestError(
+        'La fecha del partido no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
+    }
 
     const { data, error } = await supabaseAdmin
       .from('matches')
@@ -283,6 +290,12 @@ export class MatchesService {
     }
 
     if (Object.keys(u).length === 0) return MatchesService.getPublicById(id);
+
+    if (input.matchDate !== undefined && isClubDatetimeInPast(input.matchDate)) {
+      throw new BadRequestError(
+        'La fecha del partido no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
+    }
 
     const { data, error } = await supabaseAdmin
       .from('matches')

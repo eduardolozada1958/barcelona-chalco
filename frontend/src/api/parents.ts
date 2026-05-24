@@ -95,6 +95,11 @@ export async function listLinkRequests(params?: { status?: string; page?: number
   return data;
 }
 
+export async function pendingLinkRequestsCount() {
+  const { data } = await apiClient.get<ApiResponse<{ count: number }>>('/parents/link-requests/pending-count');
+  return data;
+}
+
 export async function approveLinkRequest(id: string) {
   const { data } = await apiClient.post<ApiResponse<ParentLinkRequest>>(`/parents/link-requests/${id}/approve`);
   return data;

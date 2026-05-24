@@ -57,6 +57,13 @@ parentsRouter.post(
 );
 
 parentsRouter.get(
+  '/link-requests/pending-count',
+  authMiddleware,
+  requireAdminOrCoach,
+  ParentsController.pendingLinkRequestsCount,
+);
+
+parentsRouter.get(
   '/link-requests',
   authMiddleware,
   requireAdminOrCoach,

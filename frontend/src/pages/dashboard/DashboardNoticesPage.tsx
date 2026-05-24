@@ -21,7 +21,7 @@ import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formL
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { noticeTypeLabel } from '@/config/labels';
-import { clubDatetimeLocalToIso, formatMatchDateClub, formatMatchTimeClub, isoToClubDatetimeLocal } from '@/utils/club-datetime';
+import { clubDatetimeLocalNow, clubDatetimeLocalToIso, formatMatchDateClub, formatMatchTimeClub, isoToClubDatetimeLocal, validateClubDatetimeLocalNotPast } from '@/utils/club-datetime';
 
 type NoticeForm = {
   title: string;
@@ -297,6 +297,11 @@ export function DashboardNoticesPage() {
   const onCreate = handleSubmit((data) => {
     let scheduledIso: string | null = null;
     if (data.scheduledAt.trim()) {
+      const pastErr = validateClubDatetimeLocalNotPast(data.scheduledAt.trim(), 'La fecha programada');
+      if (pastErr) {
+        toast.error(pastErr);
+        return;
+      }
       try {
         scheduledIso = clubDatetimeLocalToIso(data.scheduledAt.trim());
       } catch {
@@ -327,6 +332,11 @@ export function DashboardNoticesPage() {
     if (!editRow) return;
     let scheduledIso: string | null | undefined;
     if (data.scheduledAt.trim()) {
+      const pastErr = validateClubDatetimeLocalNotPast(data.scheduledAt.trim(), 'La fecha programada');
+      if (pastErr) {
+        toast.error(pastErr);
+        return;
+      }
       try {
         scheduledIso = clubDatetimeLocalToIso(data.scheduledAt.trim());
       } catch {
@@ -528,9 +538,9 @@ export function DashboardNoticesPage() {
           </div>
           <div>
             <label className={formLabelClass}>Publicar programado (opcional)</label>
-            <input type="datetime-local" className={formInputClass} {...register('scheduledAt')} />
+            <input type="datetime-local" className={formInputClass} min={clubDatetimeLocalNow()} {...register('scheduledAt')} />
             <p className="text-[11px] text-on-surface-variant mt-1">
-              Hora del club (México). Al llegar la fecha se publica en el sitio y se envía WhatsApp a todos los padres
+              Hora del club (México). No se permiten fechas pasadas. Al llegar la fecha se publica en el sitio y se envía WhatsApp a todos los padres
               elegibles.
             </p>
           </div>
@@ -640,7 +650,8 @@ export function DashboardNoticesPage() {
           </div>
           <div>
             <label className={formLabelClass}>Programar publicación</label>
-            <input type="datetime-local" className={formInputClass} {...registerEdit('scheduledAt')} />
+            <input type="datetime-local" className={formInputClass} min={clubDatetimeLocalNow()} {...registerEdit('scheduledAt')} />
+            <p className="text-[11px] text-on-surface-variant mt-1">Hora del club (México). No se permiten fechas pasadas.</p>
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="pinned-edit" className="rounded border-outline-variant" {...registerEdit('isPinned')} />

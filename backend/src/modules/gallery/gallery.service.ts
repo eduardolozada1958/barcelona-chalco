@@ -5,6 +5,7 @@ import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { logger } from '@shared/utils/logger';
+import { isClubDatetimeInPast } from '@shared/utils/club-datetime';
 import type {
   ListGalleryQuery,
   CreateGalleryPostBody,
@@ -217,6 +218,11 @@ export class GalleryService {
     if (mErr) throw new Error(mErr.message);
 
     const scheduledAt = normalizeScheduledAt(input.scheduledPublishAt ?? null);
+    if (scheduledAt && isClubDatetimeInPast(scheduledAt)) {
+      throw new BadRequestError(
+        'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
+    }
     if (scheduledAt) {
       await supabaseAdmin
         .from('gallery_posts')
@@ -334,7 +340,13 @@ export class GalleryService {
     if (input.isFeatured !== undefined)       u.is_featured         = input.isFeatured;
     if (input.season !== undefined)           u.season              = input.season;
     if (input.scheduledPublishAt !== undefined) {
-      u.scheduled_publish_at = normalizeScheduledAt(input.scheduledPublishAt);
+      const at = normalizeScheduledAt(input.scheduledPublishAt);
+      if (at && isClubDatetimeInPast(at)) {
+        throw new BadRequestError(
+          'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+        );
+      }
+      u.scheduled_publish_at = at;
     }
 
     if (Object.keys(u).length > 0) {
@@ -423,8 +435,10 @@ export class GalleryService {
     const at = normalizeScheduledAt(scheduledPublishAt);
     if (!at) throw new BadRequestError('Indica fecha y hora de publicación');
 
-    if (!isFutureSchedule(at)) {
-      return GalleryService.publish(id);
+    if (isClubDatetimeInPast(at)) {
+      throw new BadRequestError(
+        'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
     }
 
     const cur = await GalleryService.getById(id);

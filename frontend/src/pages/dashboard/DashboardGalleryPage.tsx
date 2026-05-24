@@ -15,7 +15,7 @@ import {
   updateGalleryPost,
   type CreateGalleryPostBody,
 } from '@/api/gallery';
-import { clubDatetimeLocalToIso, formatMatchDateClub, formatMatchTimeClub, isoToClubDatetimeLocal } from '@/utils/club-datetime';
+import { clubDatetimeLocalNow, clubDatetimeLocalToIso, formatMatchDateClub, formatMatchTimeClub, isoToClubDatetimeLocal, validateClubDatetimeLocalNotPast } from '@/utils/club-datetime';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -230,6 +230,11 @@ export function DashboardGalleryPage() {
     if (!editRow) return;
     let scheduledIso: string | null = null;
     if (data.scheduledAt.trim()) {
+      const pastErr = validateClubDatetimeLocalNotPast(data.scheduledAt.trim(), 'La fecha programada');
+      if (pastErr) {
+        toast.error(pastErr);
+        return;
+      }
       try {
         scheduledIso = clubDatetimeLocalToIso(data.scheduledAt.trim());
       } catch {
@@ -308,6 +313,11 @@ export function DashboardGalleryPage() {
     }
     let scheduledIso: string | null = null;
     if (data.scheduledAt.trim()) {
+      const pastErr = validateClubDatetimeLocalNotPast(data.scheduledAt.trim(), 'La fecha programada');
+      if (pastErr) {
+        toast.error(pastErr);
+        return;
+      }
       try {
         scheduledIso = clubDatetimeLocalToIso(data.scheduledAt.trim());
       } catch {
@@ -482,9 +492,9 @@ export function DashboardGalleryPage() {
 
           <div>
             <label className={formLabelClass}>Publicar programado (opcional)</label>
-            <input type="datetime-local" className={formInputClass} {...register('scheduledAt')} />
+            <input type="datetime-local" className={formInputClass} min={clubDatetimeLocalNow()} {...register('scheduledAt')} />
             <p className="text-[11px] text-on-surface-variant mt-1">
-              Hora del club. Al llegar la fecha se publica y envía WhatsApp a todos los padres elegibles.
+              Hora del club. No se permiten fechas pasadas. Al llegar la fecha se publica y envía WhatsApp a todos los padres elegibles.
             </p>
           </div>
 
@@ -583,7 +593,8 @@ export function DashboardGalleryPage() {
           </div>
           <div>
             <label className={formLabelClass}>Programar publicación</label>
-            <input type="datetime-local" className={formInputClass} {...registerEdit('scheduledAt')} />
+            <input type="datetime-local" className={formInputClass} min={clubDatetimeLocalNow()} {...registerEdit('scheduledAt')} />
+            <p className="text-[11px] text-on-surface-variant mt-1">Hora del club. No se permiten fechas pasadas.</p>
           </div>
           <div className={formActionsClass}>
             <button type="button" onClick={closeEditModal} className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant font-label-caps text-label-caps">

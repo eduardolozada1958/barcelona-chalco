@@ -368,6 +368,17 @@ export class ParentsService {
     return ParentsService.mapLinkRow(data as Record<string, unknown>);
   }
 
+  static async pendingLinkRequestsCount(): Promise<number> {
+    const { data, error } = await supabaseAdmin
+      .from('parent_players')
+      .select(LINK_SELECT)
+      .eq('status', 'pending');
+
+    if (error) throw new Error(error.message);
+    const filtered = await ParentsService.filterLinksWithActiveParentUser(data ?? []);
+    return filtered.length;
+  }
+
   static async listLinkRequests(opts: ListLinkRequestsQuery) {
     let query = supabaseAdmin
       .from('parent_players')

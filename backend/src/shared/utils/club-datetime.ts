@@ -25,3 +25,11 @@ export function formatClubTime(iso: string | Date): string {
 export function formatClubDateTime(iso: string | Date): string {
   return `${formatClubDate(iso)} · ${formatClubTime(iso)}`;
 }
+
+const PAST_GRACE_MS = 60_000;
+
+/** true si la fecha ISO ya pasó (con tolerancia de 1 min). */
+export function isClubDatetimeInPast(iso: string, graceMs = PAST_GRACE_MS): boolean {
+  const t = new Date(iso).getTime();
+  return !Number.isFinite(t) || t <= Date.now() - graceMs;
+}

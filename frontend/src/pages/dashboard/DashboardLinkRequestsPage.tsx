@@ -147,6 +147,7 @@ export function DashboardLinkRequestsPage() {
     onSuccess: (res) => {
       toast.success(res.message ?? 'Aprobado');
       void qc.invalidateQueries({ queryKey: ['link-requests'] });
+      void qc.invalidateQueries({ queryKey: ['link-requests-pending-count'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -158,6 +159,7 @@ export function DashboardLinkRequestsPage() {
       setRejectId(null);
       setRejectReason('');
       void qc.invalidateQueries({ queryKey: ['link-requests'] });
+      void qc.invalidateQueries({ queryKey: ['link-requests-pending-count'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -169,6 +171,7 @@ export function DashboardLinkRequestsPage() {
       setRevokeId(null);
       setRevokeReason('');
       void qc.invalidateQueries({ queryKey: ['link-requests'] });
+      void qc.invalidateQueries({ queryKey: ['link-requests-pending-count'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

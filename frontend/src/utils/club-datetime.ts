@@ -54,6 +54,26 @@ export function isoToClubDatetimeLocal(iso: string | unknown): string {
   return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
 }
 
+/** Valor mínimo para input datetime-local (hora actual del club). */
+export function clubDatetimeLocalNow(): string {
+  return isoToClubDatetimeLocal(new Date().toISOString());
+}
+
+/** Devuelve mensaje de error si la fecha/hora local del club ya pasó; null si está bien o vacío. */
+export function validateClubDatetimeLocalNotPast(local: string, label = 'La fecha'): string | null {
+  const trimmed = local.trim();
+  if (!trimmed) return null;
+  try {
+    const iso = clubDatetimeLocalToIso(trimmed);
+    if (new Date(iso).getTime() <= Date.now()) {
+      return `${label} no puede ser en el pasado. Elige una fecha y hora futura (hora del club, México).`;
+    }
+  } catch {
+    return 'Fecha u hora inválida';
+  }
+  return null;
+}
+
 /** Valor de datetime-local → ISO (interpretado como hora de México central). */
 export function clubDatetimeLocalToIso(local: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(local.trim());

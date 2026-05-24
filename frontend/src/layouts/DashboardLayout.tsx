@@ -1,7 +1,10 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import clsx from 'clsx';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth, type SessionRole } from '@/contexts/AuthContext';
+import { pendingLinkRequestsCount } from '@/api/parents';
+import { AdminNotificationBell } from '@/components/AdminNotificationBell';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { getPanelTitle } from '@/config/panel-labels';
@@ -39,6 +42,16 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const visible = NAV.filter((i) => user && i.roles.includes(user.role));
+  const isStaff = user?.role === 'admin' || user?.role === 'coach';
+
+  const pendingLinksQ = useQuery({
+    queryKey: ['link-requests-pending-count'],
+    queryFn: pendingLinkRequestsCount,
+    enabled: isStaff,
+    refetchInterval: 45_000,
+    staleTime: 20_000,
+  });
+  const pendingLinks = pendingLinksQ.data?.data?.count ?? 0;
 
   const handleLogout = async () => { await logout(); navigate('/'); };
 
@@ -46,12 +59,13 @@ export function DashboardLayout() {
     <>
       <div className="px-gutter mb-stack-lg mt-stack-md flex items-center gap-stack-sm">
         <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-12 h-12 object-contain shrink-0 drop-shadow-lg" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h1 className="font-display-hero text-body-lg text-primary tracking-tight truncate">Barcelona Cupido</h1>
           <p className="font-label-caps text-label-caps text-on-surface-variant opacity-80 truncate" title={getPanelTitle(user?.role)}>
             {getPanelTitle(user?.role)}
           </p>
         </div>
+        {isStaff ? <AdminNotificationBell /> : null}
       </div>
       <ul className="flex-1 space-y-1 px-2 overflow-y-auto">
         {visible.map((item) => (
@@ -62,7 +76,17 @@ export function DashboardLayout() {
                 isActive ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant hover:bg-surface-variant/50'
               )}
             >
-              {({ isActive }) => (<><MaterialIcon name={item.icon} filled={isActive} /><span>{item.label}</span></>)}
+              {({ isActive }) => (
+                <>
+                  <MaterialIcon name={item.icon} filled={isActive} />
+                  <span className="flex-1">{item.label}</span>
+                  {item.to === '/dashboard/link-requests' && pendingLinks > 0 ? (
+                    <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-error text-[10px] font-bold text-white flex items-center justify-center">
+                      {pendingLinks > 9 ? '9+' : pendingLinks}
+                    </span>
+                  ) : null}
+                </>
+              )}
             </NavLink>
           </li>
         ))}
@@ -110,17 +134,20 @@ export function DashboardLayout() {
             <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain shrink-0" />
             <span className="font-display-hero text-sm sm:text-body-lg text-primary truncate">Barcelona Cupido</span>
           </div>
-          <NavLink
-            to="/dashboard/cuenta"
-            className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30 overflow-hidden"
-            title="Mi perfil"
-          >
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
-            )}
-          </NavLink>
+          <div className="flex items-center gap-1 shrink-0">
+            <AdminNotificationBell />
+            <NavLink
+              to="/dashboard/cuenta"
+              className="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center border border-outline-variant/30 overflow-hidden"
+              title="Mi perfil"
+            >
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <MaterialIcon name="person" className="text-on-surface-variant" size={18} />
+              )}
+            </NavLink>
+          </div>
         </div>
         <div className="max-w-container-max mx-auto w-full min-w-0"><Outlet /></div>
       </main>

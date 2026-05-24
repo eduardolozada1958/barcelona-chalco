@@ -4,6 +4,7 @@ import { supabaseAdmin } from '@config/database';
 import { NotFoundError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
 import { logger } from '@shared/utils/logger';
+import { isClubDatetimeInPast } from '@shared/utils/club-datetime';
 import { PushService } from '@modules/push/push.service';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './notices.validation';
@@ -23,11 +24,6 @@ function normalizeScheduledAt(iso: string | null | undefined): string | null {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) throw new BadRequestError('Fecha de publicación programada inválida');
   return d.toISOString();
-}
-
-function isFutureSchedule(iso: string | null): boolean {
-  if (!iso) return false;
-  return new Date(iso).getTime() > Date.now();
 }
 
 export class NoticesService {
@@ -110,6 +106,11 @@ export class NoticesService {
     }
 
     const scheduledAt = normalizeScheduledAt(input.scheduledPublishAt ?? null);
+    if (scheduledAt && isClubDatetimeInPast(scheduledAt)) {
+      throw new BadRequestError(
+        'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
+    }
 
     const { data, error } = await supabaseAdmin
       .from('notices')
@@ -152,7 +153,13 @@ export class NoticesService {
     if (input.coverImageUrl !== undefined)      u.cover_image_url         = input.coverImageUrl;
     if (input.expiresAt !== undefined)          u.expires_at              = input.expiresAt;
     if (input.scheduledPublishAt !== undefined) {
-      u.scheduled_publish_at = normalizeScheduledAt(input.scheduledPublishAt);
+      const at = normalizeScheduledAt(input.scheduledPublishAt);
+      if (at && isClubDatetimeInPast(at)) {
+        throw new BadRequestError(
+          'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+        );
+      }
+      u.scheduled_publish_at = at;
     }
 
     if (Object.keys(u).length === 0) return NoticesService.getById(id);
@@ -256,13 +263,15 @@ export class NoticesService {
     return data;
   }
 
-  /** Programa publicación futura (borrador). Si la fecha ya pasó, publica de inmediato. */
+  /** Programa publicación futura (borrador). */
   static async schedulePublish(id: string, scheduledPublishAt: string) {
     const at = normalizeScheduledAt(scheduledPublishAt);
     if (!at) throw new BadRequestError('Indica fecha y hora de publicación');
 
-    if (!isFutureSchedule(at)) {
-      return NoticesService.publish(id);
+    if (isClubDatetimeInPast(at)) {
+      throw new BadRequestError(
+        'La fecha programada no puede ser en el pasado. Elige una fecha y hora futura (hora del club).',
+      );
     }
 
     const cur = await NoticesService.getById(id);

@@ -24,7 +24,7 @@ import { formationSlotCount, lineupIdsToSlots, slotsToLineupIds } from '@/config
 import { CANCHAS_PRESETS, parseStoredLocation, resolveVenueSelection, WALMART_FIELD_OPTIONS, type VenuePresetId, type WalmartFieldId } from '@/config/venues';
 import { matchStatusLabel } from '@/config/labels';
 import { rosterRowToPitchPlayer } from '@/utils/lineup-players';
-import { clubDatetimeLocalToIso, isoToClubDatetimeLocal } from '@/utils/club-datetime';
+import { clubDatetimeLocalNow, clubDatetimeLocalToIso, isoToClubDatetimeLocal, validateClubDatetimeLocalNotPast } from '@/utils/club-datetime';
 
 /** Partidos sin ramas Sub-XX: una sola categoría lógica en base de datos. */
 const MATCH_CATEGORY_GENERAL = 'General';
@@ -239,6 +239,11 @@ export function DashboardMatchesPage() {
       toast.error('Indica fecha y hora del partido');
       return;
     }
+    const pastErr = validateClubDatetimeLocalNotPast(data.matchDateLocal, 'La fecha del partido');
+    if (pastErr) {
+      toast.error(pastErr);
+      return;
+    }
   if (data.venuePreset === 'walmart' && !data.walmartField) {
       toast.error('Elige Campo 1, 2 o 3 en Cancha Walmart');
       return;
@@ -320,6 +325,11 @@ export function DashboardMatchesPage() {
   const onCreate = handleSubmit((data) => {
     if (!data.matchDateLocal) {
       toast.error('Indica fecha y hora del partido');
+      return;
+    }
+    const pastErr = validateClubDatetimeLocalNotPast(data.matchDateLocal, 'La fecha del partido');
+    if (pastErr) {
+      toast.error(pastErr);
       return;
     }
     const matchDate = clubDatetimeLocalToIso(data.matchDateLocal);
@@ -529,7 +539,13 @@ export function DashboardMatchesPage() {
           />
           <div>
             <label className={formLabelClass}>Fecha y hora</label>
-            <input type="datetime-local" className={formInputClass} {...register('matchDateLocal', { required: true })} />
+            <input
+              type="datetime-local"
+              className={formInputClass}
+              min={clubDatetimeLocalNow()}
+              {...register('matchDateLocal', { required: true })}
+            />
+            <p className="text-[10px] text-on-surface-variant mt-1">Hora del club (México). No se permiten fechas pasadas.</p>
           </div>
           <div>
             <label className={formLabelClass}>Sede (cancha)</label>
@@ -766,7 +782,13 @@ export function DashboardMatchesPage() {
           </div>
           <div>
             <label className={formLabelClass}>Fecha y hora</label>
-            <input type="datetime-local" className={formInputClass} {...registerEdit('matchDateLocal', { required: true })} />
+            <input
+              type="datetime-local"
+              className={formInputClass}
+              min={clubDatetimeLocalNow()}
+              {...registerEdit('matchDateLocal', { required: true })}
+            />
+            <p className="text-[10px] text-on-surface-variant mt-1">Hora del club (México). No se permiten fechas pasadas.</p>
           </div>
           <div>
             <label className={formLabelClass}>Sede (cancha)</label>
