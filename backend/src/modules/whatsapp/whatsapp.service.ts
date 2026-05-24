@@ -35,8 +35,9 @@ function delay(ms: number): Promise<void> {
 let sendsThisHour = 0;
 let hourStarted = Date.now();
 
-const BROADCAST_CONNECT_WAIT_MS = 20_000;
+const BROADCAST_CONNECT_WAIT_MS = 60_000;
 const BROADCAST_CONNECT_POLL_MS = 1_000;
+const BROADCAST_RETRY_WAIT_MS = 5_000;
 
 function resetHourlyCapIfNeeded(): void {
   if (Date.now() - hourStarted > 3_600_000) {
@@ -52,7 +53,11 @@ async function assertReadyForBroadcast(): Promise<void> {
   await ensureWhatsAppClientRunning();
   const deadline = Date.now() + BROADCAST_CONNECT_WAIT_MS;
   while (Date.now() < deadline) {
-    if (getWhatsAppStatus().state === 'open') return;
+    const state = getWhatsAppStatus().state;
+    if (state === 'open') return;
+    if (state === 'qr') {
+      throw new Error('WhatsApp esperando QR. Escanea el código en el panel de administración.');
+    }
     await delay(BROADCAST_CONNECT_POLL_MS);
   }
   throw new Error('WhatsApp no está conectado. Abre el panel de administración y escanea el QR.');
@@ -60,7 +65,14 @@ async function assertReadyForBroadcast(): Promise<void> {
 
 async function broadcastToParents(message: string): Promise<{ sent: number; failed: number; total: number; skippedCap: number }> {
   resetHourlyCapIfNeeded();
-  await assertReadyForBroadcast();
+
+  try {
+    await assertReadyForBroadcast();
+  } catch (firstErr) {
+    logger.warn('WhatsApp: conexión no lista; reintento en 5 s', { err: firstErr });
+    await delay(BROADCAST_RETRY_WAIT_MS);
+    await assertReadyForBroadcast();
+  }
 
   const recipients = await listVerifiedParentWhatsAppRecipients();
   const total = recipients.length;
@@ -221,6 +233,8 @@ export class WhatsAppService {
     category?: string;
   }): Promise<void> {
     if (!env.WHATSAPP_ENABLED || !env.WHATSAPP_NOTIFY_MATCHES) return;
+
+    logger.info('WhatsApp: enviando aviso de partido programado', { matchId: match.id, title: match.title });
 
     const fecha = formatClubDate(match.match_date);
     const hora = formatClubTime(match.match_date);

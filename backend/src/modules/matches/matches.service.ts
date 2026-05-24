@@ -160,23 +160,89 @@ export class MatchesService {
 
     if (error) throw new Error(error.message);
 
-    if (
-      env.WHATSAPP_ENABLED &&
-      env.WHATSAPP_NOTIFY_MATCHES &&
-      data.status === 'scheduled' &&
-      new Date(String(data.match_date)).getTime() > Date.now()
-    ) {
-      void WhatsAppService.notifyMatchScheduled({
+    MatchesService.scheduleMatchWhatsAppNotify(
+      {
         id:            String(data.id),
         title:         String(data.title),
         opponent_name: String(data.opponent_name),
         match_date:    String(data.match_date),
         location:      String(data.location ?? ''),
         category:      data.category ? String(data.category) : undefined,
-      }).catch((e) => logger.warn('WhatsApp: falló aviso de partido programado', { matchId: data.id, err: e }));
-    }
+        status:        String(data.status),
+      },
+      'create',
+    );
 
     return data;
+  }
+
+  static scheduleMatchWhatsAppNotify(
+    match: {
+      id: string;
+      title: string;
+      opponent_name: string;
+      match_date: string;
+      location: string;
+      category?: string;
+      status: string;
+    },
+    trigger: 'create' | 'update',
+  ): void {
+    if (!env.WHATSAPP_ENABLED) {
+      logger.info('WhatsApp partido: omitido (WHATSAPP_ENABLED=false)', { matchId: match.id, trigger });
+      return;
+    }
+    if (!env.WHATSAPP_NOTIFY_MATCHES) {
+      logger.info('WhatsApp partido: omitido (WHATSAPP_NOTIFY_MATCHES=false)', { matchId: match.id, trigger });
+      return;
+    }
+    if (match.status !== 'scheduled') {
+      logger.info('WhatsApp partido: omitido (estado no programado)', {
+        matchId: match.id,
+        trigger,
+        status: match.status,
+      });
+      return;
+    }
+
+    const matchMs = new Date(String(match.match_date)).getTime();
+    const isFuture = Number.isFinite(matchMs) && matchMs > Date.now() - 10 * 60_000;
+    if (trigger === 'update' && !isFuture) {
+      logger.info('WhatsApp partido: omitido (fecha ya pasada)', {
+        matchId: match.id,
+        trigger,
+        matchDate: match.match_date,
+      });
+      return;
+    }
+
+    logger.info('WhatsApp partido: programando envío', {
+      matchId: match.id,
+      trigger,
+      matchDate: match.match_date,
+      isFuture,
+    });
+
+    const payload = {
+      id:            String(match.id),
+      title:         String(match.title),
+      opponent_name: String(match.opponent_name),
+      match_date:    String(match.match_date),
+      location:      String(match.location ?? ''),
+      category:      match.category ? String(match.category) : undefined,
+    };
+
+    const notify =
+      trigger === 'create'
+        ? WhatsAppService.notifyMatchScheduled(payload)
+        : WhatsAppService.notifyMatchUpdated(payload);
+
+    void notify.catch((e) =>
+      logger.warn(`WhatsApp: falló aviso de partido ${trigger === 'create' ? 'programado' : 'actualizado'}`, {
+        matchId: match.id,
+        err: e,
+      }),
+    );
   }
 
   static async update(id: string, input: UpdateMatchBody) {
@@ -229,20 +295,20 @@ export class MatchesService {
     if (error) throw new Error(error.message);
 
     if (
-      env.WHATSAPP_ENABLED &&
-      env.WHATSAPP_NOTIFY_MATCHES &&
-      data.status === 'scheduled' &&
-      new Date(String(data.match_date)).getTime() > Date.now() &&
       MatchesService.shouldNotifyMatchUpdate(existing, data, input)
     ) {
-      void WhatsAppService.notifyMatchUpdated({
-        id:            String(data.id),
-        title:         String(data.title),
-        opponent_name: String(data.opponent_name),
-        match_date:    String(data.match_date),
-        location:      String(data.location ?? ''),
-        category:      data.category ? String(data.category) : undefined,
-      }).catch((e) => logger.warn('WhatsApp: falló aviso de partido actualizado', { matchId: data.id, err: e }));
+      MatchesService.scheduleMatchWhatsAppNotify(
+        {
+          id:            String(data.id),
+          title:         String(data.title),
+          opponent_name: String(data.opponent_name),
+          match_date:    String(data.match_date),
+          location:      String(data.location ?? ''),
+          category:      data.category ? String(data.category) : undefined,
+          status:        String(data.status),
+        },
+        'update',
+      );
     }
 
     return data;
