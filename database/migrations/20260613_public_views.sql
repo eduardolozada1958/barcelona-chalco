@@ -1,7 +1,11 @@
--- Vistas públicas usadas por resultados y validación QR (versionadas en repo).
--- CREATE OR REPLACE: seguro en Supabase si ya existían creadas a mano.
+-- Vistas públicas usadas por resultados y validación QR.
+-- Si la vista ya existía con otras columnas, CREATE OR REPLACE falla (42P16).
+-- Por eso: DROP + CREATE (seguro: solo vistas, sin datos).
 
-CREATE OR REPLACE VIEW public.v_match_results AS
+DROP VIEW IF EXISTS public.v_match_results;
+DROP VIEW IF EXISTS public.v_player_public_credential;
+
+CREATE VIEW public.v_match_results AS
 SELECT
   r.id,
   r.match_id,
@@ -31,7 +35,7 @@ WHERE r.published = TRUE
 
 COMMENT ON VIEW public.v_match_results IS 'Resultados publicados con datos del partido (API pública / WhatsApp).';
 
-CREATE OR REPLACE VIEW public.v_player_public_credential AS
+CREATE VIEW public.v_player_public_credential AS
 SELECT
   p.id,
   p.first_name,
