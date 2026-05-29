@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { getWhatsAppStatus, resetWhatsAppSession, sendWhatsAppTest } from '@/api/whatsapp';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
+import { WhatsAppDeliveryAudit } from '@/components/WhatsAppDeliveryAudit';
 
 const STATE_LABEL: Record<string, string> = {
   disabled: 'Desactivado en el servidor',
@@ -55,6 +56,7 @@ export function DashboardWhatsappPage() {
           ? `Enviado a ${to.name} (${to.phone})`
           : (res.message || 'Prueba enviada'),
       );
+      void qc.invalidateQueries({ queryKey: ['whatsapp-delivery-batches'] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -68,7 +70,7 @@ export function DashboardWhatsappPage() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="font-headline-lg text-headline-lg text-primary">WhatsApp del club</h1>
         <p className="text-sm text-on-surface-variant mt-2">
@@ -250,6 +252,8 @@ export function DashboardWhatsappPage() {
         <p>Se envía solo a padres con: cuenta activa, correo verificado, hijo aprobado, teléfono en su perfil y opción activada en «Mi perfil».</p>
         <p>Avisos: urgentes, partido, entrenamiento y evento. Partidos nuevos programados también (si no desactivas WHATSAPP_NOTIFY_MATCHES).</p>
       </div>
+
+      <WhatsAppDeliveryAudit />
     </div>
   );
 }

@@ -42,6 +42,53 @@ export async function resetWhatsAppSession() {
 }
 
 export async function sendWhatsAppTest() {
-  const { data } = await apiClient.post<ApiResponse<{ sent: number; failed: number }>>('/whatsapp/test');
+  const { data } = await apiClient.post<ApiResponse<{ sent: number; failed: number; batchId?: string | null }>>('/whatsapp/test');
+  return data;
+}
+
+export type WhatsAppDeliveryBatchSummary = {
+  id: string;
+  kind: string;
+  kindLabel: string;
+  referenceId: string | null;
+  title: string;
+  messagePreview: string | null;
+  sentCount: number;
+  failedCount: number;
+  skippedCount: number;
+  createdAt: string;
+  finishedAt: string | null;
+};
+
+export type WhatsAppDeliveryEntry = {
+  id: string;
+  parentId: string | null;
+  userId: string | null;
+  parentName: string;
+  email: string | null;
+  phoneMasked: string | null;
+  linkStatus: string;
+  approvedChildren: number;
+  pendingChildren: number;
+  outcome: 'sent' | 'failed' | 'skipped';
+  skipReason: string | null;
+  skipReasonLabel: string;
+  errorMessage: string | null;
+};
+
+export type WhatsAppDeliveryBatchDetail = {
+  batch: WhatsAppDeliveryBatchSummary;
+  entries: WhatsAppDeliveryEntry[];
+};
+
+export async function listWhatsAppDeliveryBatches(params?: { page?: number; limit?: number }) {
+  const { data } = await apiClient.get<
+    ApiResponse<WhatsAppDeliveryBatchSummary[]> & { meta?: { page: number; totalPages: number } }
+  >('/whatsapp/delivery-batches', { params });
+  return data;
+}
+
+export async function getWhatsAppDeliveryBatch(id: string) {
+  const { data } = await apiClient.get<ApiResponse<WhatsAppDeliveryBatchDetail>>(`/whatsapp/delivery-batches/${id}`);
   return data;
 }

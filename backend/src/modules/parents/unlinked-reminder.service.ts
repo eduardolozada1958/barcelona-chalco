@@ -5,6 +5,14 @@ import { isEmailConfigured, sendMail } from '@shared/services/email.service';
 import { logger } from '@shared/utils/logger';
 import { phoneToWhatsAppJid } from '@modules/whatsapp/phone';
 import { sendWhatsAppText, getWhatsAppStatus } from '@modules/whatsapp/whatsapp.client';
+import { listAllParentWhatsAppCandidates } from '@modules/whatsapp/whatsapp-audit.candidates';
+import { WhatsAppAuditService } from '@modules/whatsapp/whatsapp-audit.service';
+import {
+  markWhatsAppBodySent,
+  markWhatsAppSent,
+  shouldSkipWhatsAppByBody,
+  shouldSkipWhatsAppSend,
+} from '@modules/whatsapp/whatsapp-dedup';
 
 export type UnlinkedParentTarget = {
   userId: string;
@@ -57,7 +65,8 @@ async function loadParentLinkCounts(parentIds: string[]): Promise<Map<string, nu
   const { data: links, error: lErr } = await supabaseAdmin
     .from('parent_players')
     .select('parent_id')
-    .in('parent_id', parentIds);
+    .in('parent_id', parentIds)
+    .in('status', ['approved', 'pending']);
   if (lErr) throw new Error(lErr.message);
   for (const row of links ?? []) {
     const pid = String((row as { parent_id: string }).parent_id);
@@ -200,6 +209,8 @@ export type RemindUnlinkedResult = {
   whatsappFailed: number;
   skippedNoEmail: number;
   skippedNoPhone: number;
+  skippedDup: number;
+  whatsappBatchId?: string | null;
 };
 
 async function sendRemindersToTargets(
@@ -219,13 +230,90 @@ async function sendRemindersToTargets(
   let whatsappFailed = 0;
   let skippedNoEmail = 0;
   let skippedNoPhone = 0;
+  let skippedDup = 0;
 
   if (opts.sendEmail && !isEmailConfigured()) {
     throw new BadRequestError('Correo no configurado en el servidor (Brevo/SMTP).');
   }
-  if (opts.sendWhatsApp) assertWhatsAppReady();
+  let whatsappBatchId: string | null = null;
 
-  const seenJids = new Set<string>();
+  if (opts.sendWhatsApp) {
+    assertWhatsAppReady();
+    const candidates = await listAllParentWhatsAppCandidates();
+    const targetByUserId = new Map(targets.map((t) => [t.userId, t]));
+    const sampleMsg = buildCurpReminderWhatsAppText('Padre/tutor', linkUrl);
+
+    try {
+      whatsappBatchId = await WhatsAppAuditService.createBatch({
+        kind:           'remind:curp',
+        title:          targets.length === 1
+          ? `Recordatorio CURP (${displayName(targets[0]!.firstName, targets[0]!.lastName)})`
+          : `Recordatorio CURP (${targets.length} sin vínculo)`,
+        messagePreview: sampleMsg,
+      });
+    } catch (e) {
+      logger.warn('Recordatorio CURP: no se creó lote de auditoría', { err: e });
+    }
+
+    const seenJids = new Set<string>();
+    const auditLogs: Parameters<typeof WhatsAppAuditService.appendLogs>[1] = [];
+
+    for (const c of candidates) {
+      const t = targetByUserId.get(c.userId);
+      if (!t) {
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'skipped', 'not_in_audience'));
+        continue;
+      }
+
+      const name = displayName(t.firstName, t.lastName);
+      const msg = buildCurpReminderWhatsAppText(name, linkUrl);
+
+      if (!canSendWhatsAppReminder(t) || !t.jid) {
+        skippedNoPhone += 1;
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'skipped', 'no_phone'));
+        continue;
+      }
+      if (seenJids.has(t.jid)) {
+        skippedDup += 1;
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'skipped', 'duplicate_phone'));
+        continue;
+      }
+      seenJids.add(t.jid);
+
+      if (shouldSkipWhatsAppSend(t.jid, 'remind:curp', t.userId) || shouldSkipWhatsAppByBody(t.jid, msg)) {
+        skippedDup += 1;
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'skipped', 'dedup_campaign'));
+        continue;
+      }
+
+      try {
+        await sendWhatsAppText(t.jid, msg, t.phoneRaw, { lenientVerify: true });
+        markWhatsAppSent(t.jid, 'remind:curp', t.userId);
+        markWhatsAppBodySent(t.jid, msg);
+        whatsappSent += 1;
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'sent', null));
+        await new Promise((r) => setTimeout(r, env.WHATSAPP_SEND_DELAY_MS));
+      } catch (e) {
+        whatsappFailed += 1;
+        const errMsg = e instanceof Error ? e.message : String(e);
+        auditLogs.push(WhatsAppAuditService.logRowFromCandidate(c, 'failed', 'send_failed', errMsg));
+        logger.warn('Recordatorio sin vínculo: falló WhatsApp', { jid: t.jid, err: e });
+      }
+    }
+
+    if (whatsappBatchId) {
+      try {
+        await WhatsAppAuditService.appendLogs(whatsappBatchId, auditLogs);
+        await WhatsAppAuditService.finishBatch(whatsappBatchId, {
+          sent:    whatsappSent,
+          failed:  whatsappFailed,
+          skipped: auditLogs.filter((l) => l.outcome === 'skipped').length,
+        });
+      } catch (e) {
+        logger.warn('Recordatorio CURP: falló guardar auditoría', { err: e });
+      }
+    }
+  }
 
   for (const t of targets) {
     const name = displayName(t.firstName, t.lastName);
@@ -245,24 +333,6 @@ async function sendRemindersToTargets(
       }
     }
 
-    if (opts.sendWhatsApp) {
-      if (!canSendWhatsAppReminder(t) || !t.jid) {
-        skippedNoPhone += 1;
-      } else if (seenJids.has(t.jid)) {
-        logger.warn('Recordatorio sin vínculo: teléfono duplicado omitido', { jid: t.jid, userId: t.userId });
-      } else {
-        seenJids.add(t.jid);
-        const msg = buildCurpReminderWhatsAppText(name, linkUrl);
-        try {
-          await sendWhatsAppText(t.jid, msg, t.phoneRaw, { lenientVerify: true });
-          whatsappSent += 1;
-          await new Promise((r) => setTimeout(r, env.WHATSAPP_SEND_DELAY_MS));
-        } catch (e) {
-          whatsappFailed += 1;
-          logger.warn('Recordatorio sin vínculo: falló WhatsApp', { jid: t.jid, err: e });
-        }
-      }
-    }
   }
 
   return {
@@ -273,6 +343,8 @@ async function sendRemindersToTargets(
     whatsappFailed,
     skippedNoEmail,
     skippedNoPhone,
+    skippedDup,
+    whatsappBatchId,
   };
 }
 

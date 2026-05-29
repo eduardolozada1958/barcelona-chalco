@@ -24,7 +24,7 @@ export function DashboardModal({ open, title, onClose, children, wide }: Dashboa
         role="dialog"
         aria-modal="true"
         aria-labelledby="dashboard-modal-title"
-        className={`relative z-10 w-full max-w-[calc(100vw-1.5rem)] ${wide ? 'sm:max-w-2xl' : 'sm:max-w-lg'} max-h-[min(90dvh,100%)] overflow-y-auto rounded-t-xl sm:rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-2xl p-4 sm:p-stack-md`}
+        className={`relative z-10 w-full max-w-[calc(100vw-1.5rem)] ${wide ? 'sm:max-w-2xl lg:max-w-3xl' : 'sm:max-w-lg'} max-h-[min(92dvh,100%)] overflow-y-auto overscroll-contain rounded-t-xl sm:rounded-xl border border-outline-variant/30 bg-surface-container-low shadow-2xl p-4 sm:p-stack-md`}
       >
         <div className="flex items-start justify-between gap-3 mb-4">
           <h2 id="dashboard-modal-title" className="font-headline-lg text-headline-lg-mobile text-on-surface pr-2">

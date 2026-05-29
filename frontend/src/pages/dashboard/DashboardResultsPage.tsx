@@ -19,7 +19,7 @@ import { DashboardRowActions } from '@/components/DashboardRowActions';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
-import { PlayerAvatar } from '@/components/PlayerAvatar';
+import { PlayerMatchStatsEditor, type PlayerStatDraft } from '@/components/PlayerMatchStatsEditor';
 
 type ResultForm = {
   matchId: string;
@@ -33,19 +33,6 @@ type ResultEditForm = {
   goalsConceded: string;
   matchReport: string;
 };
-
-type PlayerStatDraft = {
-  goals: number;
-  assists: number;
-  yellowCards: number;
-  redCards: number;
-};
-
-function parseStatInt(raw: string, max: number): number {
-  const n = parseInt(raw, 10);
-  if (!Number.isFinite(n) || n < 0) return 0;
-  return Math.min(max, n);
-}
 
 function toDatetimeLocalValue(iso: string | unknown): string {
   if (typeof iso !== 'string' || !iso) return '';
@@ -435,94 +422,13 @@ export function DashboardResultsPage() {
             {playersForEditQ.isLoading || resultDetailQ.isLoading ? (
               <Spinner />
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-outline-variant/20 max-h-[280px] overflow-y-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-surface-container-high z-[1]">
-                    <tr className="text-left text-on-surface-variant text-[10px] font-label-caps uppercase tracking-wide">
-                      <th className="px-3 py-2">Jugador</th>
-                      <th className="px-1 py-2 w-[4.5rem] text-center">Gol</th>
-                      <th className="px-1 py-2 w-[4.5rem] text-center">Ast</th>
-                      <th className="px-1 py-2 w-[4.5rem] text-center">🟨</th>
-                      <th className="px-1 py-2 w-[4.5rem] text-center pr-3">🟥</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedPlayersForEdit.map((p) => {
-                      const pid = String(p.id);
-                      const jersey = p.jersey_number != null ? ` · #${p.jersey_number}` : '';
-                      const name = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || pid;
-                      const d = statsByPlayer[pid] ?? { goals: 0, assists: 0, yellowCards: 0, redCards: 0 };
-                      return (
-                        <tr key={pid} className="border-t border-outline-variant/10">
-                          <td className="px-3 py-1.5 text-on-surface">
-                            <span className="flex items-center gap-2 min-w-0" title={name}>
-                              <PlayerAvatar
-                                name={name}
-                                avatarUrl={avatarByPlayerId.get(pid) ?? null}
-                                size="sm"
-                              />
-                              <span className="truncate max-w-[160px]">
-                                {name}
-                                {jersey}
-                              </span>
-                            </span>
-                          </td>
-                          <td className="px-1 py-1">
-                            <input
-                              type="number"
-                              min={0}
-                              max={20}
-                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
-                              value={d.goals}
-                              onChange={(e) =>
-                                patchPlayerStat(pid, { goals: parseStatInt(e.target.value, 20) })
-                              }
-                            />
-                          </td>
-                          <td className="px-1 py-1">
-                            <input
-                              type="number"
-                              min={0}
-                              max={20}
-                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
-                              value={d.assists}
-                              onChange={(e) =>
-                                patchPlayerStat(pid, { assists: parseStatInt(e.target.value, 20) })
-                              }
-                            />
-                          </td>
-                          <td className="px-1 py-1">
-                            <input
-                              type="number"
-                              min={0}
-                              max={2}
-                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
-                              value={d.yellowCards}
-                              onChange={(e) =>
-                                patchPlayerStat(pid, { yellowCards: parseStatInt(e.target.value, 2) })
-                              }
-                            />
-                          </td>
-                          <td className="px-1 py-1 pr-3">
-                            <input
-                              type="number"
-                              min={0}
-                              max={1}
-                              className={`${formInputClass} w-full text-center px-1 py-1 text-sm`}
-                              value={d.redCards}
-                              onChange={(e) =>
-                                patchPlayerStat(pid, { redCards: parseStatInt(e.target.value, 1) })
-                              }
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                {sortedPlayersForEdit.length === 0 && (
-                  <p className="p-4 text-on-surface-variant text-sm">No hay jugadores en el sistema.</p>
-                )}
+              <div className="rounded-lg border border-outline-variant/20 md:border-0 md:rounded-none">
+                <PlayerMatchStatsEditor
+                  players={sortedPlayersForEdit}
+                  statsByPlayer={statsByPlayer}
+                  avatarByPlayerId={avatarByPlayerId}
+                  onPatch={patchPlayerStat}
+                />
               </div>
             )}
           </div>

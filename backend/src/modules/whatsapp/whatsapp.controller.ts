@@ -54,4 +54,29 @@ export class WhatsAppController {
       next(e);
     }
   }
+
+  static async listDeliveryBatches(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const page = Math.max(1, parseInt(String(req.query.page ?? '1'), 10) || 1);
+      const limit = Math.min(50, Math.max(1, parseInt(String(req.query.limit ?? '15'), 10) || 15));
+      const { data, meta } = await WhatsAppService.listDeliveryBatches({ page, limit });
+      sendSuccess(res, data, 'Historial de envíos', 200, meta);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  static async getDeliveryBatch(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const id = String(req.params.id ?? '');
+      const detail = await WhatsAppService.getDeliveryBatchDetail(id);
+      if (!detail) {
+        res.status(404).json({ success: false, message: 'Envío no encontrado' });
+        return;
+      }
+      sendSuccess(res, detail);
+    } catch (e) {
+      next(e);
+    }
+  }
 }

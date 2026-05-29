@@ -9,3 +9,5 @@ whatsappRouter.get('/status', authMiddleware, requireAdmin, WhatsAppController.s
 whatsappRouter.post('/reconnect', authMiddleware, requireAdmin, WhatsAppController.reconnect);
 whatsappRouter.post('/reset-session', authMiddleware, requireAdmin, WhatsAppController.resetSession);
 whatsappRouter.post('/test', authMiddleware, requireAdmin, WhatsAppController.testSend);
+whatsappRouter.get('/delivery-batches', authMiddleware, requireAdmin, WhatsAppController.listDeliveryBatches);
+whatsappRouter.get('/delivery-batches/:id', authMiddleware, requireAdmin, WhatsAppController.getDeliveryBatch);
