@@ -48,3 +48,5 @@ services:
         sync: false
       - key: BREVO_SENDER_NAME
         value: F.C. Barcelona Cupido
+      - key: WHATSAPP_MAX_PER_HOUR
+        value: "100"

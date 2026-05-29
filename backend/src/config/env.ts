@@ -136,7 +136,7 @@ const envSchema = z.object({
   ),
   WHATSAPP_AUTH_DIR: z.string().default('./data/whatsapp-auth'),
   WHATSAPP_SEND_DELAY_MS: z.string().default('4000').transform(Number),
-  WHATSAPP_MAX_PER_HOUR: z.string().default('40').transform(Number),
+  WHATSAPP_MAX_PER_HOUR: z.string().default('100').transform(Number),
   WHATSAPP_NOTIFY_MATCHES: z
     .string()
     .optional()
