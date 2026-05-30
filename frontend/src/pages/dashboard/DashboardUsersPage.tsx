@@ -20,6 +20,13 @@ import {
   type CreateUserBody,
 } from '@/api/users';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSecondaryButton,
+  DashboardTableFrame,
+} from '@/components/dashboard/DashboardUi';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -221,78 +228,75 @@ export function DashboardUsersPage() {
   if (q.isLoading) return <Spinner />;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">👥 Usuarios</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          {(['all', 'parent', 'coach', 'admin'] as const).map((r) => (
-            <button
-              key={r}
-              type="button"
-              onClick={() => {
-                setRoleFilter(r);
-                if (r !== 'parent') setParentLinkFilter('all');
-              }}
-              className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
-                roleFilter === r
-                  ? 'border-primary bg-primary/15 text-primary'
-                  : 'border-outline-variant/30 text-on-surface-variant'
-              }`}
-            >
-              {r === 'all' ? 'Todos' : userRoleLabel(r)}
-            </button>
-          ))}
-          {roleFilter === 'parent' ? (
-            <>
-              {(
-                [
-                  { v: 'all', label: 'Todos los padres' },
-                  { v: 'no_link', label: 'Sin CURP' },
-                  { v: 'pending', label: 'CURP pendiente' },
-                  { v: 'linked', label: 'Con hijo vinculado' },
-                ] as const
-              ).map((f) => (
-                <button
-                  key={f.v}
-                  type="button"
-                  onClick={() => setParentLinkFilter(f.v)}
-                  className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
-                    parentLinkFilter === f.v
-                      ? 'border-secondary bg-secondary/15 text-secondary'
-                      : 'border-outline-variant/30 text-on-surface-variant'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </>
-          ) : null}
-          <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
-            {rows.length} registrados
-          </span>
-          {(roleFilter === 'parent' || roleFilter === 'all') ? (
-            <button
-              type="button"
-              onClick={() => setRemindOpen(true)}
-              className="bg-secondary/15 text-secondary border border-secondary/30 font-label-caps text-label-caps px-4 py-2.5 rounded-lg hover:bg-secondary/25 transition-all flex items-center gap-2 shrink-0"
-            >
-              <MaterialIcon name="mail" size={16} />
-              Recordar vínculo CURP
-              {unlinkedStatsQ.data?.data?.count != null ? ` (${unlinkedStatsQ.data.data.count})` : ''}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2"
-          >
-            ➕ Crear usuario
-          </button>
-        </div>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="👥 Usuarios"
+        actions={
+          <>
+            {(['all', 'parent', 'coach', 'admin'] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => {
+                  setRoleFilter(r);
+                  if (r !== 'parent') setParentLinkFilter('all');
+                }}
+                className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
+                  roleFilter === r
+                    ? 'border-primary bg-primary/15 text-primary'
+                    : 'border-outline-variant/30 text-on-surface-variant'
+                }`}
+              >
+                {r === 'all' ? 'Todos' : userRoleLabel(r)}
+              </button>
+            ))}
+            {roleFilter === 'parent' ? (
+              <>
+                {(
+                  [
+                    { v: 'all', label: 'Todos los padres' },
+                    { v: 'no_link', label: 'Sin CURP' },
+                    { v: 'pending', label: 'CURP pendiente' },
+                    { v: 'linked', label: 'Con hijo vinculado' },
+                  ] as const
+                ).map((f) => (
+                  <button
+                    key={f.v}
+                    type="button"
+                    onClick={() => setParentLinkFilter(f.v)}
+                    className={`px-3 py-1 rounded-full text-[10px] font-label-caps border ${
+                      parentLinkFilter === f.v
+                        ? 'border-secondary bg-secondary/15 text-secondary'
+                        : 'border-outline-variant/30 text-on-surface-variant'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </>
+            ) : null}
+            <span className="font-label-caps text-label-caps text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full border border-outline-variant/20">
+              {rows.length} registrados
+            </span>
+            {(roleFilter === 'parent' || roleFilter === 'all') ? (
+              <DashboardSecondaryButton
+                className="bg-secondary/15 text-secondary border-secondary/30 hover:bg-secondary/25 text-[11px]"
+                onClick={() => setRemindOpen(true)}
+              >
+                <MaterialIcon name="mail" size={16} />
+                Recordar vínculo CURP
+                {unlinkedStatsQ.data?.data?.count != null ? ` (${unlinkedStatsQ.data.data.count})` : ''}
+              </DashboardSecondaryButton>
+            ) : null}
+            <DashboardPrimaryButton onClick={() => setCreateOpen(true)}>
+              ➕ Crear usuario
+            </DashboardPrimaryButton>
+          </>
+        }
+      />
 
-      <div className="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low/50">
-        <table className="min-w-full text-left text-sm">
+      <DashboardTableFrame>
+        <table className="min-w-full text-left text-sm w-full">
           <thead className="bg-surface-container border-b border-outline-variant/20">
             <tr>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Usuario</th>
@@ -381,7 +385,7 @@ export function DashboardUsersPage() {
             })}
           </tbody>
         </table>
-      </div>
+      </DashboardTableFrame>
 
       <DashboardModal open={createOpen} onClose={() => { setCreateOpen(false); reset(); }} title="Crear usuario">
         <form onSubmit={onCreate} className="space-y-3">
@@ -692,6 +696,6 @@ export function DashboardUsersPage() {
           </button>
         </div>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

@@ -5,7 +5,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 /** Aviso de datos confidenciales (solo panel admin). */
 export function AdminPrivateNotice({ children }: { children?: ReactNode }) {
   return (
-    <div className="flex gap-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-3 text-sm text-on-surface-variant">
+    <div className="flex gap-3 rounded-xl border border-primary/25 bg-primary/5 px-3 sm:px-4 py-3 text-sm text-on-surface-variant leading-relaxed">
       <MaterialIcon name="lock" size={20} className="text-primary shrink-0 mt-0.5" />
       <div>
         <p className="font-label-caps text-[10px] text-primary mb-1">Uso interno — no público</p>

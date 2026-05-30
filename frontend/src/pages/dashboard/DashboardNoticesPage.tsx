@@ -16,6 +16,15 @@ import {
   type CreateNoticeBody,
 } from '@/api/notices';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
+import {
+  DashboardIconBadge,
+  DashboardListCard,
+  DashboardListCardActions,
+  DashboardListCardBody,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+} from '@/components/dashboard/DashboardUi';
 import { EmojiPickerBar } from '@/components/EmojiPickerBar';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -370,42 +379,35 @@ export function DashboardNoticesPage() {
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">📢 Avisos</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showArchived}
-              onChange={(e) => setShowArchived(e.target.checked)}
-              className="rounded border-outline-variant"
-            />
-            Ver archivados
-          </label>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2"
-          >
-            ➕ Crear aviso
-          </button>
-        </div>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="📢 Avisos"
+        actions={
+          <>
+            <label className="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
+                className="rounded border-outline-variant"
+              />
+              Ver archivados
+            </label>
+            <DashboardPrimaryButton onClick={() => setCreateOpen(true)}>
+              ➕ Crear aviso
+            </DashboardPrimaryButton>
+          </>
+        }
+      />
 
       <div className="grid gap-stack-sm">
         {rows.map((n) => {
           const badges = noticeStatusBadges(n);
           const scheduled = n.scheduled_publish_at as string | undefined;
           return (
-            <div
-              key={String(n.id)}
-              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between hover:border-primary/30 transition-colors min-w-0"
-            >
-              <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center border border-outline-variant/10 shrink-0">
-                  <MaterialIcon name="campaign" className="text-primary" size={20} />
-                </div>
+            <DashboardListCard key={String(n.id)}>
+              <DashboardListCardBody>
+                <DashboardIconBadge icon="campaign" className="rounded-full" />
                 <div className="min-w-0">
                   <h3 className="font-medium text-on-surface">{String(n.title)}</h3>
                   <p className="text-sm text-on-surface-variant mt-0.5">
@@ -418,8 +420,8 @@ export function DashboardNoticesPage() {
                     ) : null}
                   </p>
                 </div>
-              </div>
-              <div className="flex flex-col gap-2 w-full lg:w-auto min-w-0 shrink-0">
+              </DashboardListCardBody>
+              <DashboardListCardActions>
                 <div className="flex flex-wrap items-center gap-2">
                   {badges.map((b) => (
                     <span
@@ -449,8 +451,8 @@ export function DashboardNoticesPage() {
                   deletePending={deleteMut.isPending}
                   archivePending={archiveMut.isPending}
                 />
-              </div>
-            </div>
+              </DashboardListCardActions>
+            </DashboardListCard>
           );
         })}
       </div>
@@ -667,6 +669,6 @@ export function DashboardNoticesPage() {
           </div>
         </form>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

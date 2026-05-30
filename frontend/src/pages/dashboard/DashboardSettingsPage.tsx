@@ -3,11 +3,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 import { getSettingsAdmin, updateSettings } from '@/api/settings';
+import {
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSectionTitle,
+} from '@/components/dashboard/DashboardUi';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
-const inputClass = 'w-full bg-surface-container-lowest border border-outline-variant/30 focus:border-primary rounded-lg px-4 py-3 text-on-surface font-body-md outline-none transition-colors placeholder:text-on-surface-variant/40';
-const labelClass = 'font-label-caps text-label-caps text-on-surface-variant block mb-2';
+const inputClass = 'dashboard-input w-full';
+const labelClass = 'dashboard-field-label';
 
 export function DashboardSettingsPage() {
   const qc = useQueryClient();
@@ -48,16 +54,18 @@ export function DashboardSettingsPage() {
   if (q.isLoading) return <Spinner />;
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="font-headline-lg text-headline-lg text-on-surface mb-2">Configuración</h1>
-      <p className="font-body-md text-body-md text-on-surface-variant mb-stack-lg">Personaliza la identidad y datos de contacto del club.</p>
+    <DashboardPageShell className="max-w-2xl">
+      <DashboardPageHeader
+        title="Configuración"
+        description="Personaliza la identidad y datos de contacto del club."
+      />
 
       <div className="bg-[#002366]/20 backdrop-blur-md border border-primary/20 rounded-xl p-stack-lg space-y-6 relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-3 mb-stack-md border-b border-outline-variant/20 pb-3">
           <MaterialIcon name="settings" className="text-primary" />
-          <h2 className="font-headline-lg text-headline-lg-mobile text-on-surface">Datos del Club</h2>
+          <DashboardSectionTitle>Datos del Club</DashboardSectionTitle>
         </div>
 
         <div className="relative z-10 grid gap-5 sm:grid-cols-2">
@@ -103,11 +111,10 @@ export function DashboardSettingsPage() {
           </div>
         </div>
 
-        <button
-          type="button"
+        <DashboardPrimaryButton
+          className="relative z-10 px-8"
           onClick={() => save.mutate()}
           disabled={save.isPending}
-          className="relative z-10 bg-primary text-on-primary font-label-caps text-label-caps px-8 py-3 rounded-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all disabled:opacity-50 flex items-center gap-2"
         >
           {save.isPending ? (
             <MaterialIcon name="progress_activity" className="animate-spin" size={16} />
@@ -115,8 +122,8 @@ export function DashboardSettingsPage() {
             <MaterialIcon name="save" size={16} />
           )}
           Guardar cambios
-        </button>
+        </DashboardPrimaryButton>
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { TotpSecurityPanel } from '@/components/TotpSecurityPanel';
+import { DashboardPageShell } from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { PasswordInput } from '@/components/PasswordInput';
 import * as authApi from '@/api/auth';
@@ -164,7 +165,7 @@ export function DashboardAccountPage() {
   };
 
   return (
-    <div className="space-y-stack-lg max-w-2xl">
+    <DashboardPageShell className="max-w-2xl">
       <header>
         <h1 className="font-display-hero text-headline-lg-mobile md:text-display-hero text-primary tracking-tight">
           Mi perfil
@@ -359,6 +360,6 @@ export function DashboardAccountPage() {
       </section>
 
       <TotpSecurityPanel />
-    </div>
+    </DashboardPageShell>
   );
 }

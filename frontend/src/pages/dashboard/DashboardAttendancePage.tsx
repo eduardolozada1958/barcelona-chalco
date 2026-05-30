@@ -4,6 +4,16 @@ import toast from 'react-hot-toast';
 
 import { getAttendanceGrid, saveAttendance, type AttendanceGrid } from '@/api/attendance';
 import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
+import {
+  DashboardField,
+  DashboardMonthInput,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSecondaryButton,
+  DashboardTableFrame,
+  DashboardToolbar,
+} from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { downloadAttendancePdf } from '@/utils/attendance-pdf';
@@ -38,13 +48,20 @@ export function DashboardAttendancePage() {
       const records: { playerId: string; date: string; present: boolean }[] = [];
       for (const player of grid.players) {
         const byDate = local[player.id] ?? {};
+        const saved = grid.records[player.id] ?? {};
         for (const sd of grid.sessionDates) {
+          const present = Boolean(byDate[sd.date]);
+          const wasPresent = Boolean(saved[sd.date]);
+          if (present === wasPresent) continue;
           records.push({
             playerId: player.id,
             date:     sd.date,
-            present:  Boolean(byDate[sd.date]),
+            present,
           });
         }
+      }
+      if (records.length === 0) {
+        throw new Error('No hay cambios que guardar');
       }
       return saveAttendance({ periodMonth: grid.periodMonth, records });
     },
@@ -87,40 +104,29 @@ export function DashboardAttendancePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-headline-lg text-2xl text-on-surface">Registro de asistencia</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Las fechas del mes se calculan solas: partido lun, mié, vie y sáb; entreno mar y jue.
-        </p>
-        {legend}
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="Registro de asistencia"
+        description="Las fechas del mes se calculan solas: partido lun, mié, vie y sáb; entreno mar y jue."
+      />
+      <div className="mt-1">{legend}</div>
 
       <AdminPrivateNotice>
         El registro de asistencia no se publica en la web. Cada padre solo ve sus propios avisos en el panel;
         aquí controlas la plantilla completa del club.
       </AdminPrivateNotice>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div>
-          <label className="font-label-caps text-[10px] text-on-surface-variant block mb-1">Mes</label>
-          <input
-            type="month"
-            className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          />
-        </div>
-        <button
-          type="button"
+      <DashboardToolbar>
+        <DashboardField label="Mes">
+          <DashboardMonthInput value={period} onChange={(e) => setPeriod(e.target.value)} />
+        </DashboardField>
+        <DashboardPrimaryButton
           disabled={!dirty || saveMut.isPending}
           onClick={() => saveMut.mutate()}
-          className="px-5 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-sm disabled:opacity-50"
         >
           {saveMut.isPending ? 'Guardando…' : 'Guardar asistencia'}
-        </button>
-        <button
-          type="button"
+        </DashboardPrimaryButton>
+        <DashboardSecondaryButton
           onClick={() => {
             if (dirty) {
               toast.error('Guarda los cambios antes de exportar el PDF');
@@ -133,15 +139,14 @@ export function DashboardAttendancePage() {
               toast.error(e instanceof Error ? e.message : 'No se pudo generar el PDF');
             }
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-outline-variant/40 text-sm hover:border-primary"
         >
           <MaterialIcon name="picture_as_pdf" size={18} />
           Exportar PDF
-        </button>
-      </div>
+        </DashboardSecondaryButton>
+      </DashboardToolbar>
 
-      <div className="overflow-x-auto rounded-xl border border-outline-variant/25 max-h-[70vh]">
-        <table className="text-xs border-collapse min-w-max">
+      <DashboardTableFrame maxHeight="70vh">
+        <table className="text-xs border-collapse min-w-max w-full">
           <thead className="sticky top-0 z-10">
             <tr>
               <th className="sticky left-0 z-20 bg-surface-container px-2 py-2 text-left font-label-caps min-w-[140px]">
@@ -185,7 +190,7 @@ export function DashboardAttendancePage() {
                         <button
                           type="button"
                           onClick={() => toggle(p.id, sd.date)}
-                          className={`w-8 h-8 rounded border transition-colors ${
+                          className={`min-w-[44px] min-h-[44px] w-11 h-11 rounded-lg border transition-colors touch-manipulation ${
                             on
                               ? 'bg-primary/30 border-primary text-primary'
                               : 'bg-surface-container-low border-outline-variant/30 text-on-surface-variant/40'
@@ -202,7 +207,7 @@ export function DashboardAttendancePage() {
             })}
           </tbody>
         </table>
-      </div>
-    </div>
+      </DashboardTableFrame>
+    </DashboardPageShell>
   );
 }

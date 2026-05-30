@@ -4,6 +4,15 @@ import toast from 'react-hot-toast';
 
 import { getFeesMatrix, syncPaymentHolds, updatePlayerFees, type FeeMatrixRow } from '@/api/fees';
 import { AdminPrivateNotice } from '@/components/AdminPrivateNotice';
+import {
+  DashboardField,
+  DashboardMonthInput,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardSecondaryButton,
+  DashboardTableFrame,
+  DashboardToolbar,
+} from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { COACH_PHONE_DISPLAY, COACH_WHATSAPP_URL } from '@/config/coach';
@@ -62,14 +71,16 @@ export function DashboardFeesPage() {
   if (q.isLoading) return <Spinner />;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-headline-lg text-2xl text-on-surface">Cuotas y acceso de padres</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          <strong>Registro</strong> (alta) y <strong>mensualidad</strong> del mes, por jugador. Cada padre vinculado
-          se evalúa aparte: si su hijo debe, solo esa cuenta se bloquea.
-        </p>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="Cuotas y acceso de padres"
+        description={
+          <>
+            <strong>Registro</strong> (alta) y <strong>mensualidad</strong> del mes, por jugador. Cada padre vinculado
+            se evalúa aparte: si su hijo debe, solo esa cuenta se bloquea.
+          </>
+        }
+      />
 
       <AdminPrivateNotice>
         Las cuotas son confidenciales. El acceso se bloquea solo si falta <strong>registro y mensualidad</strong> a la
@@ -77,35 +88,26 @@ export function DashboardFeesPage() {
         Contacto mora: Gabo ({COACH_PHONE_DISPLAY}).
       </AdminPrivateNotice>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label className="font-label-caps text-[10px] text-on-surface-variant block mb-1">Mes</label>
-          <input
-            type="month"
-            className="bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-3 py-2 text-on-surface"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-          />
-        </div>
-        <button
-          type="button"
-          className="px-4 py-2 rounded-lg border border-outline-variant/40 text-sm hover:border-primary"
+      <DashboardToolbar>
+        <DashboardField label="Mes">
+          <DashboardMonthInput value={period} onChange={(e) => setPeriod(e.target.value)} />
+        </DashboardField>
+        <DashboardSecondaryButton
           onClick={() => syncMut.mutate()}
           disabled={syncMut.isPending}
         >
           {syncMut.isPending ? 'Recalculando…' : 'Recalcular bloqueos'}
-        </button>
+        </DashboardSecondaryButton>
         <a
           href={COACH_WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-primary hover:underline"
+          className="text-sm text-primary hover:underline self-center"
         >
           WhatsApp Gabo
         </a>
-        <button
-          type="button"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/50 text-primary text-sm hover:bg-primary/10"
+        <DashboardSecondaryButton
+          className="border-primary/50 text-primary hover:bg-primary/10"
           disabled={!payload || rows.length === 0}
           onClick={() => {
             if (!payload) return;
@@ -119,8 +121,8 @@ export function DashboardFeesPage() {
         >
           <MaterialIcon name="picture_as_pdf" size={18} />
           Exportar PDF
-        </button>
-      </div>
+        </DashboardSecondaryButton>
+      </DashboardToolbar>
 
       <p className="text-xs text-on-surface-variant">
         Jugadores con mora este mes: {stats.mora} / {stats.total}. Los padres en la columna derecha muestran si su
@@ -128,7 +130,7 @@ export function DashboardFeesPage() {
         <strong>Suspendido</strong>.
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-outline-variant/25">
+      <DashboardTableFrame>
         <table className="w-full text-sm min-w-[720px]">
           <thead>
             <tr className="bg-surface-container/60 text-left">
@@ -147,8 +149,8 @@ export function DashboardFeesPage() {
         {rows.length === 0 ? (
           <p className="p-6 text-center text-on-surface-variant text-sm">No hay jugadores activos en plantilla.</p>
         ) : null}
-      </div>
-    </div>
+      </DashboardTableFrame>
+    </DashboardPageShell>
   );
 }
 

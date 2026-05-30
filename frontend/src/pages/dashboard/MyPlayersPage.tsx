@@ -10,6 +10,14 @@ import {
   type ParentLinkRequest,
 } from '@/api/parents';
 import { DashboardModal } from '@/components/DashboardModal';
+import {
+  DashboardEmptyState,
+  DashboardListCard,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSectionTitle,
+} from '@/components/dashboard/DashboardUi';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { playerPublicPath } from '@/utils/player-path';
@@ -79,41 +87,28 @@ export function MyPlayersPage() {
   const requests = (requestsQ.data?.data ?? []) as ParentLinkRequest[];
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">Mis Jugadores</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-            Vincula a tus hijos con la CURP que registró el club
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setLinkOpen(true)}
-          className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary font-label-caps text-label-caps px-5 py-3 rounded-lg hover:shadow-[0_0_16px_rgba(212,175,55,0.35)] transition-all shrink-0"
-        >
-          <MaterialIcon name="link" size={20} />
-          Vincular un hijo
-        </button>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="Mis Jugadores"
+        description="Vincula a tus hijos con la CURP que registró el club"
+        actions={
+          <DashboardPrimaryButton onClick={() => setLinkOpen(true)}>
+            <MaterialIcon name="link" size={20} />
+            Vincular un hijo
+          </DashboardPrimaryButton>
+        }
+      />
 
-      <div className="mb-stack-lg">
-        <ParentAccountStatus compact />
-      </div>
+      <ParentAccountStatus compact />
 
       {requests.length > 0 && (
-        <section className="mb-stack-lg">
-          <h2 className="font-label-caps text-label-caps text-on-surface-variant mb-3 tracking-widest">
-            Solicitudes de vínculo
-          </h2>
+        <section>
+          <DashboardSectionTitle>Solicitudes de vínculo</DashboardSectionTitle>
           <div className="space-y-3">
             {requests.map((req) => {
               const st = statusLabel(req.status);
               return (
-                <div
-                  key={req.id}
-                  className="bg-surface-container/40 border border-outline-variant/25 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                >
+                <DashboardListCard key={req.id} className="flex-col sm:flex-row sm:items-center">
                   <div>
                     <p className="font-medium text-on-surface">
                       {req.player?.firstName} {req.player?.lastName}
@@ -131,7 +126,7 @@ export function MyPlayersPage() {
                   <span className={`inline-flex self-start px-3 py-1 rounded-full text-xs font-label-caps border ${st.className}`}>
                     {st.text}
                   </span>
-                </div>
+                </DashboardListCard>
               );
             })}
           </div>
@@ -139,16 +134,16 @@ export function MyPlayersPage() {
       )}
 
       {rows.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-stack-lg text-center bg-surface-container/30 rounded-xl border border-outline-variant/20 px-6">
+        <DashboardEmptyState>
           <MaterialIcon name="person_off" className="text-on-surface-variant mb-4" size={64} />
           <p className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2">
             Sin jugadores vinculados
           </p>
-          <p className="font-body-md text-on-surface-variant max-w-md">
+          <p className="max-w-md">
             Pulsa <strong>Vincular un hijo</strong> e ingresa la CURP de 18 caracteres. Si el jugador no está en la
             plantilla, contacta al entrenador para que lo registre con su CURP.
           </p>
-        </div>
+        </DashboardEmptyState>
       ) : (
         <div className="grid gap-gutter sm:grid-cols-2">
           {rows.map((row, i) => {
@@ -160,9 +155,9 @@ export function MyPlayersPage() {
             const qrToken = typeof pl.qr_token === 'string' ? pl.qr_token : null;
             const avatarUrl = typeof pl.avatar_url === 'string' ? pl.avatar_url : null;
             return (
-              <div
+              <DashboardListCard
                 key={pid}
-                className="bg-[#002366]/20 backdrop-blur-md border border-primary/20 rounded-xl p-6 relative overflow-hidden group hover:border-primary/40 transition-all"
+                className="flex-col p-6 relative overflow-hidden group hover:border-primary/40"
               >
                 <div className="absolute -top-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
                 <div className="flex flex-col sm:flex-row gap-4 relative z-10">
@@ -226,7 +221,7 @@ export function MyPlayersPage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </DashboardListCard>
             );
           })}
         </div>
@@ -287,15 +282,15 @@ export function MyPlayersPage() {
             />
             Soy el contacto principal del jugador
           </label>
-          <button
+          <DashboardPrimaryButton
             type="submit"
+            className="w-full"
             disabled={linkMut.isPending}
-            className="w-full bg-primary text-on-primary font-label-caps text-label-caps py-3 rounded-lg disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {linkMut.isPending ? 'Enviando…' : 'Enviar solicitud'}
-          </button>
+          </DashboardPrimaryButton>
         </form>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

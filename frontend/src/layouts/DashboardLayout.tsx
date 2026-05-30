@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth, type SessionRole } from '@/contexts/AuthContext';
@@ -52,6 +52,12 @@ export function DashboardLayout() {
     staleTime: 20_000,
   });
   const pendingLinks = pendingLinksQ.data?.data?.count ?? 0;
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    document.body.classList.add('mobile-menu-open');
+    return () => document.body.classList.remove('mobile-menu-open');
+  }, [mobileOpen]);
 
   const handleLogout = async () => { await logout(); navigate('/'); };
 
@@ -119,7 +125,7 @@ export function DashboardLayout() {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <nav className="relative w-72 h-screen bg-surface-container-low border-r border-outline-variant/10 shadow-xl flex flex-col py-base">
+          <nav className="relative w-[min(20rem,88vw)] max-w-full h-[100dvh] bg-surface-container-low border-r border-outline-variant/10 shadow-xl flex flex-col py-base safe-area-pb">
             <button type="button" className="absolute top-4 right-4 p-1" onClick={() => setMobileOpen(false)}>
               <MaterialIcon name="close" className="text-on-surface-variant" />
             </button>
@@ -127,8 +133,8 @@ export function DashboardLayout() {
           </nav>
         </div>
       )}
-      <main className="w-full min-w-0 max-w-full md:ml-64 flex-1 p-3 sm:p-margin-mobile md:p-margin-desktop bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-surface-container/40 via-background to-background min-h-screen overflow-x-hidden">
-        <div className="md:hidden flex items-center justify-between gap-2 mb-stack-md pb-stack-sm border-b border-outline-variant/20 min-w-0">
+      <main className="w-full min-w-0 max-w-full md:ml-64 flex-1 px-3 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-4 md:px-margin-desktop md:pt-margin-desktop bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-surface-container/40 via-background to-background min-h-[100dvh] overflow-x-hidden">
+        <div className="md:hidden flex items-center justify-between gap-2 mb-4 pb-3 border-b border-outline-variant/20 min-w-0 sticky top-0 z-30 -mx-3 px-3 sm:-mx-4 sm:px-4 pt-[max(0.25rem,env(safe-area-inset-top))] bg-background/90 backdrop-blur-md">
           <button type="button" onClick={() => setMobileOpen(true)} className="p-2 shrink-0 touch-manipulation" aria-label="Menú"><MaterialIcon name="menu" className="text-primary" size={28} /></button>
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
             <img src={CLUB_LOGO_URL} alt="Logo" className="h-8 w-8 object-contain shrink-0" />

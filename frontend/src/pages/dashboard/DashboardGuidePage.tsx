@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { getPanelTitle } from '@/config/panel-labels';
+import { DashboardPageShell } from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
 type Step = { title: string; body: string; to?: string; label?: string };
@@ -159,7 +160,7 @@ export function DashboardGuidePage() {
   const showParent = role === 'parent';
 
   return (
-    <div className="flex flex-col gap-stack-lg max-w-3xl">
+    <DashboardPageShell className="max-w-3xl">
       <header>
         <h1 className="font-headline-lg text-headline-lg text-on-surface flex items-center gap-2">
           <MaterialIcon name="menu_book" className="text-primary" />
@@ -214,6 +215,6 @@ export function DashboardGuidePage() {
           </span>
         </p>
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

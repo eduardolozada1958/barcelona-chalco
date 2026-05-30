@@ -17,6 +17,12 @@ import {
 } from '@/api/gallery';
 import { clubDatetimeLocalNow, clubDatetimeLocalToIso, formatMatchDateClub, formatMatchTimeClub, isoToClubDatetimeLocal, validateClubDatetimeLocalNotPast } from '@/utils/club-datetime';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
+import {
+  DashboardListCard,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+} from '@/components/dashboard/DashboardUi';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
@@ -344,34 +350,32 @@ export function DashboardGalleryPage() {
   const editMediaList = galleryMediaFromPost(editRow);
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">📸 Galería</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showArchived}
-              onChange={(e) => setShowArchived(e.target.checked)}
-              className="rounded border-outline-variant"
-            />
-            Ver archivados
-          </label>
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2"
-          >
-            ➕ Nueva publicación
-          </button>
-        </div>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="📸 Galería"
+        actions={
+          <>
+            <label className="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showArchived}
+                onChange={(e) => setShowArchived(e.target.checked)}
+                className="rounded border-outline-variant"
+              />
+              Ver archivados
+            </label>
+            <DashboardPrimaryButton onClick={() => setCreateOpen(true)}>
+              ➕ Nueva publicación
+            </DashboardPrimaryButton>
+          </>
+        }
+      />
 
       <div className="grid gap-stack-sm sm:grid-cols-2 lg:grid-cols-3">
         {rows.map((post) => {
           const img = firstMediaUrl(post) ?? (typeof post.image_url === 'string' ? post.image_url : null);
           return (
-            <div key={String(post.id)} className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl hover:border-primary/30 transition-colors group flex flex-col min-w-0">
+            <DashboardListCard key={String(post.id)} className="flex flex-col p-0 overflow-hidden group">
               <div className="aspect-video overflow-hidden bg-surface-container-high flex items-center justify-center rounded-t-xl">
                 {img ? (
                   <img src={img} alt={String(post.title)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -425,7 +429,7 @@ export function DashboardGalleryPage() {
                   archivePending={archiveMut.isPending}
                 />
               </div>
-            </div>
+            </DashboardListCard>
           );
         })}
       </div>
@@ -606,6 +610,6 @@ export function DashboardGalleryPage() {
           </div>
         </form>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

@@ -11,6 +11,13 @@ import {
   type ParentLinkRequest,
 } from '@/api/parents';
 import { DashboardModal } from '@/components/DashboardModal';
+import {
+  DashboardEmptyState,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardTableFrame,
+  DashboardToolbar,
+} from '@/components/dashboard/DashboardUi';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
@@ -181,15 +188,13 @@ export function DashboardLinkRequestsPage() {
   const rows = (q.data?.data ?? []) as ParentLinkRequest[];
 
   return (
-    <div>
-      <div className="mb-stack-md">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Vínculos padre–jugador</h1>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-          Los padres solicitan vínculo con la CURP del jugador. Aprueba solo si el parentesco es correcto.
-        </p>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="Vínculos padre–jugador"
+        description="Los padres solicitan vínculo con la CURP del jugador. Aprueba solo si el parentesco es correcto."
+      />
 
-      <div className="flex flex-wrap gap-2 mb-stack-md">
+      <DashboardToolbar className="bg-transparent border-0 p-0">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -204,16 +209,16 @@ export function DashboardLinkRequestsPage() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </DashboardToolbar>
 
       {rows.length === 0 ? (
-        <div className="text-center py-stack-lg bg-surface-container/30 rounded-xl border border-outline-variant/20">
-          <MaterialIcon name="link_off" size={48} className="text-on-surface-variant mx-auto mb-3" />
-          <p className="text-on-surface-variant">No hay solicitudes en esta categoría.</p>
-        </div>
+        <DashboardEmptyState>
+          <MaterialIcon name="link_off" size={48} className="text-on-surface-variant mb-3" />
+          <p>No hay solicitudes en esta categoría.</p>
+        </DashboardEmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low/50">
-          <table className="min-w-full text-left text-sm">
+        <DashboardTableFrame>
+          <table className="min-w-full text-left text-sm w-full">
             <thead className="bg-surface-container border-b border-outline-variant/20">
               <tr>
                 <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Padre / tutor</th>
@@ -267,7 +272,7 @@ export function DashboardLinkRequestsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </DashboardTableFrame>
       )}
 
       <DashboardModal
@@ -355,6 +360,6 @@ export function DashboardLinkRequestsPage() {
           </div>
         ) : null}
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

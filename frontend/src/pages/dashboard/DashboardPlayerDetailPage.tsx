@@ -6,6 +6,11 @@ import toast from 'react-hot-toast';
 import { generatePlayerQr, getPlayerAdmin, getPlayerCurpSignedUrl, updatePlayer, verifyPlayer } from '@/api/players';
 import { useAuth } from '@/contexts/AuthContext';
 import { playerQrImageUrl } from '@/api/qr';
+import {
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSecondaryButton,
+} from '@/components/dashboard/DashboardUi';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
@@ -88,8 +93,8 @@ export function DashboardPlayerDetailPage() {
       : null;
 
   return (
-    <div className="max-w-3xl">
-      <Link to="/dashboard/players" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-label-caps text-label-caps mb-stack-md">
+    <DashboardPageShell className="max-w-3xl">
+      <Link to="/dashboard/players" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-label-caps text-label-caps">
         <MaterialIcon name="arrow_back" size={16} /> Plantilla
       </Link>
 
@@ -132,23 +137,17 @@ export function DashboardPlayerDetailPage() {
       </div>
 
       {/* Actions */}
-      <div className="mt-stack-md flex flex-wrap gap-3">
-        <button
-          type="button"
+      <div className="flex flex-wrap gap-3">
+        <DashboardSecondaryButton
+          className="bg-primary/15 text-primary border-primary/30 hover:bg-primary hover:text-on-primary disabled:opacity-40"
           disabled={verifyM.isPending || Boolean(p.is_verified)}
           onClick={() => verifyM.mutate()}
-          className="bg-primary/15 text-primary border border-primary/30 font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:bg-primary hover:text-on-primary disabled:opacity-40 transition-all flex items-center gap-2"
         >
           <MaterialIcon name="verified" size={16} /> {p.is_verified ? 'Ya verificado' : 'Verificar'}
-        </button>
-        <button
-          type="button"
-          disabled={qrM.isPending}
-          onClick={() => qrM.mutate()}
-          className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] disabled:opacity-50 transition-all flex items-center gap-2"
-        >
+        </DashboardSecondaryButton>
+        <DashboardPrimaryButton disabled={qrM.isPending} onClick={() => qrM.mutate()}>
           <MaterialIcon name="qr_code_2" size={16} /> {p.qr_token ? 'Renovar QR' : 'Generar QR'}
-        </button>
+        </DashboardPrimaryButton>
       </div>
 
       {/* CURP: constancia (alta) + texto para QR */}
@@ -239,6 +238,6 @@ export function DashboardPlayerDetailPage() {
           </div>
         </div>
       ) : null}
-    </div>
+    </DashboardPageShell>
   );
 }

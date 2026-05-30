@@ -16,6 +16,12 @@ import {
 import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
+import {
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardTableFrame,
+} from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { formatMatchDateClub } from '@/utils/club-datetime';
@@ -158,19 +164,17 @@ export function DashboardPerformancePage() {
   if (q.isLoading) return <Spinner />;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">📊 Análisis de rendimiento</h1>
-        <button
-          type="button"
-          onClick={openCreate}
-          className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all"
-        >
-          ➕ Nuevo informe
-        </button>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="📊 Análisis de rendimiento"
+        actions={
+          <DashboardPrimaryButton onClick={openCreate}>
+            ➕ Nuevo informe
+          </DashboardPrimaryButton>
+        }
+      />
 
-      <p className="text-sm text-on-surface-variant mb-stack-md max-w-2xl">
+      <p className="text-sm text-on-surface-variant max-w-2xl">
         Crea informes con avance y dificultad por jugador. Al publicar, aparecen en{' '}
         <Link to="/rendimiento" className="text-primary hover:underline" target="_blank" rel="noreferrer">
           /rendimiento
@@ -178,8 +182,8 @@ export function DashboardPerformancePage() {
         y puedes exportarlos en PDF con el logo de F.C. Barcelona Cupido.
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-outline-variant/20 bg-surface-container-low/50">
-        <table className="min-w-full text-left text-sm">
+      <DashboardTableFrame>
+        <table className="min-w-full text-left text-sm w-full">
           <thead className="bg-surface-container border-b border-outline-variant/20">
             <tr>
               <th className="p-4 font-label-caps text-label-caps text-on-surface-variant">Informe</th>
@@ -259,7 +263,7 @@ export function DashboardPerformancePage() {
             )}
           </tbody>
         </table>
-      </div>
+      </DashboardTableFrame>
 
       <DashboardModal open={modalOpen} onClose={closeModal} title={editRow ? 'Editar informe' : 'Nuevo informe'}>
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -412,6 +416,6 @@ export function DashboardPerformancePage() {
           </button>
         </div>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

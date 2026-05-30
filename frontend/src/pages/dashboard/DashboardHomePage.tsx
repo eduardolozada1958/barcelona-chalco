@@ -8,6 +8,7 @@ import { listMatchesAdmin } from '@/api/matches';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { DashboardModal } from '@/components/DashboardModal';
+import { DashboardPageShell } from '@/components/dashboard/DashboardUi';
 import { ParentAccountStatus } from '@/components/ParentAccountStatus';
 
 const quickActions = [
@@ -63,7 +64,7 @@ export function DashboardHomePage() {
   const newMonth = statsQ.data?.success ? statsQ.data.data?.newPlayersThisMonth ?? 0 : 0;
 
   return (
-    <div className="flex flex-col gap-stack-lg">
+    <DashboardPageShell className="gap-stack-lg">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-stack-sm border-b border-outline-variant/20 pb-stack-md">
         <div>
           <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-background tracking-tight">
@@ -190,7 +191,7 @@ export function DashboardHomePage() {
           </div>
         )}
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }
 

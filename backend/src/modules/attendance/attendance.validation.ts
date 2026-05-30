@@ -12,7 +12,7 @@ export const attendanceUpsertBodySchema = z.object({
       date:     z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       present:  z.boolean(),
     }),
-  ).max(500),
+  ).max(5000),
 });
 
 export type AttendanceUpsertBody = z.infer<typeof attendanceUpsertBodySchema>;

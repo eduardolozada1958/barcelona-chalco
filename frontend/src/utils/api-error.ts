@@ -27,13 +27,13 @@ export function getApiErrorMessage(error: unknown): string {
 
   const err = error as Error & { status?: number; payload?: ApiResponse };
 
-  if (err.payload?.message && !isTechnicalMessage(err.payload.message)) {
-    return err.payload.message;
-  }
-
   if (err.payload?.errors?.length) {
     const first = err.payload.errors[0]?.message;
     if (first && !isTechnicalMessage(first)) return first;
+  }
+
+  if (err.payload?.message && !isTechnicalMessage(err.payload.message)) {
+    return err.payload.message;
   }
 
   const status = err.status ?? (error as AxiosError).response?.status;

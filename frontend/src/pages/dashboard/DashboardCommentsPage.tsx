@@ -10,6 +10,13 @@ import {
   type CommentItem,
 } from '@/api/comments';
 import { DashboardModal } from '@/components/DashboardModal';
+import {
+  DashboardEmptyState,
+  DashboardListCard,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardToolbar,
+} from '@/components/dashboard/DashboardUi';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
 
@@ -78,15 +85,13 @@ export function DashboardCommentsPage() {
   const rows = (q.data?.data ?? []) as CommentItem[];
 
   return (
-    <div>
-      <div className="mb-stack-md">
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">Comentarios</h1>
-        <p className="font-body-md text-body-md text-on-surface-variant mt-1">
-          Revisa, rechaza o elimina los comentarios publicados en avisos y galería.
-        </p>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="Comentarios"
+        description="Revisa, rechaza o elimina los comentarios publicados en avisos y galería."
+      />
 
-      <div className="flex flex-wrap gap-2 mb-stack-md">
+      <DashboardToolbar className="bg-transparent border-0 p-0">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -101,20 +106,18 @@ export function DashboardCommentsPage() {
             {tab.label}
           </button>
         ))}
-      </div>
+      </DashboardToolbar>
 
       {rows.length === 0 ? (
-        <div className="text-center py-stack-lg bg-surface-container/30 rounded-xl border border-outline-variant/20">
-          <MaterialIcon name="forum" size={48} className="text-on-surface-variant mx-auto mb-3" />
-          <p className="text-on-surface-variant">No hay comentarios en esta categoría.</p>
-        </div>
+        <DashboardEmptyState>
+          <MaterialIcon name="forum" size={48} className="text-on-surface-variant mb-3" />
+          <p>No hay comentarios en esta categoría.</p>
+        </DashboardEmptyState>
       ) : (
         <ul className="space-y-3">
           {rows.map((c) => (
-            <li
-              key={c.id}
-              className="rounded-xl border border-outline-variant/20 bg-surface-container/30 p-4"
-            >
+            <li key={c.id}>
+              <DashboardListCard className="flex-col items-stretch lg:flex-col lg:items-stretch">
               <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                 <div>
                   <span className="font-medium text-on-surface">{c.author?.fullName ?? 'Usuario'}</span>
@@ -175,6 +178,7 @@ export function DashboardCommentsPage() {
                   <MaterialIcon name="delete" size={14} /> Eliminar
                 </button>
               </div>
+              </DashboardListCard>
             </li>
           ))}
         </ul>
@@ -208,6 +212,6 @@ export function DashboardCommentsPage() {
           Confirmar rechazo
         </button>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

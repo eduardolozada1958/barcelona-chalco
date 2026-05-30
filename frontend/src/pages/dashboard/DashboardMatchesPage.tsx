@@ -14,6 +14,16 @@ import {
   type UpdateMatchBody,
 } from '@/api/matches';
 import { DashboardRowActions } from '@/components/DashboardRowActions';
+import {
+  DashboardIconBadge,
+  DashboardListCard,
+  DashboardListCardActions,
+  DashboardListCardBody,
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSecondaryButton,
+} from '@/components/dashboard/DashboardUi';
 import { listPlayersAdmin } from '@/api/players';
 import { DashboardModal, formActionsClass, formErrorClass, formInputClass, formLabelClass } from '@/components/DashboardModal';
 import { Spinner } from '@/components/Spinner';
@@ -427,20 +437,16 @@ export function DashboardMatchesPage() {
   const rows = (q.data?.data ?? []) as Record<string, unknown>[];
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-stack-md gap-3">
-        <div>
-          <h1 className="font-headline-lg text-headline-lg text-on-surface">📅 Partidos</h1>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">Gestión de calendario deportivo</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setCreateOpen(true)}
-          className="bg-primary text-on-primary font-label-caps text-label-caps px-5 py-2.5 rounded-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.4)] transition-all flex items-center gap-2"
-        >
-          <MaterialIcon name="add" size={18} /> Programar
-        </button>
-      </div>
+    <DashboardPageShell>
+      <DashboardPageHeader
+        title="📅 Partidos"
+        description="Gestión de calendario deportivo"
+        actions={
+          <DashboardPrimaryButton onClick={() => setCreateOpen(true)}>
+            <MaterialIcon name="add" size={18} /> Programar
+          </DashboardPrimaryButton>
+        }
+      />
 
       <div className="grid gap-stack-sm">
         {rows.map((m) => {
@@ -448,14 +454,9 @@ export function DashboardMatchesPage() {
           const lineup = normalizeLineupFromRow(m.starting_lineup);
           const ft = m.formation_type === 'football_7' || m.formation_type === 'football_11' ? String(m.formation_type) : '';
           return (
-            <div
-              key={String(m.id)}
-              className="bg-surface-container/40 backdrop-blur-sm border border-outline-variant/20 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-primary/30 transition-colors group min-w-0"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-12 h-12 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/10 group-hover:bg-primary/10 transition-colors shrink-0">
-                  <MaterialIcon name="sports_soccer" className="text-primary" />
-                </div>
+            <DashboardListCard key={String(m.id)} className="group">
+              <DashboardListCardBody>
+                <DashboardIconBadge icon="sports_soccer" className="group-hover:bg-primary/10 transition-colors" />
                 <div className="min-w-0">
                   <h3 className="font-headline-lg-mobile text-body-lg text-on-surface font-semibold truncate">{String(m.title)}</h3>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-on-surface-variant">
@@ -471,15 +472,14 @@ export function DashboardMatchesPage() {
                     )}
                   </div>
                 </div>
-              </div>
-              <div className="flex flex-col min-[400px]:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto shrink-0 sm:justify-end">
-                <button
-                  type="button"
+              </DashboardListCardBody>
+              <DashboardListCardActions className="min-[400px]:flex-row flex-wrap items-stretch sm:items-center">
+                <DashboardSecondaryButton
+                  className="w-full sm:w-auto text-[11px] border-primary/40 text-primary hover:bg-primary/10"
                   onClick={() => openLineupModal(m)}
-                  className="w-full sm:w-auto px-3 py-2 sm:py-1.5 rounded-lg border border-primary/40 text-primary font-label-caps text-[11px] hover:bg-primary/10 touch-manipulation text-center"
                 >
                   Plantilla
-                </button>
+                </DashboardSecondaryButton>
                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-label-caps ${
                   status === 'scheduled' ? 'bg-secondary/15 text-secondary' :
                   status === 'completed' ? 'bg-primary/15 text-primary' :
@@ -493,8 +493,8 @@ export function DashboardMatchesPage() {
                   onDelete={() => confirmDeleteMatch(String(m.id), String(m.title))}
                   deletePending={deleteMut.isPending}
                 />
-              </div>
-            </div>
+              </DashboardListCardActions>
+            </DashboardListCard>
           );
         })}
       </div>
@@ -856,6 +856,6 @@ export function DashboardMatchesPage() {
           </div>
         </form>
       </DashboardModal>
-    </div>
+    </DashboardPageShell>
   );
 }

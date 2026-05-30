@@ -3,6 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 
 import { getWhatsAppStatus, resetWhatsAppSession, sendWhatsAppTest } from '@/api/whatsapp';
+import {
+  DashboardPageHeader,
+  DashboardPageShell,
+  DashboardPrimaryButton,
+  DashboardSecondaryButton,
+} from '@/components/dashboard/DashboardUi';
 import { MaterialIcon } from '@/components/MaterialIcon';
 import { Spinner } from '@/components/Spinner';
 import { WhatsAppDeliveryAudit } from '@/components/WhatsAppDeliveryAudit';
@@ -70,13 +76,11 @@ export function DashboardWhatsappPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <div>
-        <h1 className="font-headline-lg text-headline-lg text-primary">WhatsApp del club</h1>
-        <p className="text-sm text-on-surface-variant mt-2">
-          Número secundario para avisos a padres verificados (no masivo). Usa el chip solo para el club.
-        </p>
-      </div>
+    <DashboardPageShell className="max-w-4xl">
+      <DashboardPageHeader
+        title="WhatsApp del club"
+        description="Número secundario para avisos a padres verificados (no masivo). Usa el chip solo para el club."
+      />
 
       {!status?.enabled ? (
         <div className="rounded-xl border border-error/40 bg-error-container/20 p-4 text-sm">
@@ -216,8 +220,7 @@ export function DashboardWhatsappPage() {
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="button"
+        <DashboardSecondaryButton
           disabled={
             !status?.enabled ||
             resetMut.isPending ||
@@ -227,25 +230,23 @@ export function DashboardWhatsappPage() {
             (status?.pairingWaitSec ?? 0) > 0
           }
           onClick={() => resetMut.mutate()}
-          className="px-4 py-2 rounded-lg border border-outline-variant/40 font-label-caps text-[11px] hover:border-primary/40 disabled:opacity-50"
+          className="text-[11px]"
         >
           {resetMut.isPending ? 'Preparando QR…' : 'Nuevo QR / vincular de nuevo'}
-        </button>
-        <button
-          type="button"
+        </DashboardSecondaryButton>
+        <DashboardPrimaryButton
+          className="text-[11px]"
           disabled={!status?.enabled || status?.state !== 'open' || testMut.isPending}
           onClick={() => testMut.mutate()}
-          className="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-[11px] disabled:opacity-50"
         >
           {testMut.isPending ? 'Enviando…' : 'Enviar prueba'}
-        </button>
-        <button
-          type="button"
+        </DashboardPrimaryButton>
+        <DashboardSecondaryButton
+          className="text-[11px]"
           onClick={() => void qc.invalidateQueries({ queryKey: ['whatsapp-status'] })}
-          className="px-4 py-2 rounded-lg border border-outline-variant/40 font-label-caps text-[11px]"
         >
           Actualizar estado
-        </button>
+        </DashboardSecondaryButton>
       </div>
 
       <div className="text-[11px] text-on-surface-variant space-y-2 border-t border-outline-variant/20 pt-4">
@@ -254,6 +255,6 @@ export function DashboardWhatsappPage() {
       </div>
 
       <WhatsAppDeliveryAudit />
-    </div>
+    </DashboardPageShell>
   );
 }
