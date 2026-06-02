@@ -1,21 +1,11 @@
 import axios, { type AxiosError } from 'axios';
 
 import { STORAGE_KEYS } from '@utils/constants';
+import { getApiV1BaseUrl } from '@utils/api-origin';
 import { getApiErrorMessage } from '@utils/api-error';
 import type { ApiResponse } from './types';
 
-const DEFAULT_API_HOST = 'https://barcelona-chalco.onrender.com';
-
-/** URL base del API — calculada una vez al cargar el módulo. */
-const API_BASE_URL = (() => {
-  // Desarrollo: proxy Vite en /api → backend local
-  if (import.meta.env.MODE === 'development') {
-    return '/api/v1';
-  }
-  // Producción: siempre URL absoluta a Render (nunca relativa a pages.dev)
-  const host = String(import.meta.env.VITE_API_URL || DEFAULT_API_HOST).replace(/\/$/, '');
-  return `${host}/api/v1`;
-})();
+const API_BASE_URL = getApiV1BaseUrl();
 
 export function resolveApiBaseUrl(): string {
   return API_BASE_URL;

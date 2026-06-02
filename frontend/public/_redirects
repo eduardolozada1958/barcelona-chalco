@@ -3,7 +3,8 @@
 /robots.txt /robots.txt 200
 /googlea8bbd9e440b744cd.html /googlea8bbd9e440b744cd.html 200
 
-# Proxy API (mismo dominio): imágenes QR y peticiones /api/*
-/api/* https://barcelona-chalco.onrender.com/api/:splat 200
+# Proxy API vía Cloudflare Worker (WAF) → Render
+/health https://barcelona-api-proxy.eduardolozada1958.workers.dev/health 200
+/api/* https://barcelona-api-proxy.eduardolozada1958.workers.dev/api/:splat 200
 
 /* /index.html 200
