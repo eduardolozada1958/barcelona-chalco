@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@config/database';
+import { invalidateCachedUser } from '@shared/utils/user-cache';
 import { maskEmail } from '@shared/utils/mask-contact';
 import { PARENT_PAYMENT_BLOCKED_MESSAGE } from '@config/coach-contact';
 import { NotFoundError, UnauthorizedError } from '@middlewares/error.middleware';
@@ -206,6 +207,7 @@ export class FeesService {
       .update({ payment_hold: hold })
       .eq('id', parent.user_id);
     if (error) throw new Error(error.message);
+    invalidateCachedUser(parent.user_id as string);
   }
 
   static async parentShouldHavePaymentHold(parentId: string): Promise<boolean> {

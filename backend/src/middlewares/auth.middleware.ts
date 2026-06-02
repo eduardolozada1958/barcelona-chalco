@@ -37,7 +37,10 @@ async function loadActiveUser(userId: string): Promise<AuthenticatedUser | null>
     role:     data.role as AuthenticatedUser['role'],
     fullName: (data.full_name as string) ?? '',
   };
-  setCachedUser(userId, user);
+  setCachedUser(userId, user, {
+    status:      String(data.status),
+    paymentHold: Boolean(data.payment_hold),
+  });
   return user;
 }
 

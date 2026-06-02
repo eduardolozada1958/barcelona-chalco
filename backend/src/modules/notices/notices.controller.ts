@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { NoticesService } from './notices.service';
 import { sendSuccess } from '@shared/utils/response';
 import { routeParam } from '@shared/utils/route-params';
+import { assertImageUpload } from '@shared/utils/file-magic';
 import { HTTP_STATUS } from '@config/constants';
 import type { ListNoticesQuery, CreateNoticeBody, UpdateNoticeBody } from './notices.validation';
 
@@ -68,6 +69,7 @@ export class NoticesController {
         res.status(400).json({ success: false, message: 'Adjunta una imagen (campo cover)' });
         return;
       }
+      assertImageUpload(req.file);
       const row = await NoticesService.uploadCover(routeParam(req, 'id'), req.file);
       sendSuccess(res, row, 'Imagen del aviso actualizada');
     } catch (e) {

@@ -100,7 +100,7 @@ export class AuthService {
     if (error) throw new Error(error.message);
 
     if (!user) {
-      throw new UnauthorizedError('No hay una cuenta registrada con este correo.');
+      throw new UnauthorizedError('Correo o contraseña incorrectos.');
     }
 
     await assertNotLocked(user);
@@ -177,7 +177,9 @@ export class AuthService {
       .single();
 
     if (existing) {
-      throw new ConflictError('El email ya está registrado');
+      throw new ConflictError(
+        'No se pudo completar el registro. Si ya tienes cuenta, inicia sesión o recupera tu contraseña.',
+      );
     }
 
     const passwordHash = await bcrypt.hash(input.password, env.BCRYPT_ROUNDS);

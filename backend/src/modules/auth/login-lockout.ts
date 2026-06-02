@@ -42,9 +42,7 @@ export async function recordFailedLogin(userId: string, currentAttempts: number)
     throw new ForbiddenError(lockedAccountMessage());
   }
 
-  const remaining = MAX_LOGIN_ATTEMPTS - next;
-  const intentos = remaining === 1 ? '1 intento' : `${remaining} intentos`;
-  throw new UnauthorizedError(`Contraseña incorrecta. Te quedan ${intentos} antes del bloqueo.`);
+  throw new UnauthorizedError('Correo o contraseña incorrectos.');
 }
 
 export async function clearLoginLockout(userId: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '@shared/utils/response';
+import { routeParam } from '@shared/utils/route-params';
 import { formatPhoneForDisplay } from './phone';
 import { getWhatsAppRecipientDiagnostics, listVerifiedParentWhatsAppRecipients } from './whatsapp.recipients';
 import { WhatsAppService } from './whatsapp.service';
@@ -68,7 +69,7 @@ export class WhatsAppController {
 
   static async getDeliveryBatch(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const id = String(req.params.id ?? '');
+      const id = routeParam(req, 'id');
       const detail = await WhatsAppService.getDeliveryBatchDetail(id);
       if (!detail) {
         res.status(404).json({ success: false, message: 'Envío no encontrado' });

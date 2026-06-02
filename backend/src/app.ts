@@ -4,7 +4,10 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
-import { publicReadLimiter } from '@middlewares/rate-limit.middleware';
+import {
+  healthCheckLimiter,
+  publicReadLimiter,
+} from '@middlewares/rate-limit.middleware';
 
 import { parseCorsOrigins } from '@config/cors-origins';
 import { env, isProd } from '@config/env';
@@ -83,7 +86,7 @@ export function createApp(): Application {
           callback(null, origin);
           return;
         }
-        callback(new Error(`Origen no permitido por CORS: ${origin}`));
+        callback(new Error(isProd ? 'Origen no permitido por CORS' : `Origen no permitido por CORS: ${origin}`));
       },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -91,14 +94,14 @@ export function createApp(): Application {
     }),
   );
 
-  // ── Health (antes del rate limit: monitores tipo UptimeRobot no consumen cuota) ──
-  app.get('/health', (_req, res) => {
+  // ── Health (límite suave: monitores OK, anti-DoS) ──
+  app.get('/health', healthCheckLimiter, (_req, res) => {
     res.set('Cache-Control', 'no-store');
     res.status(200).json({
       success: true,
       status:  'ok',
       message: 'Academia Barcelona API',
-      env:     env.NODE_ENV,
+      ...(isProd ? {} : { env: env.NODE_ENV }),
       version: '1.0.0',
     });
   });

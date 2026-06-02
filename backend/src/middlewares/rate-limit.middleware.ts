@@ -47,3 +47,39 @@ export const publicInscriptionLimiter = rateLimit({
     message: 'Demasiadas inscripciones desde esta red. Intenta más tarde.',
   },
 });
+
+/** Health check (anti-DoS sin bloquear monitores legítimos). */
+export const healthCheckLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max:      120,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: {
+    success: false,
+    message: 'Demasiadas peticiones al servidor.',
+  },
+});
+
+/** Suscripción push pública (anti-spam en push_subscriptions). */
+export const pushPublicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      25,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: {
+    success: false,
+    message: 'Demasiadas suscripciones push. Intenta más tarde.',
+  },
+});
+
+/** Operaciones sensibles de admin (WhatsApp, etc.). */
+export const adminSensitiveLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      60,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message: {
+    success: false,
+    message: 'Demasiadas operaciones administrativas. Espera un momento.',
+  },
+});

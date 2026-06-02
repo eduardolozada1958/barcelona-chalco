@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { supabaseAdmin } from '@config/database';
+import { invalidateCachedUser } from '@shared/utils/user-cache';
 import { env } from '@config/env';
 import { NotFoundError, ConflictError, BadRequestError } from '@middlewares/error.middleware';
 import { buildPaginationMeta, getPaginationOffset } from '@shared/utils/response';
@@ -190,6 +191,7 @@ export class UsersService {
       if (error.code === '23505') throw new ConflictError('Email duplicado');
       throw new Error(error.message);
     }
+    invalidateCachedUser(id);
     return data;
   }
 

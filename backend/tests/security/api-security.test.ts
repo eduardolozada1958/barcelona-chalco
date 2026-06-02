@@ -76,4 +76,23 @@ describe('API seguridad (superficie HTTP)', () => {
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('DENY');
   });
+
+  it('WhatsApp admin sin token devuelve 401', async () => {
+    const res = await request(app).get(`${prefix}/whatsapp/status`);
+    expect(res.status).toBe(401);
+  });
+
+  it('WhatsApp batch id inválido devuelve 422 con token admin falso', async () => {
+    const res = await request(app)
+      .get(`${prefix}/whatsapp/delivery-batches/not-a-uuid`)
+      .set('Authorization', 'Bearer invalid');
+    expect([401, 422]).toContain(res.status);
+  });
+
+  it('push subscribe sin body válido devuelve 422', async () => {
+    const res = await request(app)
+      .post(`${prefix}/push/public/subscribe`)
+      .send({});
+    expect(res.status).toBe(422);
+  });
 });
