@@ -3,8 +3,6 @@
 /robots.txt /robots.txt 200
 /googlea8bbd9e440b744cd.html /googlea8bbd9e440b744cd.html 200
 
-# Proxy API vía Cloudflare Worker (WAF) → Render
-/health https://barcelona-api-proxy.eduardolozada1958.workers.dev/health 200
-/api/* https://barcelona-api-proxy.eduardolozada1958.workers.dev/api/:splat 200
+# /api/* lo atiende functions/api/[[path]].js → Worker WAF → Render
 
 /* /index.html 200
