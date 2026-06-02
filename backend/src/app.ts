@@ -4,6 +4,7 @@ import cors from 'cors';
 import compression from 'compression';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { securityAlertMiddleware } from '@middlewares/security-alert.middleware';
 import {
   healthCheckLimiter,
   publicReadLimiter,
@@ -60,6 +61,7 @@ export function createApp(): Application {
   }
 
   app.use(requestContextMiddleware);
+  app.use(securityAlertMiddleware);
   app.use(securityHeadersMiddleware);
 
   // ── Seguridad ─────────────────────────────────────────────

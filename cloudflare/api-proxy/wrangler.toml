@@ -1,0 +1,10 @@
+name = "barcelona-api-proxy"
+main = "src/index.js"
+compatibility_date = "2024-06-01"
+
+# Ruta custom (ajusta dominio):
+# routes = [{ pattern = "api.fcbarcelonacupido.com/*", zone_name = "fcbarcelonacupido.com" }]
+
+[vars]
+# Origen Render (override con secret RENDER_ORIGIN en prod)
+RENDER_ORIGIN = "https://barcelona-chalco.onrender.com"

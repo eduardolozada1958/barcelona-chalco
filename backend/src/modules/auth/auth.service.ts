@@ -1,8 +1,12 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+} from '@shared/utils/jwt-secrets';
 import {
   UnauthorizedError,
   ConflictError,
@@ -239,7 +243,7 @@ export class AuthService {
     // Verificar el refresh token
     let payload: JwtPayload;
     try {
-      payload = jwt.verify(token, env.JWT_REFRESH_SECRET) as JwtPayload;
+      payload = verifyRefreshToken(token);
     } catch {
       throw new UnauthorizedError('Refresh token inválido o expirado');
     }
@@ -317,13 +321,8 @@ export class AuthService {
       role:  user.role as JwtPayload['role'],
     };
 
-    const accessToken = jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],
-    });
-
-    const refreshToken = jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-      expiresIn: env.JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
-    });
+    const accessToken = signAccessToken(payload);
+    const refreshToken = signRefreshToken(payload);
 
     // Calcular expiración del refresh token
     const refreshExpiresIn = env.JWT_REFRESH_EXPIRES_IN;

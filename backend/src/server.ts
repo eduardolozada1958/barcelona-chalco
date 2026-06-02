@@ -6,6 +6,7 @@ dns.setDefaultResultOrder('ipv4first');
 import { createApp } from './app';
 import { env } from '@config/env';
 import { logger } from '@shared/utils/logger';
+import { checkJwtRotationOnStartup } from '@shared/utils/jwt-secrets';
 import { verifyEmailOnStartup } from '@shared/services/email.service';
 import { WhatsAppService } from '@modules/whatsapp/whatsapp.service';
 import {
@@ -19,6 +20,7 @@ const server = app.listen(env.PORT, () => {
   logger.info(`🚀 Academia Barcelona API corriendo en puerto ${env.PORT}`);
   logger.info(`📡 Ambiente: ${env.NODE_ENV}`);
   logger.info(`🔗 Prefijo: ${env.API_PREFIX}`);
+  checkJwtRotationOnStartup();
   verifyEmailOnStartup();
   void WhatsAppService.startup().catch((e) => {
     logger.warn('WhatsApp no inició al arranque', { err: e });

@@ -31,8 +31,37 @@ const envSchema = z.object({
   // JWT
   JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
   JWT_EXPIRES_IN: z.string().default('15m'),
+  /** Secreto anterior (rotación): tokens firmados con él siguen válidos hasta expirar. */
+  JWT_SECRET_PREVIOUS: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(32).optional(),
+  ),
+  /** Fecha ISO del último cambio de JWT_SECRET (auditoría rotación 90 días). */
+  JWT_SECRET_ROTATED_AT: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'JWT_SECRET_ROTATED_AT: fecha inválida').optional(),
+  ),
   JWT_REFRESH_SECRET: z.string().min(32, 'JWT_REFRESH_SECRET debe tener al menos 32 caracteres'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+  JWT_REFRESH_SECRET_PREVIOUS: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().min(32).optional(),
+  ),
+  JWT_REFRESH_SECRET_ROTATED_AT: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'JWT_REFRESH_SECRET_ROTATED_AT: fecha inválida').optional(),
+  ),
+  JWT_ROTATION_MAX_DAYS: z.string().default('90').transform(Number),
+
+  /** Alertas de seguridad (picos 401/429). Webhook Slack/Discord opcional. */
+  SECURITY_ALERT_WINDOW_MS: z.string().default('300000').transform(Number),
+  SECURITY_ALERT_COOLDOWN_MS: z.string().default('900000').transform(Number),
+  SECURITY_ALERT_401_THRESHOLD: z.string().default('50').transform(Number),
+  SECURITY_ALERT_429_THRESHOLD: z.string().default('40').transform(Number),
+  SECURITY_ALERT_WEBHOOK_URL: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().url().optional(),
+  ),
 
   // CORS (puede ser lista separada por comas; el QR usa el primer origen si no hay APP_PUBLIC_URL)
   CORS_ORIGIN: z.string().default('http://localhost:5173'),

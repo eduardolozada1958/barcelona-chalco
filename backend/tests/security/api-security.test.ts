@@ -95,4 +95,16 @@ describe('API seguridad (superficie HTTP)', () => {
       .send({});
     expect(res.status).toBe(422);
   });
+
+  it('QR validate rechaza token malformado (422)', async () => {
+    const res = await request(app).get(`${prefix}/qr/validate/not-valid`);
+    expect(res.status).toBe(422);
+  });
+
+  it('QR image rechaza UUID inválido (422)', async () => {
+    const res = await request(app)
+      .get(`${prefix}/qr/player/not-a-uuid/image`)
+      .query({ token: 'a'.repeat(40) });
+    expect(res.status).toBe(422);
+  });
 });

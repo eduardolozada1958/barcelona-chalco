@@ -33,8 +33,8 @@ export class QrController {
 
   static async getImage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const token = typeof req.query.token === 'string' ? req.query.token : '';
-      const qrBuffer = await QrService.generateImage(routeParam(req, 'id'), token);
+      const q = req.validatedQuery as { token: string };
+      const qrBuffer = await QrService.generateImage(routeParam(req, 'id'), q.token);
 
       res.set('Content-Type', 'image/png');
       res.set('Cache-Control', 'public, max-age=86400, immutable');

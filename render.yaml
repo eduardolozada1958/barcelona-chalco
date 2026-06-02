@@ -30,6 +30,22 @@ services:
         generateValue: true
       - key: JWT_REFRESH_EXPIRES_IN
         value: 7d
+      - key: JWT_ROTATION_MAX_DAYS
+        value: "90"
+      - key: JWT_SECRET_ROTATED_AT
+        sync: false
+      - key: JWT_REFRESH_SECRET_ROTATED_AT
+        sync: false
+      - key: JWT_SECRET_PREVIOUS
+        sync: false
+      - key: JWT_REFRESH_SECRET_PREVIOUS
+        sync: false
+      - key: SECURITY_ALERT_WEBHOOK_URL
+        sync: false
+      - key: SECURITY_ALERT_401_THRESHOLD
+        value: "50"
+      - key: SECURITY_ALERT_429_THRESHOLD
+        value: "40"
       - key: CORS_ORIGIN
         value: https://barcelona-chalco.pages.dev
       - key: RATE_LIMIT_WINDOW_MS

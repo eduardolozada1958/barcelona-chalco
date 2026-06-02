@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from '@config/database';
-import { env } from '@config/env';
 import { UnauthorizedError } from './error.middleware';
-import type { JwtPayload, AuthenticatedUser } from '@shared/types';
+import type { AuthenticatedUser } from '@shared/types';
+import { verifyAccessToken } from '@shared/utils/jwt-secrets';
 import { getCachedUser, setCachedUser } from '@shared/utils/user-cache';
 
 declare global {
@@ -63,7 +62,7 @@ async function authMiddlewareAsync(
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const decoded = verifyAccessToken(token);
     const user = await loadActiveUser(decoded.sub);
 
     if (!user) {
@@ -79,7 +78,7 @@ async function authMiddlewareAsync(
     req.user = user;
     next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
+    if (error instanceof Error && error.name === 'TokenExpiredError') {
       next(new UnauthorizedError('Token expirado'));
       return;
     }
@@ -106,7 +105,7 @@ async function optionalAuthMiddlewareAsync(
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const decoded = verifyAccessToken(token);
     const user = await loadActiveUser(decoded.sub);
     if (user && decoded.role === user.role && decoded.email === user.email) {
       req.user = user;

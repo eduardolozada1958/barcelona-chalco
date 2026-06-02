@@ -1,10 +1,23 @@
 import { Router } from 'express';
+import { validateParams, validateQuery } from '@middlewares/validate.middleware';
 import { QrController } from './qr.controller';
+import {
+  qrPlayerIdParamSchema,
+  qrPlayerImageQuerySchema,
+  qrTokenParamSchema,
+} from './qr.validation';
 
 export const qrRouter = Router();
 
-// Validar QR públicamente (escaneo desde celular)
-qrRouter.get('/validate/:token', QrController.validate);
+qrRouter.get(
+  '/validate/:token',
+  validateParams(qrTokenParamSchema),
+  QrController.validate,
+);
 
-// Generar imagen QR de un jugador
-qrRouter.get('/player/:id/image', QrController.getImage);
+qrRouter.get(
+  '/player/:id/image',
+  validateParams(qrPlayerIdParamSchema),
+  validateQuery(qrPlayerImageQuerySchema),
+  QrController.getImage,
+);

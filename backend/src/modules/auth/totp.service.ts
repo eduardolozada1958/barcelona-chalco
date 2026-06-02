@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
 import QRCode from 'qrcode';
 import { authenticator } from 'otplib';
 import { supabaseAdmin } from '@config/database';
 import { env } from '@config/env';
+import { signWithAccessSecret, verifyAccessTokenPayload } from '@shared/utils/jwt-secrets';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -159,17 +159,16 @@ export class TotpService {
   }
 
   static createPendingLoginToken(userId: string): string {
-    return jwt.sign(
+    return signWithAccessSecret(
       { sub: userId, purpose: PENDING_LOGIN_PURPOSE } satisfies PendingLoginPayload,
-      env.JWT_SECRET,
-      { expiresIn: '5m' },
+      '5m',
     );
   }
 
   static parsePendingLoginToken(token: string): string {
     let payload: PendingLoginPayload;
     try {
-      payload = jwt.verify(token, env.JWT_SECRET) as PendingLoginPayload;
+      payload = verifyAccessTokenPayload<PendingLoginPayload>(token);
     } catch {
       throw new UnauthorizedError('Sesión de verificación expirada. Vuelve a iniciar sesión.');
     }
