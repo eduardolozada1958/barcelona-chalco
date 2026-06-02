@@ -17,13 +17,16 @@ wrangler secret put RENDER_ORIGIN
 wrangler deploy
 ```
 
+**URL activa (desplegada):** https://barcelona-api-proxy.eduardolozada1958.workers.dev  
+Ejemplo: `GET .../health` → proxy a Render (`200 OK`).
+
 ### 2. Dominio público del API
 
 En Cloudflare DNS:
 
 | Tipo | Nombre | Contenido | Proxy |
 |------|--------|-----------|-------|
-| CNAME | `api` | `barcelona-api-proxy.<tu-cuenta>.workers.dev` | Proxied |
+| CNAME | `api` | `barcelona-api-proxy.eduardolozada1958.workers.dev` | Proxied |
 
 O en `wrangler.toml` descomenta `routes` con tu zona.
 
