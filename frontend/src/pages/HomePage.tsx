@@ -15,6 +15,8 @@ import { displayPlayerShort, rosterRowToPitchPlayer } from '@/utils/lineup-playe
 import { NoticeCard } from '@/components/NoticeCard';
 import { listNoticesPublic } from '@/api/notices';
 import { useDisplaySeason } from '@/hooks/useClubSettings';
+import { useMobileIntro } from '@/hooks/useMobileIntro';
+import { MobileIntroOverlay } from '@/components/MobileIntroOverlay';
 import type { Result, Match, Notice } from '@/types';
 
 function isNoticeExpired(notice: Notice): boolean {
@@ -31,6 +33,7 @@ const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018
  */
 export function HomePage() {
   const season = useDisplaySeason();
+  const { visible: introVisible, dismiss: dismissIntro, dismissOnError: introFailed } = useMobileIntro();
 
   // Fetch real data for highlights
   const latestResult = useQuery({
@@ -94,6 +97,9 @@ export function HomePage() {
 
   return (
     <>
+      {introVisible ? (
+        <MobileIntroOverlay onDismiss={dismissIntro} onError={introFailed} />
+      ) : null}
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="relative min-h-[calc(100dvh-var(--public-header-h)-2rem)] sm:min-h-[85vh] flex items-center justify-center px-4 sm:px-margin-mobile md:px-margin-desktop py-8 sm:py-stack-lg overflow-hidden">
         {/* Background image + overlay */}
