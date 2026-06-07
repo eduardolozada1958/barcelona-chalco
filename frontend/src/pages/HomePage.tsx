@@ -17,6 +17,7 @@ import { listNoticesPublic } from '@/api/notices';
 import { useDisplaySeason } from '@/hooks/useClubSettings';
 import { useMobileIntro } from '@/hooks/useMobileIntro';
 import { MobileIntroOverlay } from '@/components/MobileIntroOverlay';
+import { HeroLoopBackground } from '@/components/HeroLoopBackground';
 import type { Result, Match, Notice } from '@/types';
 
 function isNoticeExpired(notice: Notice): boolean {
@@ -24,8 +25,7 @@ function isNoticeExpired(notice: Notice): boolean {
   return new Date(notice.expires_at).getTime() < Date.now();
 }
 
-/* ─── Hero placeholder image (cinematic stadium) ─── */
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&q=80&auto=format&fit=crop';
+/* ─── Hero poster (fallback si no hay video o reduced-motion) ─── */
 
 /**
  * Home Page – faithful translation of `home.html` mockup.
@@ -102,16 +102,7 @@ export function HomePage() {
       ) : null}
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="relative min-h-[calc(100dvh-var(--public-header-h)-2rem)] sm:min-h-[85vh] flex items-center justify-center px-4 sm:px-margin-mobile md:px-margin-desktop py-8 sm:py-stack-lg overflow-hidden">
-        {/* Background image + overlay */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={HERO_IMAGE}
-            alt="Barcelona Cupido Hero – stadium"
-            className="w-full h-full object-cover opacity-30 mix-blend-overlay"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-        </div>
-
+        <HeroLoopBackground paused={introVisible} />
         {/* Content */}
         <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-4 sm:gap-stack-md px-1">
           <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-1 sm:mb-2" />
