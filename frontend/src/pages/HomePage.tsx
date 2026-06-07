@@ -15,8 +15,6 @@ import { displayPlayerShort, rosterRowToPitchPlayer } from '@/utils/lineup-playe
 import { NoticeCard } from '@/components/NoticeCard';
 import { listNoticesPublic } from '@/api/notices';
 import { useDisplaySeason } from '@/hooks/useClubSettings';
-import { useMobileIntro } from '@/hooks/useMobileIntro';
-import { MobileIntroOverlay } from '@/components/MobileIntroOverlay';
 import { HeroLoopBackground } from '@/components/HeroLoopBackground';
 import type { Result, Match, Notice } from '@/types';
 
@@ -33,7 +31,6 @@ function isNoticeExpired(notice: Notice): boolean {
  */
 export function HomePage() {
   const season = useDisplaySeason();
-  const { visible: introVisible, dismiss: dismissIntro, dismissOnError: introFailed } = useMobileIntro();
 
   // Fetch real data for highlights
   const latestResult = useQuery({
@@ -97,12 +94,9 @@ export function HomePage() {
 
   return (
     <>
-      {introVisible ? (
-        <MobileIntroOverlay onDismiss={dismissIntro} onError={introFailed} />
-      ) : null}
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="relative min-h-[calc(100dvh-var(--public-header-h)-2rem)] sm:min-h-[85vh] flex items-center justify-center px-4 sm:px-margin-mobile md:px-margin-desktop py-8 sm:py-stack-lg overflow-hidden">
-        <HeroLoopBackground paused={introVisible} />
+        <HeroLoopBackground />
         {/* Content */}
         <div className="relative z-10 w-full max-w-[1280px] mx-auto text-center flex flex-col items-center gap-4 sm:gap-stack-md px-1">
           <img src={CLUB_LOGO_URL} alt="F.C. Barcelona Cupido" className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 object-contain drop-shadow-2xl mb-1 sm:mb-2" />

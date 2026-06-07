@@ -93,8 +93,6 @@ export const STORAGE_KEYS = {
   USER:           'user',
   LOCALE:         'locale',
   THEME:          'theme',
-  /** Intro móvil vista / descartada (localStorage). */
-  MOBILE_INTRO_DISMISSED: 'mobileIntroDismissed',
 };
 
 // Headers

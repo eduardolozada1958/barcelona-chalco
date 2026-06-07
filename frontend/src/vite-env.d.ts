@@ -13,7 +13,7 @@ interface ImportMetaEnv {
   readonly VITE_VENUE_ATLAS_MAP_EMBED_URL?: string;
   /** Canchas 100 (Fútbol rápido). Opcional: el front ya trae URL por defecto. */
   readonly VITE_VENUE_CANCHAS100_MAP_EMBED_URL?: string;
-  /** Intro vertical móvil (opcional). Default: /videos/intro-mobile.mp4 */
+  /** Video loop del hero (opcional). Default: /videos/intro-mobile.mp4 */
   readonly VITE_INTRO_VIDEO_URL?: string;
 }
 

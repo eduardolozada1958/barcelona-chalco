@@ -1,10 +1,10 @@
-# Video intro móvil
+# Video de fondo del hero (home)
 
-Coloca aquí tu clip vertical (9:16):
+Coloca aquí el clip en loop:
 
 - **Nombre:** `intro-mobile.mp4`
-- **Recomendado:** 15–30 s, sin audio obligatorio (se reproduce mute), &lt; 8 MB
+- **Recomendado:** 15–30 s en bucle, sin audio, &lt; 8 MB
 
-Solo se muestra en pantallas ≤ 768px (móvil). En PC no aparece.
+Se reproduce detrás del logo en la portada (móvil y PC), estilo ambiente BBVA.
 
-Alternativa: variable `VITE_INTRO_VIDEO_URL` apuntando a Supabase Storage o CDN.
+Alternativa: `VITE_INTRO_VIDEO_URL` en Cloudflare Pages.
