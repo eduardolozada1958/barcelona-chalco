@@ -651,4 +651,27 @@ export class PlayersService {
     if (error) throw new Error(error.message);
     return data;
   }
+
+  /** Quita la foto pública del jugador (avatar_url → null). */
+  static async clearAvatar(id: string) {
+    await PlayersService.getById(id);
+
+    const bucket = env.STORAGE_BUCKET_PLAYERS;
+    const { data: listed } = await supabaseAdmin.storage.from(bucket).list(id, { limit: 100 });
+    if (listed?.length) {
+      const paths = listed.map((f) => `${id}/${f.name}`);
+      await supabaseAdmin.storage.from(bucket).remove(paths).catch(() => {});
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('players')
+      .update({ avatar_url: null })
+      .eq('id', id)
+      .is('deleted_at', null)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
 }

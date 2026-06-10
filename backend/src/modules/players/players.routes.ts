@@ -61,6 +61,13 @@ playersRouter.post('/:id/photo',
   PlayersController.uploadPhoto
 );
 
+playersRouter.delete('/:id/photo',
+  authMiddleware,
+  requireAdminOrCoach,
+  validateParams(playerIdSchema),
+  PlayersController.deletePhoto
+);
+
 // ── Rutas protegidas (Admin / Coach) ──────────────────────────
 
 // GET/PUT /api/v1/players/mvp-of-week — Asignar MVP de la semana (Plantilla)

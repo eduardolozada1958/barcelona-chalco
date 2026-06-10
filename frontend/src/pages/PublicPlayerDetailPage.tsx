@@ -129,31 +129,26 @@ export function PublicPlayerDetailPage() {
           </div>
         </div>
 
-        {/* Datos del jugador — min-w-0 evita que flex/grid colapse el texto */}
+        {/* Datos del jugador */}
         <div className="relative min-w-0 flex flex-col md:border-l border-outline-variant/10 md:pl-6 pt-2 md:pt-0">
-          {/* Name + Position + Badges */}
-          <div className="mb-stack-md flex justify-between items-start gap-3">
-            <div className="min-w-0">
-              {!highlights.loading && highlights.kind ? (
-                <div className="mb-2">
-                  <PlayerHighlightBadge kind={highlights.kind} />
-                </div>
-              ) : null}
-              <h1 className="font-display-hero text-display-hero text-on-surface mb-2 tracking-tighter">
-                {player.first_name.toUpperCase()} <br />
-                <span className="text-primary">{player.last_name.toUpperCase()}</span>
-              </h1>
-              <p className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
-                <MaterialIcon name="sports_soccer" className="text-primary" size={16} />
-                {player.position?.toUpperCase() || 'JUGADOR'}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-2">
-              {player.is_verified && <Badge variant="verified" />}
-              <div className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">
+          <div className="mb-stack-md space-y-3 min-w-0">
+            {!highlights.loading && highlights.kind ? (
+              <PlayerHighlightBadge kind={highlights.kind} />
+            ) : null}
+            <h1 className="font-display-hero text-[clamp(1.2rem,4.2vw,2.75rem)] leading-[1.08] text-on-surface tracking-tighter break-words">
+              <span className="block">{player.first_name.toUpperCase()}</span>
+              <span className="block text-primary">{player.last_name.toUpperCase()}</span>
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+              {player.is_verified ? <Badge variant="verified" /> : null}
+              <span className="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">
                 Temporada {displaySeason}
-              </div>
+              </span>
             </div>
+            <p className="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+              <MaterialIcon name="sports_soccer" className="text-primary shrink-0" size={16} />
+              {player.position?.toUpperCase() || 'JUGADOR'}
+            </p>
           </div>
 
           {/* Stats grid */}

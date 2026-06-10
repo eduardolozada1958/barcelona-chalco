@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import {
   createPlayerWithDocuments,
   deletePlayer,
+  deletePlayerPhoto,
   listPlayersAdmin,
   updatePlayer,
   uploadPlayerPhoto,
@@ -145,6 +146,24 @@ export function DashboardPlayersPage() {
       }
       void qc.invalidateQueries({ queryKey: ['players-admin'] });
       void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      void qc.invalidateQueries({ queryKey: ['player-public'] });
+      if (editPhotoRef.current) editPhotoRef.current.value = '';
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const photoDeleteMut = useMutation({
+    mutationFn: (id: string) => deletePlayerPhoto(id),
+    onSuccess: (res, id) => {
+      toast.success(res.message || 'Foto eliminada');
+      setEditRow((prev) => {
+        if (!prev || String(prev.id) !== id) return prev;
+        return { ...prev, avatar_url: null };
+      });
+      void qc.invalidateQueries({ queryKey: ['player-admin', id] });
+      void qc.invalidateQueries({ queryKey: ['players-admin'] });
+      void qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      void qc.invalidateQueries({ queryKey: ['player-public'] });
       if (editPhotoRef.current) editPhotoRef.current.value = '';
     },
     onError: (e: Error) => toast.error(e.message),
@@ -572,67 +591,91 @@ export function DashboardPlayersPage() {
             <p className="text-[11px] text-on-surface-variant mt-1">Solo los activos y verificados suelen mostrarse en el sitio público.</p>
           </div>
           <PlayerPhysiqueFields register={registerEdit} watch={watchEdit} setValue={setEditValue} />
-          <div className="flex items-start gap-3 rounded-lg border border-outline-variant/30 bg-surface-container/40 px-3 py-3">
+          <div className="rounded-lg border border-outline-variant/30 bg-surface-container/40 px-3 py-3">
             <Controller
               name="isVerified"
               control={editControl}
               render={({ field }) => (
-                <input
-                  type="checkbox"
-                  id="edit-is-verified"
-                  checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary/40"
-                />
+                <label htmlFor="edit-is-verified" className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    id="edit-is-verified"
+                    checked={field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-outline-variant text-primary focus:ring-primary/40"
+                  />
+                  <span className="min-w-0 text-sm text-on-surface">
+                    <span className="font-label-caps text-label-caps text-primary block mb-1">Verificación</span>
+                    <span className="text-on-surface-variant text-xs leading-relaxed block">
+                      Marcar guarda fecha y responsable; desmarcar quita la verificación (no borra al jugador).
+                    </span>
+                  </span>
+                </label>
               )}
             />
-            <label htmlFor="edit-is-verified" className="text-sm text-on-surface cursor-pointer">
-              <span className="font-label-caps text-label-caps text-primary block">Verificación</span>
-              <span className="text-on-surface-variant text-xs">Marcar guarda fecha y responsable; desmarcar quita la verificación (no borra al jugador).</span>
-            </label>
           </div>
-          <div className="rounded-lg border border-outline-variant/30 bg-surface-container/40 p-3 space-y-2">
+          <div className="rounded-lg border border-outline-variant/30 bg-surface-container/40 p-3 space-y-3">
             <span className="font-label-caps text-label-caps text-primary block">Foto del jugador</span>
-            <div className="flex flex-wrap items-end gap-3">
-              {editRow?.avatar_url ? (
-                <img
-                  src={String(editRow.avatar_url)}
-                  alt=""
-                  className="w-16 h-16 rounded-lg object-cover border border-outline-variant/30 shrink-0"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/20 shrink-0">
-                  <MaterialIcon name="person" size={32} className="text-on-surface-variant/50" />
-                </div>
-              )}
-              <div className="flex-1 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <div className="relative shrink-0 mx-auto sm:mx-0">
+                {editRow?.avatar_url ? (
+                  <img
+                    src={String(editRow.avatar_url)}
+                    alt=""
+                    className="w-20 h-20 rounded-lg object-cover border border-outline-variant/30"
+                  />
+                ) : (
+                  <div className="w-20 h-20 rounded-lg bg-surface-container-high flex items-center justify-center border border-outline-variant/20">
+                    <MaterialIcon name="person" size={36} className="text-on-surface-variant/50" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 space-y-2">
                 <input
                   ref={editPhotoRef}
                   type="file"
                   accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
-                  className={`${formInputClass} py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary/20 file:px-2 file:py-1 file:text-[10px] file:font-label-caps file:text-primary`}
+                  className={`${formInputClass} py-2 text-xs file:mr-2 file:rounded file:border-0 file:bg-primary/20 file:px-2 file:py-1 file:text-[10px] file:font-label-caps file:text-primary w-full`}
                 />
-                <p className="text-[10px] text-on-surface-variant mt-1">PNG, JPEG o WebP. Actualiza la imagen pública del jugador.</p>
+                <p className="text-[10px] text-on-surface-variant">PNG, JPEG o WebP.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={photoUploadMut.isPending || !editRow}
+                    onClick={() => {
+                      const file = editPhotoRef.current?.files?.[0];
+                      if (!file || !editRow) {
+                        toast.error('Selecciona una imagen');
+                        return;
+                      }
+                      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+                        toast.error('Solo PNG, JPEG o WebP');
+                        return;
+                      }
+                      photoUploadMut.mutate({ id: String(editRow.id), file });
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-on-primary font-label-caps text-[11px] disabled:opacity-50 touch-manipulation"
+                  >
+                    <MaterialIcon name="photo_camera" size={16} />
+                    {photoUploadMut.isPending ? 'Subiendo…' : editRow?.avatar_url ? 'Cambiar foto' : 'Subir foto'}
+                  </button>
+                  {editRow?.avatar_url ? (
+                    <button
+                      type="button"
+                      disabled={photoDeleteMut.isPending || !editRow}
+                      onClick={() => {
+                        if (!editRow) return;
+                        if (!window.confirm('¿Quitar la foto de este jugador?')) return;
+                        photoDeleteMut.mutate(String(editRow.id));
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-error/40 text-error font-label-caps text-[11px] hover:bg-error/10 disabled:opacity-50 touch-manipulation"
+                    >
+                      <MaterialIcon name="delete" size={16} />
+                      {photoDeleteMut.isPending ? 'Quitando…' : 'Quitar foto'}
+                    </button>
+                  ) : null}
+                </div>
               </div>
-              <button
-                type="button"
-                disabled={photoUploadMut.isPending || !editRow}
-                onClick={() => {
-                  const file = editPhotoRef.current?.files?.[0];
-                  if (!file || !editRow) {
-                    toast.error('Selecciona una imagen');
-                    return;
-                  }
-                  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
-                    toast.error('Solo PNG, JPEG o WebP');
-                    return;
-                  }
-                  photoUploadMut.mutate({ id: String(editRow.id), file });
-                }}
-                className="shrink-0 px-4 py-2 rounded-lg bg-surface-container-high text-on-surface font-label-caps text-[11px] border border-outline-variant/40 hover:border-primary/40 disabled:opacity-50"
-              >
-                {photoUploadMut.isPending ? 'Subiendo…' : 'Subir foto'}
-              </button>
             </div>
           </div>
           <div className={formActionsClass}>

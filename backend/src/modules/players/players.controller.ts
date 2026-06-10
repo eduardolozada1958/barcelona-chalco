@@ -187,6 +187,13 @@ export class PlayersController {
     } catch (e) { next(e); }
   }
 
+  static async deletePhoto(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const player = await PlayersService.clearAvatar(routeParam(req, 'id'));
+      sendSuccess(res, forViewer(player), 'Foto eliminada');
+    } catch (e) { next(e); }
+  }
+
   static async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const player = await PlayersService.update(

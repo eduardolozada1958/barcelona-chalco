@@ -185,6 +185,12 @@ export async function uploadPlayerPhoto(playerId: string, file: File) {
   return data;
 }
 
+/** Elimina la foto pública del jugador. */
+export async function deletePlayerPhoto(playerId: string) {
+  const { data } = await apiClient.delete<ApiResponse<unknown>>(`/players/${playerId}/photo`);
+  return data;
+}
+
 export async function getPlayerAdmin(id: string) {
   const { data } = await apiClient.get<ApiResponse<unknown>>(`/players/${id}`);
   return data;
