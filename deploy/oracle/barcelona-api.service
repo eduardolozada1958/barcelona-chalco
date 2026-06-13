@@ -1,0 +1,20 @@
+[Unit]
+Description=Academia Barcelona API (Node.js)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/barcelona/backend
+EnvironmentFile=/home/ubuntu/barcelona/backend/.env.production
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=10
+# WhatsApp sesión en disco (Render Free usaba Supabase)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=barcelona-api
+
+[Install]
+WantedBy=multi-user.target
