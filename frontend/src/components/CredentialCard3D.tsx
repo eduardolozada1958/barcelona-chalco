@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { LazyMediaImage } from '@/components/LazyMediaImage';
 import { CLUB_LOGO_URL } from '@/config/club';
 import { calcAgeFromBirthDate, formatBirthDateEs } from '@/utils/birth-date';
 
@@ -141,7 +142,13 @@ export function CredentialCard3D({ player, immersive = false, className = '' }: 
               <div className="mx-auto sm:mx-0 shrink-0" style={{ transform: 'translateZ(42px)' }}>
                 <div className="relative h-36 w-28 sm:h-40 sm:w-32 rounded-2xl border border-primary/25 bg-[#050810] shadow-[0_12px_32px_rgba(0,0,0,0.5)] overflow-hidden">
                   {avatar ? (
-                    <img src={avatar} alt="" className="h-full w-full object-cover" />
+                    <LazyMediaImage
+                      src={avatar}
+                      priority
+                      optimize={{ width: 256, height: 320, quality: 80, resize: 'cover' }}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <MaterialIcon name="person" size={48} className="text-on-surface-variant/35" />

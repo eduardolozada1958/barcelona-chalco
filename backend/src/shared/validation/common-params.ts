@@ -31,4 +31,12 @@ export const qrPlayerIdParamSchema = z.object({
 
 export const qrPlayerImageQuerySchema = z.object({
   token: opaqueQrToken,
+  w: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const n = v ? parseInt(v, 10) : 384;
+      if (Number.isNaN(n)) return 384;
+      return Math.min(512, Math.max(192, n));
+    }),
 });

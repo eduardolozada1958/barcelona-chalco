@@ -95,7 +95,7 @@ export function PublicPlayersPage() {
         </div>
       ) : (
         <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
-          {players.map((player) => (
+          {players.map((player, index) => (
             <StaggerItem key={player.id}>
               <Link
                 to={playerPublicPath(player)}
@@ -103,7 +103,7 @@ export function PublicPlayersPage() {
                 onMouseEnter={() => prefetchPublicPlayer(queryClient, player)}
                 onFocus={() => prefetchPublicPlayer(queryClient, player)}
               >
-                <PlayerCard player={player} displaySeason={displaySeason} />
+                <PlayerCard player={player} displaySeason={displaySeason} priority={index < 6} />
               </Link>
             </StaggerItem>
           ))}

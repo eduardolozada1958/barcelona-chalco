@@ -56,11 +56,13 @@ export class QrService {
    * Genera una imagen QR (PNG buffer) para el jugador indicado.
    * Requiere el qr_token del jugador para evitar enumeración por UUID.
    */
-  static async generateImage(playerId: string, qrToken: string): Promise<Buffer> {
+  static async generateImage(playerId: string, qrToken: string, width = 384): Promise<Buffer> {
     const token = qrToken.trim();
     if (!token) {
       throw new BadRequestError('Token QR requerido');
     }
+
+    const pngWidth = Math.min(512, Math.max(192, width));
 
     const { data: player, error } = await supabaseAdmin
       .from('players')
@@ -74,15 +76,14 @@ export class QrService {
       throw new NotFoundError('Jugador no encontrado o sin QR generado');
     }
 
-    const memKey = `qr:png:${player.id}:${player.qr_token}`;
+    const memKey = `qr:png:${player.id}:${player.qr_token}:${pngWidth}`;
     const cached = cacheGet<Buffer>(memKey);
     if (cached) return cached;
 
     const qrUrl = `${publicSiteBaseUrl()}/credencial-ar/${player.qr_token}`;
-    /** Mayor anchura PNG + margen 4 módulos + ECC «L» = menos módulos a la misma URL, celdas más grandes y más fáciles de enfocar con la cámara. */
     const qrBuffer = await QRCode.toBuffer(qrUrl, {
       type:                    'png',
-      width:                   512,
+      width:                   pngWidth,
       margin:                  4,
       errorCorrectionLevel:    'L',
       color:                   { dark: '#000000', light: '#FFFFFF' },

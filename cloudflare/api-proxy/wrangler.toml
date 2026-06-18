@@ -8,4 +8,4 @@ account_id = "5a8bb89355198fb637f153e205898ff6"
 
 [vars]
 # Origen Render (override con secret RENDER_ORIGIN en prod)
-RENDER_ORIGIN = "https://barcelona-chalco.onrender.com"
+RENDER_ORIGIN = "https://barcelona-chalco-84n2.onrender.com"

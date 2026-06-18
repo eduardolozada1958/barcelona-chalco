@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { getPlayerPublic } from '@/api/players';
 import type { ApiResponse } from '@/api/types';
 import type { Player } from '@/types';
+import { playerCardAvatarUrl, prefetchImageUrl } from '@/utils/media-url';
 
 export function findCachedPublicPlayer(
   queryClient: QueryClient,
@@ -18,6 +19,7 @@ export function findCachedPublicPlayer(
 
 export function prefetchPublicPlayer(queryClient: QueryClient, player: Player): void {
   const ref = player.slug?.trim() || player.id;
+  prefetchImageUrl(playerCardAvatarUrl(player.avatar_url));
   void queryClient.prefetchQuery({
     queryKey: ['player-public', ref],
     queryFn: () => getPlayerPublic(ref),

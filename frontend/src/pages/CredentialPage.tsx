@@ -9,6 +9,7 @@ import type { ApiResponse } from '@/api/types';
 import type { Player } from '@/types';
 import { Spinner } from '@/components/Spinner';
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { LazyMediaImage } from '@/components/LazyMediaImage';
 import { SkeletonGrid } from '@/components/Skeleton';
 import { StaggerContainer, StaggerItem } from '@/components/PageTransition';
 import { PlayerQrImage } from '@/components/PlayerQrImage';
@@ -22,7 +23,7 @@ type ValidatePayload = { isValid: boolean; player?: Record<string, unknown> };
 /*  Credential Card Component                                        */
 /* ------------------------------------------------------------------ */
 
-function CredentialCard({ player }: { player: Player }) {
+function CredentialCard({ player, priority = false }: { player: Player; priority?: boolean }) {
   const age       = calcAgeFromBirthDate(player.birth_date);
   const headerRef =
     player.jersey_number != null && !Number.isNaN(Number(player.jersey_number))
@@ -48,7 +49,13 @@ function CredentialCard({ player }: { player: Player }) {
         <div className="flex flex-col items-center gap-2 flex-shrink-0 mx-auto md:mx-0">
           <div className="relative w-24 h-28 rounded-xl bg-surface-container-highest border border-outline-variant/30 overflow-hidden flex items-center justify-center">
             {player.avatar_url ? (
-              <img src={player.avatar_url} alt={player.first_name} className="w-full h-full object-cover" />
+              <LazyMediaImage
+                src={player.avatar_url}
+                priority={priority}
+                optimize={{ width: 200, height: 240, quality: 75, resize: 'cover' }}
+                alt={player.first_name}
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="flex flex-col items-center justify-center">
                 <MaterialIcon name="person" size={40} className="text-on-surface-variant/40" />
@@ -91,7 +98,7 @@ function CredentialCard({ player }: { player: Player }) {
         <div className="flex flex-col items-center justify-center flex-shrink-0 mx-auto md:mx-0">
           {hasQr && qrToken ? (
             <div className="flex flex-col items-center">
-              <PlayerQrImage playerId={player.id} qrToken={qrToken} cacheKey={qrCache} size="xl" />
+              <PlayerQrImage playerId={player.id} qrToken={qrToken} cacheKey={qrCache} size="xl" priority={priority} />
               <p className="mt-3 text-[11px] text-center text-on-surface-variant/75 max-w-[14rem] leading-snug">
                 Acerca el teléfono; buena luz. El código es grande a propósito para que sea más fácil de leer.
               </p>
@@ -190,9 +197,9 @@ function CredentialsGallery() {
               {allPlayers.length} jugador{allPlayers.length !== 1 ? 'es' : ''} verificado{allPlayers.length !== 1 ? 's' : ''}
             </p>
             <StaggerContainer className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {allPlayers.map((player) => (
+              {allPlayers.map((player, index) => (
                 <StaggerItem key={player.id}>
-                  <CredentialCard player={player} />
+                  <CredentialCard player={player} priority={index < 4} />
                 </StaggerItem>
               ))}
             </StaggerContainer>

@@ -12,6 +12,7 @@ import { MaterialIcon } from '@/components/MaterialIcon';
 import { StatBox } from '@/components/StatBox';
 import { Badge } from '@/components/Badge';
 import { Spinner } from '@/components/Spinner';
+import { LazyMediaImage } from '@/components/LazyMediaImage';
 import { PageSeo } from '@/components/PageSeo';
 import { absoluteUrl } from '@/config/seo';
 import { isPlayerUuid, playerPublicPath } from '@/utils/player-path';
@@ -109,8 +110,10 @@ export function PublicPlayerDetailPage() {
         <div className="flex justify-center md:justify-start">
           <div className="relative w-[min(100%,260px)] aspect-[3/4] rounded-xl overflow-hidden bg-surface-container-lowest border border-outline-variant/25 shadow-md">
             {player.avatar_url ? (
-              <img
+              <LazyMediaImage
                 src={player.avatar_url}
+                priority
+                optimize={{ width: 560, height: 747, quality: 80, resize: 'cover' }}
                 alt={`Foto de ${fullName}`}
                 className="absolute inset-0 h-full w-full object-cover object-top"
               />

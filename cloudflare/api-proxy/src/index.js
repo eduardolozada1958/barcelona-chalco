@@ -3,7 +3,7 @@
  *
  * Despliegue:
  *   cd cloudflare/api-proxy
- *   npx wrangler secret put RENDER_ORIGIN   # https://barcelona-chalco.onrender.com
+ *   npx wrangler secret put RENDER_ORIGIN   # https://barcelona-chalco-84n2.onrender.com
  *   npx wrangler deploy
  *
  * DNS: api.tudominio.com → Worker (ruta custom) o CNAME proxied al worker.
@@ -26,7 +26,7 @@ export default {
       });
     }
 
-    const origin = (env.RENDER_ORIGIN || 'https://barcelona-chalco.onrender.com').replace(/\/$/, '');
+    const origin = (env.RENDER_ORIGIN || 'https://barcelona-chalco-84n2.onrender.com').replace(/\/$/, '');
     const target = `${origin}${url.pathname}${url.search}`;
 
     const headers = new Headers(request.headers);

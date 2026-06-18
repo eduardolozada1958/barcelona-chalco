@@ -1,4 +1,5 @@
 import { MaterialIcon } from '@/components/MaterialIcon';
+import { LazyMediaImage } from '@/components/LazyMediaImage';
 
 type PlayerAvatarProps = {
   name: string;
@@ -22,9 +23,11 @@ export function PlayerAvatar({ name, avatarUrl, size = 'md', className = '' }: P
   const dim = size === 'sm' ? 'w-8 h-8 text-[10px]' : 'w-10 h-10 text-xs';
 
   if (avatarUrl) {
+    const px = size === 'sm' ? 64 : 80;
     return (
-      <img
+      <LazyMediaImage
         src={avatarUrl}
+        optimize={{ width: px, height: px, quality: 75, resize: 'cover' }}
         alt=""
         className={`${dim} rounded-full object-cover border border-outline-variant/30 shrink-0 bg-surface-variant ${className}`}
       />

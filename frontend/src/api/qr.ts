@@ -9,7 +9,7 @@ export async function validateQrToken(token: string): Promise<ApiResponse<{ isVa
 }
 
 /** PNG del QR (misma base que el resto del API en producción). Requiere token QR del jugador. */
-export function playerQrImageUrl(playerId: string, qrToken: string): string {
-  const params = new URLSearchParams({ token: qrToken });
+export function playerQrImageUrl(playerId: string, qrToken: string, width = 384): string {
+  const params = new URLSearchParams({ token: qrToken, w: String(width) });
   return `${resolveApiBaseUrl()}/qr/player/${encodeURIComponent(playerId)}/image?${params.toString()}`;
 }

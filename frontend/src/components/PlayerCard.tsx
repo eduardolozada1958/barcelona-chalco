@@ -1,15 +1,18 @@
 import type { Player } from '@/types';
 import { useDisplaySeason } from '@/hooks/useClubSettings';
+import { LazyMediaImage } from '@/components/LazyMediaImage';
 import { MaterialIcon } from './MaterialIcon';
 
 interface PlayerCardProps {
   player: Player;
   /** Evita una consulta de ajustes por cada tarjeta en la grilla. */
   displaySeason?: string;
+  /** Primeras tarjetas visibles: carga foto antes. */
+  priority?: boolean;
 }
 
 /** Tarjeta pública: foto + nombre + descripción. La validación QR está en /credencial. */
-export function PlayerCard({ player, displaySeason: seasonProp }: PlayerCardProps) {
+export function PlayerCard({ player, displaySeason: seasonProp, priority = false }: PlayerCardProps) {
   const seasonFromHook = useDisplaySeason();
   const displaySeason = seasonProp ?? seasonFromHook;
   const fullName = `${player.first_name} ${player.last_name}`;
@@ -20,10 +23,12 @@ export function PlayerCard({ player, displaySeason: seasonProp }: PlayerCardProp
 
       <div className="h-64 relative z-10 overflow-hidden bg-surface-container-lowest">
         {player.avatar_url ? (
-          <img
+          <LazyMediaImage
             src={player.avatar_url}
+            priority={priority}
+            optimize={{ width: 520, height: 640, quality: 75, resize: 'cover' }}
             alt={`Retrato de ${fullName}`}
-            className="w-full h-full object-cover object-top mix-blend-luminosity opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700"
+            className="w-full h-full object-cover object-top grayscale-[0.35] group-hover:grayscale-0 opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-[opacity,transform,filter] duration-500"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
